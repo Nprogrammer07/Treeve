@@ -73,7 +73,9 @@ No tienes que acordarte de memoria: **el compilador y la CI te frenan.**
   - el núcleo usa ASP.NET, EF Core, Npgsql, Supabase, HTTP o `Microsoft.Extensions.*`;
   - un endpoint usa algo de `Treeve.Infrastructure`;
   - una interfaz `IRepositorio*` está fuera de `Domain.Services`;
-  - creas un proyecto nuevo sin registrarlo en su anillo.
+  - creas un proyecto nuevo sin registrarlo en su anillo;
+  - hay código fuera de los anillos (por ejemplo, otra carpeta `backend/`) o archivos del backend que no son C#. **Todo el backend se escribe en C# dentro de los proyectos de los anillos.** Si algo no cabe en esa estructura, se habla con el arquitecto y se propone un ADR antes de escribirlo.
+- Cambiar las pruebas de arquitectura, el CI, los ADRs o agregar paquetes NuGet requiere la aprobación del arquitecto (`.github/CODEOWNERS`).
 
 ### Áreas funcionales = carpetas
 

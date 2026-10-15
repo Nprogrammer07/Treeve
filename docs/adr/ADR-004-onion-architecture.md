@@ -42,6 +42,8 @@ SPA (`Treeve.Web`) → API (`Treeve.Api`, que contiene el núcleo y la infraestr
 
 - **Compilación:** las referencias entre proyectos solo apuntan hacia adentro. `Treeve.Domain` no referencia nada.
 - **CI:** `tests/Treeve.ArchitectureTests` (ArchUnitNET) verifica las reglas 1 a 4, que las interfaces `IRepositorio*` vivan en `Domain.Services` y que cada proyecto esté en la carpeta de su anillo.
+- **Estructura y lenguajes:** `EstructuraDelRepositorioTests` falla si aparece código fuera de los anillos (por ejemplo, un segundo backend en otra carpeta), si el backend tiene archivos que no son C#, si el frontend tiene código que no es TypeScript o si un `.cs` queda fuera de un proyecto. Sin esto, las reglas anteriores no verían ese código.
+- **Cambios a las reglas:** `.github/CODEOWNERS` exige la aprobación del arquitecto para modificar las pruebas de arquitectura, el CI, los ADRs y las dependencias.
 - **Frontend:** `dependency-cruiser` impide clientes de base de datos en el frontend, PixiJS fuera de `src/scene` e importaciones cruzadas entre features.
 
 ## Alternativas consideradas

@@ -13,6 +13,7 @@
 
 ## Checklist de arquitectura
 
+- [ ] ¿Usa solo el stack (C# / .NET en el backend; React + TypeScript + PixiJS en el frontend) y todo el código vive dentro de los anillos? No se agregan dependencias ni tecnologías sin un ADR
 - [ ] ¿Respeta la regla de dependencias del Onion (todo apunta hacia el centro)? (CI en verde, incluidas `Treeve.ArchitectureTests` y `npm run depcruise`)
 - [ ] ¿Cada pieza está en su anillo? (reglas de negocio en `Domain`/`Domain.Services`, orquestación en `Application`, nada de lógica de negocio en endpoints ni en el frontend)
 - [ ] ¿La autorización está en el caso de uso (validada en el backend)?
