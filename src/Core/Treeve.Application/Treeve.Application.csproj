@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Anillo 3 · Servicios de aplicación: casos de uso, autorización y puertos hacia el
+       exterior (cifrado, reloj, bus de eventos). Solo conoce los anillos 1 y 2. -->
+  <ItemGroup>
+    <ProjectReference Include="..\Treeve.Domain.Services\Treeve.Domain.Services.csproj" />
+  </ItemGroup>
+</Project>

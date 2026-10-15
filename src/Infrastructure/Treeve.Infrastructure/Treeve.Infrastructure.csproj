@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Anillo externo · Infraestructura: implementa las interfaces del núcleo
+       (repositorios, cifrado, bus de eventos). No conoce la presentación. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Treeve.Application\Treeve.Application.csproj" />
+  </ItemGroup>
+</Project>

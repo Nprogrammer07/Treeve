@@ -1,0 +1,25 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Core/">
+    <Project Path="src/Core/Treeve.Domain/Treeve.Domain.csproj" />
+    <Project Path="src/Core/Treeve.Domain.Services/Treeve.Domain.Services.csproj" />
+    <Project Path="src/Core/Treeve.Application/Treeve.Application.csproj" />
+  </Folder>
+  <Folder Name="/src/Infrastructure/">
+    <Project Path="src/Infrastructure/Treeve.Infrastructure/Treeve.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Presentation/">
+    <Project Path="src/Presentation/Treeve.Api/Treeve.Api.csproj" />
+  </Folder>
+  <!-- El frontend es presentación (anillo externo). Se lista aquí para verlo en el IDE;
+       se compila con npm, no con dotnet. -->
+  <Folder Name="/src/Presentation/Treeve.Web/">
+    <File Path="src/Presentation/Treeve.Web/package.json" />
+    <File Path="src/Presentation/Treeve.Web/README.md" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Treeve.Domain.Tests/Treeve.Domain.Tests.csproj" />
+    <Project Path="tests/Treeve.Application.Tests/Treeve.Application.Tests.csproj" />
+    <Project Path="tests/Treeve.ArchitectureTests/Treeve.ArchitectureTests.csproj" />
+  </Folder>
+</Solution>

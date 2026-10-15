@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend (.NET) · build, pruebas y regla de dependencias Onion
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+      - run: dotnet restore Treeve.slnx
+      - run: dotnet build Treeve.slnx --no-restore --configuration Release
+      # Incluye Treeve.ArchitectureTests: si un anillo interno depende de uno externo,
+      # o un proyecto queda fuera de la carpeta de su anillo, esta etapa falla.
+      - run: dotnet test Treeve.slnx --no-build --configuration Release
+
+  web:
+    name: Presentación web (React) · lint, dependencias, pruebas y build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/Presentation/Treeve.Web
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: src/Presentation/Treeve.Web/.nvmrc
+          cache: npm
+          cache-dependency-path: src/Presentation/Treeve.Web/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run depcruise
+      - run: npm test
+      - run: npm run build

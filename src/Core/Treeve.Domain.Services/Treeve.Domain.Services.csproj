@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Anillo 2 · Servicios de dominio: reglas que involucran varias entidades e
+       interfaces de repositorio. Solo conoce el modelo de dominio. -->
+  <ItemGroup>
+    <ProjectReference Include="..\Treeve.Domain\Treeve.Domain.csproj" />
+  </ItemGroup>
+</Project>

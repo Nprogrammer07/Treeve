@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Anillo 1 · Modelo de dominio (centro del Onion): entidades y objetos de valor.
+       No referencia ningún proyecto ni paquete. -->
+</Project>

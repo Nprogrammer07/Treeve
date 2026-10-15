@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <!-- Anillo externo · Presentación HTTP: endpoints y DTOs (Endpoints/) y composición
+       de dependencias (Composition/). Los endpoints solo llaman casos de uso. -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Treeve.Application\Treeve.Application.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\Treeve.Infrastructure\Treeve.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

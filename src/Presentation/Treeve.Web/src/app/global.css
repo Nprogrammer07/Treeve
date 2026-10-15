@@ -1,0 +1,32 @@
+/* Tokens mínimos provisionales; los define el sistema de diseño (TEC-07).
+   Guía visual: fondo nunca blanco puro, contraste ≥ 4.5:1, foco visible. */
+:root {
+  --color-fondo: #f3efe4;
+  --color-texto: #23402f;
+  --color-foco: #3d7a5a;
+
+  color-scheme: light;
+  background-color: var(--color-fondo);
+  color: var(--color-texto);
+  font-family: ui-rounded, system-ui, sans-serif;
+  line-height: 1.5;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--color-fondo);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+.app {
+  display: grid;
+  place-content: center;
+  min-height: 100vh;
+  padding: 16px;
+  text-align: center;
+}
