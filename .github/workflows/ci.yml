@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   backend:
-    name: Backend (.NET) · build, pruebas y regla de dependencias Onion
+    name: Backend (.NET) · build, pruebas, reglas del Onion y lenguajes permitidos
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -23,8 +23,9 @@ jobs:
           dotnet-version: 10.0.x
       - run: dotnet restore Treeve.slnx
       - run: dotnet build Treeve.slnx --no-restore --configuration Release
-      # Incluye Treeve.ArchitectureTests: si un anillo interno depende de uno externo,
-      # o un proyecto queda fuera de la carpeta de su anillo, esta etapa falla.
+      # Incluye Treeve.ArchitectureTests. Falla si un anillo interno depende de uno externo,
+      # si un proyecto queda fuera de la carpeta de su anillo, si hay código fuera de los
+      # anillos o si el backend no es C# / el frontend no es TypeScript (ADR-003).
       - run: dotnet test Treeve.slnx --no-build --configuration Release
 
   web:

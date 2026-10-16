@@ -1,0 +1,16 @@
+# Archivos que protegen la arquitectura y el stack: cualquier PR que los cambie necesita
+# la aprobación del arquitecto. Solo se exige si la protección de main tiene activado
+# "Require review from Code Owners".
+
+/.github/                                              @Nprogrammer07
+/tests/Treeve.ArchitectureTests/                       @Nprogrammer07
+/docs/adr/                                             @Nprogrammer07
+/CLAUDE.md                                             @Nprogrammer07
+/Treeve.slnx                                           @Nprogrammer07
+/global.json                                           @Nprogrammer07
+/Directory.Build.props                                 @Nprogrammer07
+/Directory.Packages.props                              @Nprogrammer07
+/src/**/*.csproj                                       @Nprogrammer07
+/src/Presentation/Treeve.Web/package.json              @Nprogrammer07
+/src/Presentation/Treeve.Web/.dependency-cruiser.cjs   @Nprogrammer07
+/src/Presentation/Treeve.Web/.oxlintrc.json            @Nprogrammer07
