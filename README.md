@@ -47,6 +47,7 @@ Treeve/
 │   ├── Treeve.Domain.Tests/           # Reglas de negocio (anillos 1 y 2)
 │   ├── Treeve.Application.Tests/      # Casos de uso con dobles de prueba
 │   └── Treeve.ArchitectureTests/      # Regla de dependencias verificada en CI
+├── deploy/                            # Externo · Dockerfile de Treeve.Api (Railway, ADR-002)
 ├── docs/
 │   ├── adr/                           # Decisiones de arquitectura
 │   └── guias/                         # Guías para el equipo
@@ -65,6 +66,7 @@ Las áreas funcionales (Identidad, Desahogos, EspacioVerde, MensajesApoyo, Suger
 | Los endpoints no usan la infraestructura (solo `Composition/` la conoce) | `Treeve.ArchitectureTests` |
 | Las interfaces `IRepositorio*` viven en `Treeve.Domain.Services` | `Treeve.ArchitectureTests` |
 | Cada proyecto vive en la carpeta de su anillo | `Treeve.ArchitectureTests` |
+| `.github/`, `deploy/` y `docs/` solo contienen lo suyo (ninguna carpeta es un comodín) | `Treeve.ArchitectureTests` |
 | No hay código fuera de los anillos (nada de `backend/` u otras carpetas paralelas) | `Treeve.ArchitectureTests` |
 | El backend es solo C# y el frontend solo TypeScript (ADR-003); ningún `.cs` queda fuera de un proyecto | `Treeve.ArchitectureTests` |
 | Cambiar estas reglas, el CI, los ADRs o las dependencias requiere aprobación del arquitecto | [`CODEOWNERS`](.github/CODEOWNERS) + protección de `main` |

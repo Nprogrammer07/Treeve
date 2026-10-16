@@ -1,5 +1,5 @@
 # Imagen de Treeve.Api para Railway (ADR-002, punto 7).
-# El contexto de construcción es la raíz del repositorio: RAILWAY_DOCKERFILE_PATH=./.github/docker/Dockerfile
+# El contexto de construcción es la raíz del repositorio: RAILWAY_DOCKERFILE_PATH=deploy/Dockerfile
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 COPY global.json Directory.Build.props Directory.Packages.props .editorconfig ./

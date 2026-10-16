@@ -159,7 +159,7 @@ Como visitante, quiero registrarme con la menor cantidad de datos posible.
 
 Ejemplo: `src/Core/Treeve.Domain/Desahogos/Nota.cs` → namespace `Treeve.Domain.Desahogos`.
 
-- **Regla de dependencias verificada en CI:** referencias entre proyectos hacia el centro + `tests/Treeve.ArchitectureTests` (ArchUnitNET). Frontend: `src/Presentation/Treeve.Web/.dependency-cruiser.cjs`. Si algo apunta hacia afuera, el build falla. `EstructuraDelRepositorioTests` además falla si hay código fuera de los anillos o en un lenguaje distinto del stack (todo el backend en C#, todo el frontend en TypeScript). `.github/CODEOWNERS` exige la aprobación del arquitecto para cambiar estas reglas.
+- **Regla de dependencias verificada en CI:** referencias entre proyectos hacia el centro + `tests/Treeve.ArchitectureTests` (ArchUnitNET). Frontend: `src/Presentation/Treeve.Web/.dependency-cruiser.cjs`. Si algo apunta hacia afuera, el build falla. `EstructuraDelRepositorioTests` además falla si hay código fuera de los anillos o en un lenguaje distinto del stack (todo el backend en C#, todo el frontend en TypeScript), y si `.github/`, `deploy/` o `docs/` contienen algo distinto de lo suyo. `.github/CODEOWNERS` exige la aprobación del arquitecto para cambiar estas reglas.
 - **Interfaces adentro, implementaciones afuera.** El núcleo no conoce el contenedor de dependencias: los casos de uso se registran en `Treeve.Api/Composition` y la infraestructura en `Treeve.Infrastructure/DependencyInjection.cs`.
 - **Ceremonia proporcional:** todos los anillos para lógica de negocio no trivial (crecimiento del árbol, motor de respuestas, autorización); un CRUD trivial puede saltarse el servicio de dominio, pero siempre pasa por un caso de uso.
 - **Autorización siempre en el caso de uso**, nunca solo en el frontend.
@@ -252,9 +252,9 @@ Una IA futura entraría como otra implementación de `IGeneradorMensajeApoyo` en
 
 ---
 
-## 7. ADR-002 · Persistencia (PROPUESTO, aún no escrito ni aprobado)
+## 7. ADR-002 · Persistencia (Aceptado el 16-oct-2026, ver [ADR-002](docs/adr/ADR-002-persistencia.md))
 
-Puntos a decidir y registrar:
+Puntos que el ADR resolvió:
 1. **Solo el backend accede a la base de datos**, a través de adaptadores de persistencia. El frontend no consulta la base de datos directamente (aunque Supabase lo permita), para no saltarse los casos de uso.
 2. **Cifrado de los desahogos:** en la aplicación o con funciones de la base de datos; **la llave no puede vivir en la misma base de datos**.
 3. **Organización de tablas:** por revisar tras ADR-004 (ya no hay módulos; p. ej. un esquema por área funcional). Solo `Treeve.Infrastructure` toca la base de datos.
@@ -427,8 +427,8 @@ IDs de tareas en ClickUp:
 ## 11. Decisiones abiertas (resolver antes o durante el Sprint 1)
 
 1. ~~Stack tecnológico.~~ **Resuelto (13-oct-2026) en ADR-003.** Stack: C# / .NET 10 (con ASP.NET Core) y React + TypeScript + PixiJS. Herramientas, que no son parte del stack: Vite (compila el frontend), xUnit + ArchUnitNET, Vitest + Testing Library, Oxlint y dependency-cruiser. Falta la herramienta de migraciones, que se define en ADR-002 (candidata: EF Core + Npgsql).
-2. **Infraestructura:** el backend es **propio** (se deduce de la Onion Architecture: el núcleo concentra los casos de uso; descartadas las funciones de Supabase como backend). Proveedores propuestos, por confirmar en TEC-02: Supabase (solo PostgreSQL), Railway (backend), Vercel (frontend).
-3. **ADR-002 de persistencia** por escribir y aprobar.
+2. **Infraestructura:** el backend es **propio** (se deduce de la Onion Architecture: el núcleo concentra los casos de uso; descartadas las funciones de Supabase como backend). Proveedores: Supabase (solo PostgreSQL) y Railway (backend) confirmados en ADR-002; Vercel (frontend) por confirmar en TEC-02.
+3. ~~ADR-002 de persistencia.~~ **Aceptado (16-oct-2026):** solo el backend accede a PostgreSQL (Supabase solo como base de datos, esquema `treeve`), cifrado AES-256-GCM en la aplicación, migraciones con EF Core + Npgsql en `Treeve.Infrastructure`, backend en Railway con `deploy/Dockerfile`.
 4. **Definition of Done v2** por aprobar y copiar a ClickUp y a la plantilla de PR.
 5. **Planning Poker** pendiente: estimaciones aún no validadas por Luis y Juan José.
 6. **Fechas de los sprints** sin definir.
