@@ -159,7 +159,7 @@ Como visitante, quiero registrarme con la menor cantidad de datos posible.
 
 Ejemplo: `src/Core/Treeve.Domain/Desahogos/Nota.cs` → namespace `Treeve.Domain.Desahogos`.
 
-- **Regla de dependencias verificada en CI:** referencias entre proyectos hacia el centro + `tests/Treeve.ArchitectureTests` (ArchUnitNET). Frontend: `src/Presentation/Treeve.Web/.dependency-cruiser.cjs`. Si algo apunta hacia afuera, el build falla.
+- **Regla de dependencias verificada en CI:** referencias entre proyectos hacia el centro + `tests/Treeve.ArchitectureTests` (ArchUnitNET). Frontend: `src/Presentation/Treeve.Web/.dependency-cruiser.cjs`. Si algo apunta hacia afuera, el build falla. `EstructuraDelRepositorioTests` además falla si hay código fuera de los anillos o en un lenguaje distinto del stack (todo el backend en C#, todo el frontend en TypeScript). `.github/CODEOWNERS` exige la aprobación del arquitecto para cambiar estas reglas.
 - **Interfaces adentro, implementaciones afuera.** El núcleo no conoce el contenedor de dependencias: los casos de uso se registran en `Treeve.Api/Composition` y la infraestructura en `Treeve.Infrastructure/DependencyInjection.cs`.
 - **Ceremonia proporcional:** todos los anillos para lógica de negocio no trivial (crecimiento del árbol, motor de respuestas, autorización); un CRUD trivial puede saltarse el servicio de dominio, pero siempre pasa por un caso de uso.
 - **Autorización siempre en el caso de uso**, nunca solo en el frontend.
@@ -467,7 +467,7 @@ IDs de tareas en ClickUp:
 - Prompt para el prototipo en Figma preparado.
 
 - Stack decidido (ADR-003, 13-oct-2026).
-- **TEC-01 implementado en local con Onion** (pendiente de commit, repositorio remoto, PR y revisión): `Treeve.slnx` con los 5 proyectos de los anillos; `Treeve.ArchitectureTests` (9 pruebas) y proyectos vacíos `Treeve.Domain.Tests` y `Treeve.Application.Tests`; `Treeve.Web` (React + TypeScript, `shared/api/clienteApi.ts`; herramientas: Vite, Vitest, Oxlint `jsx-a11y`, dependency-cruiser) en `src/Presentation`; CI de GitHub Actions; plantilla de PR; README; ADR-001, ADR-003 y ADR-004; guías en `docs/guias`.
+- **TEC-01 implementado en local con Onion** (pendiente de commit, repositorio remoto, PR y revisión): `Treeve.slnx` con los 5 proyectos de los anillos; `Treeve.ArchitectureTests` (13 pruebas: regla de dependencias, convenciones, estructura y lenguajes) y proyectos vacíos `Treeve.Domain.Tests` y `Treeve.Application.Tests`; `Treeve.Web` (React + TypeScript, `shared/api/clienteApi.ts`; herramientas: Vite, Vitest, Oxlint `jsx-a11y`, dependency-cruiser) en `src/Presentation`; CI de GitHub Actions; plantilla de PR; README; ADR-001, ADR-003 y ADR-004; guías en `docs/guias`.
 
 **No iniciado**
 - Repositorio remoto (GitHub) y primer PR.

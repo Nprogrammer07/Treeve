@@ -43,6 +43,8 @@ Son herramientas que compilan, prueban y verifican el código. No se programa "e
 | **ArchUnitNET** | Regla de dependencias del Onion en CI | Regla de dependencias verificada en CI (CLAUDE.md, sección 5) |
 | **GitHub Actions** | Ejecuta todo lo anterior en cada PR | DoD: "CI en verde" |
 
+**El stack se verifica en CI:** `EstructuraDelRepositorioTests` falla si el backend contiene archivos que no son C# o el frontend código que no es TypeScript, y si aparece código fuera de los anillos. Agregar una dependencia (`package.json`, `Directory.Packages.props`) requiere la aprobación del arquitecto (`CODEOWNERS`).
+
 En el backend, la regla de dependencias se cumple en dos niveles:
 
 1. *Compilación:* las referencias entre proyectos solo apuntan hacia el centro. `Treeve.Domain` no referencia nada, así que una entidad no puede importar EF Core ni ASP.NET.

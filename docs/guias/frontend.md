@@ -113,6 +113,12 @@ Las carpetas de `features/` se crean cuando se empieza cada historia. Dentro de 
 
 `npm run lint` revisa además la accesibilidad (`jsx-a11y`): una imagen sin `alt` o un `div` con `onClick` sin teclado hacen fallar la CI.
 
+Además, la CI del backend (`EstructuraDelRepositorioTests`) revisa los archivos del frontend:
+- en `src/` solo puede haber TypeScript (`.ts`, `.tsx`), CSS y recursos (imágenes, sonidos, fuentes, JSON);
+- los archivos de configuración de la raíz de `Treeve.Web` son una lista cerrada.
+
+Agregar dependencias a `package.json` o cambiar la configuración de lint y dependencias requiere la aprobación del arquitecto (`.github/CODEOWNERS`).
+
 ---
 
 ## 4. Ejemplo guiado: HU-05 · Hoja de papel
