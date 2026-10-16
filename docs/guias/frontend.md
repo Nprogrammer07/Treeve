@@ -28,13 +28,19 @@ Supone que conoces la teoría de Onion y Clean Architecture; aquí se explica **
    npm --prefix src/Presentation/Treeve.Web install
    ```
 
-3. En una terminal, levanta la API:
+3. La API necesita la cadena de conexión de la base de **desarrollo**; sin ella no arranca. Pídesela a Juan José por un canal privado y guárdala una sola vez en tus secretos locales, que quedan fuera del repositorio:
+
+   ```bash
+   dotnet user-secrets set "ConnectionStrings:Treeve" "<cadena de desarrollo>" --project src/Presentation/Treeve.Api
+   ```
+
+4. En una terminal, levanta la API:
 
    ```bash
    dotnet run --project src/Presentation/Treeve.Api
    ```
 
-4. En otra terminal, levanta el frontend y abre `http://localhost:5173`:
+5. En otra terminal, levanta el frontend y abre `http://localhost:5173`:
 
    ```bash
    npm --prefix src/Presentation/Treeve.Web run dev

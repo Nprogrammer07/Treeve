@@ -79,7 +79,13 @@ Las áreas funcionales (Identidad, Desahogos, EspacioVerde, MensajesApoyo, Suger
 
 ## Cómo ejecutarlo
 
-API (en `http://localhost:5242`; salud en `/health`):
+La API necesita una base de datos: sin la cadena de conexión no arranca (ADR-002). La primera vez, guarda la cadena de la base de **desarrollo** en tus secretos locales, que quedan fuera del repositorio. Pídesela a Juan José por un canal privado; nunca uses la de producción ni la pegues en el repositorio, ClickUp o un PR:
+
+```bash
+dotnet user-secrets set "ConnectionStrings:Treeve" "<cadena de desarrollo>" --project src/Presentation/Treeve.Api
+```
+
+API (en `http://localhost:5242`; `/health` dice si el proceso vive y `/health/ready` si llega a la base de datos):
 
 ```bash
 dotnet run --project src/Presentation/Treeve.Api

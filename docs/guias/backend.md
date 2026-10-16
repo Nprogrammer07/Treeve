@@ -25,11 +25,24 @@ Supone que conoces la teoría de Onion y Clean Architecture; aquí se explica **
    dotnet test Treeve.slnx
    ```
 
-   Mientras `Treeve.Domain.Tests` y `Treeve.Application.Tests` estén vacíos verás el aviso "No hay ninguna prueba disponible". Es normal y desaparece con la primera prueba.
-3. Levanta la API y abre `http://localhost:5242/health` (debe responder `Healthy`):
+   Mientras `Treeve.Domain.Tests` esté vacío verás el aviso "No hay ninguna prueba disponible". Es normal y desaparece con la primera prueba.
+3. Configura la cadena de conexión de la base de **desarrollo**. Sin ella la API no arranca (ADR-002). Se guarda en tus secretos locales de .NET, fuera del repositorio:
+
+   ```bash
+   dotnet user-secrets set "ConnectionStrings:Treeve" "<cadena de desarrollo>" --project src/Presentation/Treeve.Api
+   ```
+
+   El formato es `Host=<host del pooler>;Port=5432;Database=postgres;Username=<usuario>;Password=<contraseña>;SSL Mode=Require`. Usa el *Session pooler* de Supabase. Nunca uses la base de producción ni pegues la cadena en el repositorio, ClickUp o un PR.
+4. Levanta la API. `http://localhost:5242/health` debe responder `Healthy` y `http://localhost:5242/health/ready` debe responder 200 si llega a la base de datos:
 
    ```bash
    dotnet run --project src/Presentation/Treeve.Api
+   ```
+
+5. Para crear migraciones (`Treeve.Infrastructure/Persistence/Migrations`) necesitas la herramienta de EF Core:
+
+   ```bash
+   dotnet tool install --global dotnet-ef
    ```
 
 ---
