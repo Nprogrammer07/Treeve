@@ -5,7 +5,7 @@ Cada decisión de arquitectura nueva, o cada cambio a una existente, se propone 
 | ADR | Título | Estado |
 |---|---|---|
 | [ADR-001](ADR-001-mensajes-de-apoyo-grafo-de-composicion.md) | Mensajes de apoyo con grafo de composición | Aceptado |
-| ADR-002 | Persistencia (acceso solo desde el backend, cifrado, organización de tablas, migraciones) | Propuesto · por escribir (TEC-06) |
+| [ADR-002](ADR-002-persistencia.md) | Persistencia (acceso solo desde el backend, cifrado, organización de tablas, migraciones) | Propuesto |
 | [ADR-003](ADR-003-stack-tecnologico.md) | Stack tecnológico | Aceptado |
 | [ADR-004](ADR-004-onion-architecture.md) | Onion Architecture | Aceptado |
 

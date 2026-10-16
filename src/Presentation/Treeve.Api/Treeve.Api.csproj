@@ -5,4 +5,10 @@
     <ProjectReference Include="..\..\Core\Treeve.Application\Treeve.Application.csproj" />
     <ProjectReference Include="..\..\Infrastructure\Treeve.Infrastructure\Treeve.Infrastructure.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
 </Project>
