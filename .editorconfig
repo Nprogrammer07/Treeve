@@ -16,3 +16,7 @@ dotnet_sort_system_directives_first = true
 
 [*.md]
 trim_trailing_whitespace = false
+
+# Las migraciones de EF Core se generan con `dotnet ef`; no se les aplican las reglas de estilo.
+[**/Persistence/Migrations/*.cs]
+generated_code = true

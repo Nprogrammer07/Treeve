@@ -1,3 +1,5 @@
+using Treeve.Application.Comun;
+
 namespace Treeve.Api.Composition;
 
 /// <summary>
@@ -8,6 +10,8 @@ public static class ApplicationServices
 {
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
+        services.AddScoped<VerificarSalud>();
+
         // Ejemplo: services.AddScoped<CrearNota>();
         return services;
     }
