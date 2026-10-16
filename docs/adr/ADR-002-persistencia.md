@@ -1,6 +1,6 @@
 # ADR-002 · Persistencia
 
-- **Estado:** Propuesto (pendiente de aprobación del arquitecto)
+- **Estado:** Aceptado (2026-10-16)
 - **Fecha:** 2026-10-15
 - **Decisores:** Nicolás (arquitecto), Juan José (backend)
 - **Historias relacionadas:** TEC-02, TEC-06, HU-02, HU-05
@@ -23,7 +23,7 @@ Restricciones que ya existen en el repositorio:
 4. **Migraciones con EF Core + Npgsql** (candidata de ADR-003), escritas en C# dentro de `Treeve.Infrastructure/Persistence/Migrations`. Es la única vía para cambiar la base de datos. Una migración por historia; una migración ya aplicada no se edita, se agrega otra. En el entorno compartido se aplican al arrancar la API con `Persistencia__AplicarMigraciones=true`.
 5. **Conexión.** Cadena en `ConnectionStrings__Treeve`, como secreto del entorno, con SSL obligatorio. Para el despliegue se usa el *Session pooler* de Supabase (compatible con IPv4) porque la conexión directa solo funciona por IPv6.
 6. **Datos y registros.** El texto de un desahogo y el tema detectado nunca se guardan en claro ni en logs. Los logs de comandos de EF Core quedan en nivel `Warning` y `EnableSensitiveDataLogging` está prohibido.
-7. **Despliegue de TEC-02.** Backend en Railway, construido con un `Dockerfile` (Railpack no soporta .NET: su documentación exige Dockerfile). El archivo vive en `.github/docker/Dockerfile` y Railway lo toma con la variable `RAILWAY_DOCKERFILE_PATH=/.github/docker/Dockerfile`, para no tocar la lista de archivos permitidos en la raíz. Railway termina TLS: la API confía en `X-Forwarded-Proto` y envía HSTS fuera de desarrollo.
+7. **Despliegue de TEC-02.** Backend en Railway, construido con un `Dockerfile` (Railpack no soporta .NET: su documentación exige Dockerfile). El archivo vive en `deploy/Dockerfile`, la carpeta de despliegue habilitada en las pruebas de estructura, y Railway lo toma con la variable `RAILWAY_DOCKERFILE_PATH=deploy/Dockerfile`. Railway termina TLS: la API confía en `X-Forwarded-Proto` y envía HSTS fuera de desarrollo.
 
 ## Alternativas consideradas
 
@@ -34,16 +34,16 @@ Restricciones que ya existen en el repositorio:
 | Scripts SQL versionados (`supabase/migrations`) | `.sql` no está permitido en la estructura; cambiarla exige modificar las pruebas de arquitectura |
 | Cifrado con `pgcrypto` en la base de datos | La llave y el texto pasarían por la base de datos, contra el punto 2 de CLAUDE.md sección 7 |
 | Dapper con SQL manual | Sin historial de migraciones integrado; más código fuera del modelo |
-| `Dockerfile` en la raíz del repositorio | Requiere cambiar `EstructuraDelRepositorioTests`; se deja como opción si el arquitecto prefiere esa ruta |
+| `Dockerfile` en la raíz del repositorio o en `.github/` | La raíz quedaría sin reglas para archivos de despliegue y `.github/` es solo para la configuración de GitHub; se eligió una carpeta explícita, `deploy/`, con su propia regla |
 
 ## Consecuencias
 
 - **Positivas:** una sola vía de acceso a los datos; la llave nunca comparte lugar con los datos cifrados; el historial de migraciones queda en el repositorio y lo revisa la CI.
-- **Negativas:** el backend depende de EF Core y Npgsql (paquetes nuevos, con aprobación del arquitecto por `CODEOWNERS`); Railway necesita un archivo auxiliar (`Dockerfile`) fuera de `src/`.
+- **Negativas:** el backend depende de EF Core y Npgsql (paquetes nuevos, con aprobación del arquitecto por `CODEOWNERS`); Railway necesita un archivo auxiliar (`deploy/Dockerfile`) fuera de `src/`.
 - **Verificación:** `dotnet test Treeve.slnx` (reglas del Onion y estructura); `GET /health/ready` responde 200 solo si la API conecta con la base de datos; el esquema `treeve` no aparece en la Data API de Supabase.
 
 ## Pendiente
 
 - Definir un rol de base de datos con permisos mínimos para la aplicación (las migraciones usarían el rol dueño).
-- Confirmar con el arquitecto la ubicación del `Dockerfile` y los proveedores (Railway, Supabase, Vercel).
+- Confirmar el proveedor del frontend (Vercel) en la parte de TEC-02 que lo despliega.
 - Definir el procedimiento de rotación de `Cifrado__Llave` junto con HU-05.

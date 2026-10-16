@@ -1,6 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <!-- Anillo externo · Presentación HTTP: endpoints y DTOs (Endpoints/) y composición
        de dependencias (Composition/). Los endpoints solo llaman casos de uso. -->
+  <PropertyGroup>
+    <!-- Secretos locales de desarrollo (cadena de conexión) fuera del repositorio: dotnet user-secrets. -->
+    <UserSecretsId>47f19d46-6cd3-4038-8a03-6e5396f7250d</UserSecretsId>
+  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Treeve.Application\Treeve.Application.csproj" />
     <ProjectReference Include="..\..\Infrastructure\Treeve.Infrastructure\Treeve.Infrastructure.csproj" />

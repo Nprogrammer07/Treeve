@@ -13,6 +13,7 @@ namespace Treeve.ArchitectureTests;
 public class EstructuraDelRepositorioTests
 {
     private const string Web = "src/Presentation/Treeve.Web/";
+    private const string Despliegue = "deploy/";
 
     private static readonly string[] CarpetasDelBackend =
         ["src/Core/", "src/Infrastructure/", "src/Presentation/Treeve.Api/", "tests/"];
@@ -27,14 +28,14 @@ public class EstructuraDelRepositorioTests
             ".editorconfig", ".gitattributes", ".gitignore", "CLAUDE.md", "README.md",
             "Treeve.slnx", "global.json", "Directory.Build.props", "Directory.Packages.props",
         ];
-        string[] carpetas = [.. CarpetasDelBackend, Web, "docs/", ".github/"];
+        string[] carpetas = [.. CarpetasDelBackend, Web, Despliegue, "docs/", ".github/"];
 
         var fueraDeLugar = Archivos
             .Where(a => !archivosDeLaRaiz.Contains(a) && !carpetas.Any(c => a.StartsWith(c, StringComparison.Ordinal)))
             .ToList();
 
         SinArchivos(fueraDeLugar,
-            "Hay archivos fuera de las carpetas de la arquitectura (src/Core, src/Infrastructure, src/Presentation, tests, docs). " +
+            "Hay archivos fuera de las carpetas de la arquitectura (src/Core, src/Infrastructure, src/Presentation, tests, deploy, docs). " +
             "El backend va en los proyectos C# de los anillos; un cambio de estructura se propone primero como ADR.");
     }
 
@@ -95,6 +96,28 @@ public class EstructuraDelRepositorioTests
             "El frontend solo admite TypeScript y CSS en src/, recursos en src/ o public/, y la configuración ya revisada (ADR-003).");
     }
 
+    [Fact]
+    public void Las_carpetas_de_apoyo_solo_contienen_lo_que_les_corresponde()
+    {
+        // Ninguna carpeta permitida es un comodín: no se pueden esquivar las demás reglas
+        // dejando código o archivos de despliegue donde no van (p. ej. un Dockerfile en .github/).
+        string[] documentos = [".md", ".png", ".svg", ".jpg", ".webp"];
+
+        var ajenos = Archivos
+            .Where(a => a switch
+            {
+                _ when a.StartsWith(".github/", StringComparison.Ordinal) => !EsConfiguracionDeGitHub(a[".github/".Length..]),
+                _ when a.StartsWith(Despliegue, StringComparison.Ordinal) => a is not ("deploy/Dockerfile" or "deploy/README.md"),
+                _ when a.StartsWith("docs/", StringComparison.Ordinal) => !documentos.Contains(Path.GetExtension(a)),
+                _ => false,
+            })
+            .ToList();
+
+        SinArchivos(ajenos,
+            ".github/ solo admite CODEOWNERS, la plantilla de PR y los workflows; deploy/ solo el Dockerfile y su README; " +
+            "docs/ solo documentos (.md e imágenes). Un archivo nuevo en estas carpetas lo habilita el arquitecto.");
+    }
+
     private static void SinArchivos(List<string> archivos, string explicacion)
     {
         if (archivos.Count > 0)
@@ -102,6 +125,11 @@ public class EstructuraDelRepositorioTests
             Assert.Fail($"{explicacion}{Environment.NewLine}{string.Join(Environment.NewLine, archivos.Select(a => $"  - {a}"))}");
         }
     }
+
+    private static bool EsConfiguracionDeGitHub(string ruta) =>
+        ruta is "CODEOWNERS" or "pull_request_template.md" ||
+        (ruta.StartsWith("workflows/", StringComparison.Ordinal) && ruta.Count(c => c == '/') == 1 &&
+         ruta.EndsWith(".yml", StringComparison.Ordinal));
 
     private static bool EsConfiguracionDeAspNet(string archivo) =>
         archivo == "launchSettings.json" ||
