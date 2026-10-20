@@ -73,6 +73,10 @@ namespace Treeve.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(30)")
                         .HasColumnName("apodo");
 
+                    b.Property<DateTimeOffset?>("BloqueadoHasta")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("bloqueado_hasta");
+
                     b.Property<string>("Correo")
                         .HasMaxLength(254)
                         .HasColumnType("character varying(254)")
@@ -87,6 +91,10 @@ namespace Treeve.Infrastructure.Persistence.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)")
                         .HasColumnName("hash_de_contrasena");
+
+                    b.Property<int>("IntentosFallidos")
+                        .HasColumnType("integer")
+                        .HasColumnName("intentos_fallidos");
 
                     b.Property<string>("MotivoDeRegistro")
                         .HasMaxLength(500)
