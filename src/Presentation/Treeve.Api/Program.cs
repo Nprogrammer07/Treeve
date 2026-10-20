@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.HttpOverrides;
 using Treeve.Api.Composition;
+using Treeve.Api.Endpoints.Identidad;
 using Treeve.Api.Endpoints.Salud;
+using Treeve.Api.Errores;
+using Treeve.Api.Seguridad;
 using Treeve.Infrastructure;
 using Treeve.Infrastructure.Persistence;
 
@@ -22,19 +25,30 @@ builder.Services.Configure<ForwardedHeadersOptions>(opciones =>
     opciones.KnownProxies.Clear();
 });
 
+// El frontend vive en otro dominio (Vercel): solo se aceptan los orígenes de Cors:Origenes.
+// En el entorno: Cors__Origenes__0=https://tu-frontend.vercel.app
+var origenesPermitidos = builder.Configuration.GetSection("Cors:Origenes").Get<string[]>() ?? [];
+builder.Services.AddCors(opciones => opciones.AddDefaultPolicy(
+    politica => politica.WithOrigins(origenesPermitidos).AllowAnyHeader().AllowAnyMethod()));
+
 builder.Services
     .AddApplicationServices()
-    .AddInfrastructure(builder.Configuration);
+    .AddInfrastructure(builder.Configuration)
+    .AddAutenticacion();
 
+builder.Services.AddExceptionHandler<ManejadorDeExcepciones>();
+builder.Services.AddProblemDetails();
 builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
 app.UseForwardedHeaders();
+app.UseExceptionHandler();
 
 if (!app.Environment.IsDevelopment())
 {
     app.UseHsts();
+    app.ExigirHttpsEnLaApi();
 }
 
 // ADR-002: en el entorno compartido las migraciones se aplican al arrancar.
@@ -43,8 +57,13 @@ if (app.Configuration.GetValue<bool>("Persistencia:AplicarMigraciones"))
     await app.Services.AplicarMigraciones(app.Lifetime.ApplicationStopping);
 }
 
+app.UseCors();
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapHealthChecks("/health"); // el proceso está vivo (no consulta la base de datos)
 app.MapSaludEndpoints();        // /health/ready: valida la conexión con la base de datos
+app.MapIdentidadEndpoints();    // HU-02: registro
 
 // Endpoints por área, definidos en Endpoints/. Ejemplo: app.MapDesahogosEndpoints();
 
