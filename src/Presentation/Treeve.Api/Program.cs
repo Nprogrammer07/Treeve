@@ -27,9 +27,11 @@ builder.Services.Configure<ForwardedHeadersOptions>(opciones =>
 
 // El frontend vive en otro dominio (Vercel): solo se aceptan los orígenes de Cors:Origenes.
 // En el entorno: Cors__Origenes__0=https://tu-frontend.vercel.app
+// Retry-After se expone para que el frontend sepa cuánto falta para desbloquear la cuenta (HU-03a);
+// sin esto, el navegador la oculta en peticiones entre dominios.
 var origenesPermitidos = builder.Configuration.GetSection("Cors:Origenes").Get<string[]>() ?? [];
 builder.Services.AddCors(opciones => opciones.AddDefaultPolicy(
-    politica => politica.WithOrigins(origenesPermitidos).AllowAnyHeader().AllowAnyMethod()));
+    politica => politica.WithOrigins(origenesPermitidos).AllowAnyHeader().AllowAnyMethod().WithExposedHeaders("Retry-After")));
 
 builder.Services
     .AddApplicationServices()

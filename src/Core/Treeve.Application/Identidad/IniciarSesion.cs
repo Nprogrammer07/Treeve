@@ -12,6 +12,7 @@ public sealed record IniciarSesionComando(string? Identificador, string? Contras
 
 /// <summary>HU-03a: inicia sesión con usuario o correo + contraseña y bloquea la cuenta tras 5 intentos fallidos.</summary>
 public sealed class IniciarSesion(
+    IRepositorioCredenciales credenciales,
     IRepositorioUsuarios usuarios,
     IHasheadorDeContrasenas hasheador,
     IReloj reloj,
@@ -29,9 +30,9 @@ public sealed class IniciarSesion(
             throw new CredencialesInvalidas();
         }
 
-        var usuario = await usuarios.ObtenerPorIdentificador(Usuario.NormalizarIdentificador(comando.Identificador), ct);
+        var credencial = await credenciales.ObtenerPorIdentificador(Usuario.NormalizarIdentificador(comando.Identificador), ct);
 
-        if (usuario is null)
+        if (credencial is null)
         {
             // Mismo trabajo y misma respuesta que con una contraseña incorrecta: no se revela qué usuarios existen.
             hasheador.Verificar(null, contrasena);
@@ -39,20 +40,24 @@ public sealed class IniciarSesion(
         }
 
         var ahora = reloj.Ahora;
-        if (usuario.EstaBloqueado(ahora))
+        if (credencial.EstaBloqueada(ahora))
         {
-            throw new CuentaBloqueada(usuario.TiempoDeBloqueoRestante(ahora));
+            throw new CuentaBloqueada(credencial.TiempoDeBloqueoRestante(ahora));
         }
 
-        if (!hasheador.Verificar(usuario.HashDeContrasena, contrasena))
+        if (!hasheador.Verificar(credencial.HashDeContrasena, contrasena))
         {
-            usuario.RegistrarIntentoFallido(ahora);
-            await usuarios.Actualizar(usuario, ct);
+            credencial.RegistrarIntentoFallido(ahora);
+            await credenciales.Actualizar(credencial, ct);
             throw new CredencialesInvalidas();
         }
 
-        usuario.RegistrarAccesoExitoso();
-        await usuarios.Actualizar(usuario, ct);
+        credencial.RegistrarAccesoExitoso(ahora);
+        await credenciales.Actualizar(credencial, ct);
+
+        // El perfil solo se lee con la contraseña verificada: lo necesita la sesión (apodo).
+        var usuario = await usuarios.ObtenerPorId(credencial.UsuarioId, ct)
+            ?? throw new CredencialesInvalidas();
 
         return await abridorDeSesiones.Abrir(usuario, ct);
     }

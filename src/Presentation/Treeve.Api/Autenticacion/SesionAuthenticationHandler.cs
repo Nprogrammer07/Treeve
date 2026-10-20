@@ -2,6 +2,7 @@ using System.Security.Claims;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
+using Treeve.Api.Errores;
 using Treeve.Application.Identidad;
 
 namespace Treeve.Api.Autenticacion;
@@ -36,5 +37,12 @@ public sealed class SesionAuthenticationHandler(
 
         var identidad = new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, usuarioId.Value.ToString())], Esquema);
         return AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(identidad), Esquema));
+    }
+
+    /// <summary>Sin sesión válida: 401 con la misma forma de error que el resto de la API.</summary>
+    protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
+    {
+        Response.StatusCode = StatusCodes.Status401Unauthorized;
+        await Response.WriteAsJsonAsync(new ErrorResponse("NO_AUTENTICADO", "Inicia sesión para continuar."), Context.RequestAborted);
     }
 }

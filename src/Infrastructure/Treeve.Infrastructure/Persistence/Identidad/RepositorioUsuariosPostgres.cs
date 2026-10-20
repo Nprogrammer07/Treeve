@@ -12,15 +12,14 @@ internal sealed class RepositorioUsuariosPostgres(TreeveDbContext contexto) : IR
         contexto.Set<Usuario>().AnyAsync(
             u => u.NombreDeUsuario == nombreDeUsuario || (correo != null && u.Correo == correo), ct);
 
-    public Task<Usuario?> ObtenerPorIdentificador(string identificadorNormalizado, CancellationToken ct) =>
-        contexto.Set<Usuario>().FirstOrDefaultAsync(
-            u => u.NombreDeUsuario == identificadorNormalizado || u.Correo == identificadorNormalizado, ct);
+    public Task<Usuario?> ObtenerPorId(Guid usuarioId, CancellationToken ct) =>
+        contexto.Set<Usuario>().FirstOrDefaultAsync(u => u.Id == usuarioId, ct);
 
-    public Task Actualizar(Usuario usuario, CancellationToken ct) => contexto.SaveChangesAsync(ct);
-
-    public async Task Agregar(Usuario usuario, CancellationToken ct)
+    public async Task Agregar(Usuario usuario, Credencial credencial, CancellationToken ct)
     {
+        // Un solo SaveChanges: el perfil y la credencial se guardan juntos o no se guarda ninguno.
         contexto.Set<Usuario>().Add(usuario);
+        contexto.Set<Credencial>().Add(credencial);
 
         try
         {

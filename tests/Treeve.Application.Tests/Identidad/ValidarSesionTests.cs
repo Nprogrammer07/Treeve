@@ -15,7 +15,7 @@ public class ValidarSesionTests
     public ValidarSesionTests()
     {
         var tokens = new EmisorDeTokensFalso();
-        registrar = new RegistrarUsuario(usuarios, new HasheadorFalso(), reloj, new AbridorDeSesiones(sesiones, tokens, reloj));
+        registrar = new RegistrarUsuario(usuarios, new HasheadorFalso(), new CifradorFalso(), reloj, new AbridorDeSesiones(sesiones, tokens, reloj));
         validar = new ValidarSesion(sesiones, tokens, reloj);
     }
 

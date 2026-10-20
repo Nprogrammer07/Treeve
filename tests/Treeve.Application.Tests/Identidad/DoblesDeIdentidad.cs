@@ -1,3 +1,4 @@
+using System.Text;
 using Treeve.Application.Comun;
 using Treeve.Application.Identidad;
 using Treeve.Domain.Identidad;
@@ -8,20 +9,34 @@ namespace Treeve.Application.Tests.Identidad;
 internal sealed class RepositorioUsuariosFalso : IRepositorioUsuarios
 {
     public List<Usuario> Guardados { get; } = [];
+    public List<Credencial> Credenciales { get; } = [];
 
     public Task<bool> ExisteNombreDeUsuarioOCorreo(string nombreDeUsuario, string? correo, CancellationToken ct) =>
         Task.FromResult(Guardados.Any(u => u.NombreDeUsuario == nombreDeUsuario || (correo is not null && u.Correo == correo)));
 
-    public Task Agregar(Usuario usuario, CancellationToken ct)
+    public Task Agregar(Usuario usuario, Credencial credencial, CancellationToken ct)
     {
         Guardados.Add(usuario);
+        Credenciales.Add(credencial);
         return Task.CompletedTask;
     }
 
-    public Task<Usuario?> ObtenerPorIdentificador(string identificadorNormalizado, CancellationToken ct) =>
-        Task.FromResult(Guardados.FirstOrDefault(u => u.NombreDeUsuario == identificadorNormalizado || u.Correo == identificadorNormalizado));
+    public Task<Usuario?> ObtenerPorId(Guid usuarioId, CancellationToken ct) =>
+        Task.FromResult(Guardados.FirstOrDefault(u => u.Id == usuarioId));
+}
 
-    public Task Actualizar(Usuario usuario, CancellationToken ct) => Task.CompletedTask;
+/// <summary>Busca en los mismos datos que <see cref="RepositorioUsuariosFalso"/>, como lo haría la base de datos.</summary>
+internal sealed class RepositorioCredencialesFalso(RepositorioUsuariosFalso usuarios) : IRepositorioCredenciales
+{
+    public Task<Credencial?> ObtenerPorIdentificador(string identificadorNormalizado, CancellationToken ct)
+    {
+        var usuario = usuarios.Guardados.FirstOrDefault(
+            u => u.NombreDeUsuario == identificadorNormalizado || u.Correo == identificadorNormalizado);
+
+        return Task.FromResult(usuario is null ? null : usuarios.Credenciales.FirstOrDefault(c => c.UsuarioId == usuario.Id));
+    }
+
+    public Task Actualizar(Credencial credencial, CancellationToken ct) => Task.CompletedTask;
 }
 
 internal sealed class RepositorioSesionesFalso : IRepositorioSesiones
@@ -44,6 +59,21 @@ internal sealed class HasheadorFalso : IHasheadorDeContrasenas
     public string Hashear(string contrasena) => "hash:" + contrasena;
 
     public bool Verificar(string? hash, string contrasena) => hash is not null && hash == Hashear(contrasena);
+}
+
+/// <summary>Codifica el texto en Base64 junto al contexto: el texto no queda legible y el contexto se exige al descifrar.</summary>
+internal sealed class CifradorFalso : ICifradorDeDatosSensibles
+{
+    public byte[] Cifrar(string textoPlano, string contexto) =>
+        Encoding.UTF8.GetBytes($"{contexto}|{Convert.ToBase64String(Encoding.UTF8.GetBytes(textoPlano))}");
+
+    public string Descifrar(byte[] datosCifrados, string contexto)
+    {
+        var partes = Encoding.UTF8.GetString(datosCifrados).Split('|');
+        return partes[0] == contexto
+            ? Encoding.UTF8.GetString(Convert.FromBase64String(partes[1]))
+            : throw new InvalidOperationException("Contexto incorrecto.");
+    }
 }
 
 internal sealed class EmisorDeTokensFalso : IEmisorDeTokens

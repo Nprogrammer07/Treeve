@@ -33,6 +33,12 @@ Supone que conoces la teoría de Onion y Clean Architecture; aquí se explica **
    ```
 
    El formato es `Host=<host del pooler>;Port=5432;Database=postgres;Username=<usuario>;Password=<contraseña>;SSL Mode=Require`. Usa el *Session pooler* de Supabase. Nunca uses la base de producción ni pegues la cadena en el repositorio, ClickUp o un PR.
+
+   Guarda también tu llave de cifrado de desarrollo (32 bytes en Base64, ADR-002). Genérala con PowerShell y guárdala con `dotnet user-secrets set "Cifrado:Llave" "<llave>" --project src/Presentation/Treeve.Api`:
+
+   ```powershell
+   $b = New-Object byte[] 32; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); [Convert]::ToBase64String($b)
+   ```
 4. Levanta la API. `http://localhost:5242/health` debe responder `Healthy` y `http://localhost:5242/health/ready` debe responder 200 si llega a la base de datos:
 
    ```bash
@@ -277,6 +283,8 @@ public sealed class AccesoDenegado() : Exception("No tienes permiso para esta ac
 ```
 
 `src/Core/Treeve.Application/Desahogos/ICifradorDesahogos.cs`
+
+> En el código real ya existe un puerto general, `ICifradorDeDatosSensibles` (`Treeve.Application/Comun`), implementado por `CifradorAesGcm`. Úsalo en HU-05 en lugar de crear `ICifradorDesahogos`, con un contexto como `desahogos.texto:{id}:{usuarioId}`.
 
 ```csharp
 using Treeve.Domain.Desahogos;

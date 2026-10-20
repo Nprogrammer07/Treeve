@@ -20,6 +20,7 @@
   <Folder Name="/tests/">
     <Project Path="tests/Treeve.Domain.Tests/Treeve.Domain.Tests.csproj" />
     <Project Path="tests/Treeve.Application.Tests/Treeve.Application.Tests.csproj" />
+    <Project Path="tests/Treeve.Infrastructure.Tests/Treeve.Infrastructure.Tests.csproj" />
     <Project Path="tests/Treeve.ArchitectureTests/Treeve.ArchitectureTests.csproj" />
   </Folder>
 </Solution>

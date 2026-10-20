@@ -40,13 +40,13 @@ Obligatorios: `nombreCompleto` (2–100), `apodo` (2–30), `nombreDeUsuario` (3
 |---|---|---|
 | 200 | Credenciales correctas | `{ "usuarioId", "apodo", "token", "expiraEn" }` |
 | 401 | Usuario o contraseña incorrectos | `{ "codigo": "CREDENCIALES_INVALIDAS", "mensaje": "Usuario o contraseña incorrectos." }` |
-| 429 | Cuenta bloqueada por 5 intentos fallidos seguidos | `{ "codigo": "CUENTA_BLOQUEADA", "mensaje": "… Intenta de nuevo en N minuto(s)." }` y cabecera `Retry-After` (segundos) |
+| 429 | Cuenta bloqueada por 5 intentos fallidos seguidos | `{ "codigo": "CUENTA_BLOQUEADA", "mensaje": "… Intenta de nuevo en N minuto(s)." }` y cabecera `Retry-After` (segundos, legible desde el frontend) |
 
 El mensaje del 401 es el mismo si el usuario no existe o si la contraseña es incorrecta: no revela cuál dato falló. Tras **5 intentos fallidos consecutivos** la cuenta se bloquea **15 minutos**; un inicio de sesión correcto reinicia el conteo. Mientras está bloqueada, ni siquiera la contraseña correcta entra.
 
 ## Usar el token
 
-Todas las rutas protegidas piden la cabecera `Authorization: Bearer <token>`. Sin token, o con un token vencido o desconocido, responden 401. El token dura 7 días (valor propuesto).
+Todas las rutas protegidas piden la cabecera `Authorization: Bearer <token>`. Sin token, o con un token vencido o desconocido, responden 401 con `{ "codigo": "NO_AUTENTICADO", "mensaje": "Inicia sesión para continuar." }`. El token dura 7 días (valor propuesto).
 
 `GET /api/auth/yo` → `200 { "usuarioId": "…" }` con un token válido. Sirve para comprobar la sesión.
 
