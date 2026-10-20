@@ -13,9 +13,10 @@ public static class ApplicationServices
     {
         services.AddScoped<VerificarSalud>();
 
-        // Identidad (HU-02)
+        // Identidad (HU-02, HU-03a)
         services.AddScoped<AbridorDeSesiones>();
         services.AddScoped<RegistrarUsuario>();
+        services.AddScoped<IniciarSesion>();
         services.AddScoped<ValidarSesion>();
 
         // Ejemplo: services.AddScoped<CrearNota>();
