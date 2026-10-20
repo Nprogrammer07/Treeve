@@ -27,6 +27,8 @@ public sealed class UsuarioConfiguration : IEntityTypeConfiguration<Usuario>
         builder.Property(u => u.HashDeContrasena).HasColumnName("hash_de_contrasena")
             .HasMaxLength(200).IsRequired();
         builder.Property(u => u.CreadoEn).HasColumnName("creado_en");
+        builder.Property(u => u.IntentosFallidos).HasColumnName("intentos_fallidos");
+        builder.Property(u => u.BloqueadoHasta).HasColumnName("bloqueado_hasta");
 
         // Los valores se guardan normalizados (minúsculas), así la unicidad no distingue mayúsculas.
         // Un correo vacío es NULL y PostgreSQL permite varios NULL en un índice único.

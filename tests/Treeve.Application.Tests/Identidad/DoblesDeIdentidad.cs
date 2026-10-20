@@ -17,6 +17,11 @@ internal sealed class RepositorioUsuariosFalso : IRepositorioUsuarios
         Guardados.Add(usuario);
         return Task.CompletedTask;
     }
+
+    public Task<Usuario?> ObtenerPorIdentificador(string identificadorNormalizado, CancellationToken ct) =>
+        Task.FromResult(Guardados.FirstOrDefault(u => u.NombreDeUsuario == identificadorNormalizado || u.Correo == identificadorNormalizado));
+
+    public Task Actualizar(Usuario usuario, CancellationToken ct) => Task.CompletedTask;
 }
 
 internal sealed class RepositorioSesionesFalso : IRepositorioSesiones
