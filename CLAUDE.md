@@ -429,6 +429,7 @@ IDs de tareas en ClickUp:
 1. ~~Stack tecnológico.~~ **Resuelto (13-oct-2026) en ADR-003.** Stack: C# / .NET 10 (con ASP.NET Core) y React + TypeScript + PixiJS. Herramientas, que no son parte del stack: Vite (compila el frontend), xUnit + ArchUnitNET, Vitest + Testing Library, Oxlint y dependency-cruiser. Falta la herramienta de migraciones, que se define en ADR-002 (candidata: EF Core + Npgsql).
 2. **Infraestructura:** el backend es **propio** (se deduce de la Onion Architecture: el núcleo concentra los casos de uso; descartadas las funciones de Supabase como backend). Proveedores: Supabase (solo PostgreSQL) y Railway (backend) confirmados en ADR-002; Vercel (frontend) por confirmar en TEC-02.
 3. ~~ADR-002 de persistencia.~~ **Aceptado (16-oct-2026):** solo el backend accede a PostgreSQL (Supabase solo como base de datos, esquema `treeve`), cifrado AES-256-GCM en la aplicación, migraciones con EF Core + Npgsql en `Treeve.Infrastructure`, backend en Railway con `deploy/Dockerfile`.
+   - **Autenticación (ADR-005, aceptado el 20-oct-2026):** PBKDF2-SHA256 (600 000 iteraciones), sesiones con token opaco de 7 días (solo se guarda su hash), bloqueo de 15 minutos tras 5 intentos en la tabla `credenciales`, motivo de registro cifrado. Riesgo aceptado: se puede averiguar si un correo está registrado.
 4. **Definition of Done v2** por aprobar y copiar a ClickUp y a la plantilla de PR.
 5. **Planning Poker** pendiente: estimaciones aún no validadas por Luis y Juan José.
 6. **Fechas de los sprints** sin definir.

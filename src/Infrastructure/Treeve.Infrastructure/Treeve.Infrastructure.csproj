@@ -9,4 +9,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Treeve.Application\Treeve.Application.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- Las pruebas del cifrador y del hash de contraseñas usan las clases internas. -->
+    <InternalsVisibleTo Include="Treeve.Infrastructure.Tests" />
+  </ItemGroup>
 </Project>

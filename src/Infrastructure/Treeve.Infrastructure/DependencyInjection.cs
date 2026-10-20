@@ -13,7 +13,7 @@ namespace Treeve.Infrastructure;
 
 /// <summary>
 /// Registra las implementaciones de infraestructura de las interfaces del núcleo:
-/// repositorios (Persistence/), cifrado de desahogos, bus de eventos en memoria, reloj.
+/// repositorios (Persistence/), cifrado de datos sensibles, bus de eventos en memoria, reloj.
 /// </summary>
 public static class DependencyInjection
 {
@@ -31,14 +31,36 @@ public static class DependencyInjection
 
         services.AddScoped<IVerificadorDeBaseDeDatos, VerificadorDeBaseDeDatosPostgres>();
 
-        // Identidad (HU-02)
+        // ADR-002: la llave llega por el entorno y nunca vive en la base de datos ni en el repositorio.
+        services.AddSingleton<ICifradorDeDatosSensibles>(new CifradorAesGcm(LeerLlaveDeCifrado(configuration)));
+
+        // Identidad (HU-02, HU-03a)
         services.AddSingleton<IReloj, RelojDelSistema>();
         services.AddSingleton<IHasheadorDeContrasenas, HasheadorDeContrasenasPbkdf2>();
         services.AddSingleton<IEmisorDeTokens, EmisorDeTokensAleatorios>();
         services.AddScoped<IRepositorioUsuarios, RepositorioUsuariosPostgres>();
+        services.AddScoped<IRepositorioCredenciales, RepositorioCredencialesPostgres>();
         services.AddScoped<IRepositorioSesiones, RepositorioSesionesPostgres>();
 
         // Ejemplo: services.AddScoped<IRepositorioNotas, RepositorioNotasPostgres>();
         return services;
+    }
+
+    private static byte[] LeerLlaveDeCifrado(IConfiguration configuration)
+    {
+        const string Ayuda = "Cifrado:Llave (variable de entorno Cifrado__Llave) debe ser una llave de 32 bytes en Base64.";
+
+        var valor = configuration["Cifrado:Llave"]
+            ?? throw new InvalidOperationException($"Falta la llave de cifrado. {Ayuda}");
+
+        try
+        {
+            var llave = Convert.FromBase64String(valor);
+            return llave.Length == CifradorAesGcm.TamanoDeLlave ? llave : throw new InvalidOperationException(Ayuda);
+        }
+        catch (FormatException)
+        {
+            throw new InvalidOperationException(Ayuda);
+        }
     }
 }

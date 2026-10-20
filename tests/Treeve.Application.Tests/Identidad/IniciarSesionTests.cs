@@ -15,8 +15,8 @@ public class IniciarSesionTests
     {
         var hasheador = new HasheadorFalso();
         var abridor = new AbridorDeSesiones(sesiones, new EmisorDeTokensFalso(), reloj);
-        var registrar = new RegistrarUsuario(usuarios, hasheador, reloj, abridor);
-        iniciarSesion = new IniciarSesion(usuarios, hasheador, reloj, abridor);
+        var registrar = new RegistrarUsuario(usuarios, hasheador, new CifradorFalso(), reloj, abridor);
+        iniciarSesion = new IniciarSesion(new RepositorioCredencialesFalso(usuarios), usuarios, hasheador, reloj, abridor);
 
         registrar.Ejecutar(
             new RegistrarUsuarioComando("Ana Lopez", "Ani", "ana.l", "Treeve2026", "ana@correo.com", null),

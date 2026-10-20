@@ -23,6 +23,35 @@ namespace Treeve.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Treeve.Domain.Identidad.Credencial", b =>
+                {
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("usuario_id");
+
+                    b.Property<DateTimeOffset>("ActualizadaEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("actualizada_en");
+
+                    b.Property<DateTimeOffset?>("BloqueadoHasta")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("bloqueado_hasta");
+
+                    b.Property<string>("HashDeContrasena")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("hash_de_contrasena");
+
+                    b.Property<int>("IntentosFallidos")
+                        .HasColumnType("integer")
+                        .HasColumnName("intentos_fallidos");
+
+                    b.HasKey("UsuarioId");
+
+                    b.ToTable("credenciales", "treeve");
+                });
+
             modelBuilder.Entity("Treeve.Domain.Identidad.Sesion", b =>
                 {
                     b.Property<Guid>("Id")
@@ -73,10 +102,6 @@ namespace Treeve.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(30)")
                         .HasColumnName("apodo");
 
-                    b.Property<DateTimeOffset?>("BloqueadoHasta")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("bloqueado_hasta");
-
                     b.Property<string>("Correo")
                         .HasMaxLength(254)
                         .HasColumnType("character varying(254)")
@@ -86,20 +111,9 @@ namespace Treeve.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("creado_en");
 
-                    b.Property<string>("HashDeContrasena")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("hash_de_contrasena");
-
-                    b.Property<int>("IntentosFallidos")
-                        .HasColumnType("integer")
-                        .HasColumnName("intentos_fallidos");
-
-                    b.Property<string>("MotivoDeRegistro")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("motivo_de_registro");
+                    b.Property<byte[]>("MotivoDeRegistroCifrado")
+                        .HasColumnType("bytea")
+                        .HasColumnName("motivo_de_registro_cifrado");
 
                     b.Property<string>("NombreCompleto")
                         .IsRequired()
@@ -124,6 +138,15 @@ namespace Treeve.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ux_usuarios_nombre_de_usuario");
 
                     b.ToTable("usuarios", "treeve");
+                });
+
+            modelBuilder.Entity("Treeve.Domain.Identidad.Credencial", b =>
+                {
+                    b.HasOne("Treeve.Domain.Identidad.Usuario", null)
+                        .WithOne()
+                        .HasForeignKey("Treeve.Domain.Identidad.Credencial", "UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Treeve.Domain.Identidad.Sesion", b =>

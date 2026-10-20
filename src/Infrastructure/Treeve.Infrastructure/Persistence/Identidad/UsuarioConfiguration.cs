@@ -22,13 +22,8 @@ public sealed class UsuarioConfiguration : IEntityTypeConfiguration<Usuario>
             .HasMaxLength(ReglasDeIdentidad.NombreDeUsuarioMaximo).IsRequired();
         builder.Property(u => u.Correo).HasColumnName("correo")
             .HasMaxLength(ReglasDeIdentidad.CorreoMaximo);
-        builder.Property(u => u.MotivoDeRegistro).HasColumnName("motivo_de_registro")
-            .HasMaxLength(ReglasDeIdentidad.MotivoMaximo);
-        builder.Property(u => u.HashDeContrasena).HasColumnName("hash_de_contrasena")
-            .HasMaxLength(200).IsRequired();
+        builder.Property(u => u.MotivoDeRegistroCifrado).HasColumnName("motivo_de_registro_cifrado"); // byte[] → bytea
         builder.Property(u => u.CreadoEn).HasColumnName("creado_en");
-        builder.Property(u => u.IntentosFallidos).HasColumnName("intentos_fallidos");
-        builder.Property(u => u.BloqueadoHasta).HasColumnName("bloqueado_hasta");
 
         // Los valores se guardan normalizados (minúsculas), así la unicidad no distingue mayúsculas.
         // Un correo vacío es NULL y PostgreSQL permite varios NULL en un índice único.

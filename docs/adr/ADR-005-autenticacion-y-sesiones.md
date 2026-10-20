@@ -1,6 +1,6 @@
 # ADR-005 · Autenticación y sesiones
 
-- **Estado:** Propuesto (pendiente de aprobación del arquitecto)
+- **Estado:** Aceptado (2026-10-20), con los valores propuestos para la política de contraseña y la duración de la sesión
 - **Fecha:** 2026-10-17
 - **Decisores:** Nicolás (arquitecto), Juan José (backend)
 - **Historias relacionadas:** HU-02, HU-03a, HU-03b, HU-10
@@ -13,10 +13,10 @@ HU-02 exige contraseñas con hash y sal, registro con acceso automático y todo 
 
 1. **Contraseñas:** PBKDF2-HMAC-SHA256, 600 000 iteraciones (recomendación de OWASP), sal aleatoria de 16 bytes por contraseña, con `System.Security.Cryptography` (sin paquetes nuevos). El formato guardado incluye las iteraciones (`pbkdf2-sha256$iteraciones$sal$hash`) para poder subirlas sin invalidar las existentes. Política mínima propuesta: entre 8 y 128 caracteres, con al menos una letra y un número.
 2. **Sesiones:** token opaco de 256 bits aleatorios. En la base de datos solo se guarda su SHA-256 (tabla `sesiones`); el token en claro solo lo conoce el cliente. Viaja en `Authorization: Bearer`. Vigencia propuesta: 7 días. Cada petición protegida consulta la tabla, por eso una sesión se puede revocar desde el servidor.
-3. **Bloqueo (HU-03a):** 5 intentos fallidos consecutivos bloquean la cuenta 15 minutos. El contador y la fecha de fin viven en `usuarios`. Un acceso correcto reinicia el conteo. Con la cuenta bloqueada no se verifica la contraseña. La respuesta es 429 con `Retry-After`.
+3. **Bloqueo (HU-03a):** 5 intentos fallidos consecutivos bloquean la cuenta 15 minutos. El hash, el contador y la fecha de fin viven en la tabla `credenciales` (1:1 con `usuarios`), separada del perfil para que ninguna consulta de perfil ni del panel de staff toque datos de acceso. Un acceso correcto reinicia el conteo. Con la cuenta bloqueada no se verifica la contraseña. La respuesta es 429 con `Retry-After`.
 4. **Mensajes:** credenciales incorrectas y usuario inexistente responden lo mismo (401, mismo texto) y tardan lo mismo, porque con un hash nulo se gasta igual el trabajo de PBKDF2.
 5. **HTTPS:** en producción, las rutas `/api` rechazan peticiones que no lleguen por HTTPS (según `X-Forwarded-Proto` del proxy de la plataforma). Además se envía HSTS.
-6. **Hexagonal:** `IHasheadorDeContrasenas` e `IEmisorDeTokens` son puertos del anillo Application; las implementaciones viven en Infrastructure. La autenticación HTTP (`SesionAuthenticationHandler`) solo llama al caso de uso `ValidarSesion`.
+6. **Puertos (Onion, ADR-004):** `IHasheadorDeContrasenas` e `IEmisorDeTokens` son puertos del anillo Application; las implementaciones viven en Infrastructure. La autenticación HTTP (`SesionAuthenticationHandler`) solo llama al caso de uso `ValidarSesion`.
 
 ## Alternativas consideradas
 
@@ -39,4 +39,8 @@ HU-02 exige contraseñas con hash y sal, registro con acceso automático y todo 
 - Límite de peticiones por IP en login y registro (el bloqueo es por cuenta, no frena el recorrido de muchas cuentas).
 - El contador de intentos no es atómico: bajo peticiones simultáneas podrían colarse unos pocos intentos extra. Aceptable para la escala del proyecto.
 - El frontend debe guardar el token en memoria o `sessionStorage` y nunca registrarlo en consola.
-- `motivoDeRegistro` es texto libre y puede ser sensible: hoy se guarda sin cifrar y no se escribe en logs. Evaluar cifrarlo.
+
+## Riesgos conocidos (aceptados)
+
+- **Se puede averiguar si un correo está registrado.** En el registro, "El usuario o el correo ya están en uso" lo revela si se usa un usuario nuevo con un correo ajeno. En el login, tras 5 intentos fallidos con ese correo, el sexto responde 429 si la cuenta existe y 401 si no. Se acepta para la versión 1. La mitigación sería avisar al dueño de la cuenta por otro canal (por ejemplo, SMS), que hoy no está contemplado.
+- **Bloqueo intencional de cuentas ajenas.** Quien conozca un nombre de usuario puede bloquear esa cuenta 15 minutos. Se mitiga con el límite de peticiones por IP pendiente.

@@ -11,14 +11,27 @@ public class UsuarioTests
     {
         var datos = DatosDeRegistro.Crear("  Ana Lopez ", "Ani", "ANA.L", "Ana@Correo.com", null);
 
-        var usuario = Usuario.Registrar(datos, "hash-de-prueba", Ahora);
+        var id = Guid.NewGuid();
 
-        Assert.NotEqual(Guid.Empty, usuario.Id);
+        var usuario = Usuario.Registrar(id, datos, null, Ahora);
+
+        Assert.Equal(id, usuario.Id);
         Assert.Equal("Ana Lopez", usuario.NombreCompleto);
         Assert.Equal("ana.l", usuario.NombreDeUsuario);
         Assert.Equal("ana@correo.com", usuario.Correo);
-        Assert.Null(usuario.MotivoDeRegistro);
+        Assert.Null(usuario.MotivoDeRegistroCifrado);
         Assert.Equal(Ahora, usuario.CreadoEn);
+    }
+
+    [Fact]
+    public void El_motivo_solo_se_guarda_cifrado()
+    {
+        var conMotivo = DatosDeRegistro.Crear("Ana Lopez", "Ani", "ana.l", null, "Quiero un espacio para mí");
+        var sinMotivo = DatosDeRegistro.Crear("Ana Lopez", "Ani", "ana.l", null, null);
+
+        Assert.Throws<ArgumentException>(() => Usuario.Registrar(Guid.NewGuid(), conMotivo, null, Ahora));
+        Assert.Throws<ArgumentException>(() => Usuario.Registrar(Guid.NewGuid(), sinMotivo, [1, 2, 3], Ahora));
+        Assert.Equal([1, 2, 3], Usuario.Registrar(Guid.NewGuid(), conMotivo, [1, 2, 3], Ahora).MotivoDeRegistroCifrado);
     }
 
     [Fact]
@@ -34,7 +47,7 @@ public class UsuarioTests
     public void No_se_imprimen_datos_personales()
     {
         var datos = DatosDeRegistro.Crear("Ana Lopez", "Ani", "ana.l", "ana@correo.com", null);
-        var usuario = Usuario.Registrar(datos, "hash-de-prueba", Ahora);
+        var usuario = Usuario.Registrar(Guid.NewGuid(), datos, null, Ahora);
 
         Assert.DoesNotContain("Ana", usuario.ToString(), StringComparison.Ordinal);
         Assert.DoesNotContain("Ana", datos.ToString(), StringComparison.Ordinal);

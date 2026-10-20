@@ -85,6 +85,16 @@ La API necesita una base de datos: sin la cadena de conexión no arranca (ADR-00
 dotnet user-secrets set "ConnectionStrings:Treeve" "<cadena de desarrollo>" --project src/Presentation/Treeve.Api
 ```
 
+También necesita la llave de cifrado de los datos sensibles (ADR-002), una por entorno. Genera la tuya de desarrollo y guárdala igual; sin ella la API no arranca:
+
+```powershell
+$b = New-Object byte[] 32; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); [Convert]::ToBase64String($b)
+```
+
+```bash
+dotnet user-secrets set "Cifrado:Llave" "<llave en Base64>" --project src/Presentation/Treeve.Api
+```
+
 API (en `http://localhost:5242`; `/health` dice si el proceso vive y `/health/ready` si llega a la base de datos):
 
 ```bash

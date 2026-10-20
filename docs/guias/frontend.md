@@ -34,6 +34,12 @@ Supone que conoces la teoría de Onion y Clean Architecture; aquí se explica **
    dotnet user-secrets set "ConnectionStrings:Treeve" "<cadena de desarrollo>" --project src/Presentation/Treeve.Api
    ```
 
+   Guarda también la llave de cifrado de desarrollo: genera una propia con este comando de PowerShell y guárdala con `dotnet user-secrets set "Cifrado:Llave" "<llave>" --project src/Presentation/Treeve.Api`:
+
+   ```powershell
+   $b = New-Object byte[] 32; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); [Convert]::ToBase64String($b)
+   ```
+
 4. En una terminal, levanta la API:
 
    ```bash
