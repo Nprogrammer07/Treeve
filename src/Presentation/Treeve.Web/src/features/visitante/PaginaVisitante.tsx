@@ -109,13 +109,10 @@ export function PaginaVisitante({ acceso, controlesSonido, onElegirAcceso, onAcc
             Cómo funciona
           </h2>
           <ol className={estilos.pasos}>
-            {PASOS.map(({ icono, titulo, texto }, i) => (
+            {PASOS.map(({ icono, titulo, texto }) => (
               <li key={titulo} className={estilos.paso}>
                 <span className={estilos.iconoPaso}>
                   <Icono nombre={icono} tamano={22} />
-                </span>
-                <span className={estilos.numero} aria-hidden="true">
-                  {String(i + 1).padStart(2, '0')}
                 </span>
                 <h3 className={estilos.tituloPaso}>{titulo}</h3>
                 <p className={estilos.textoPaso}>{texto}</p>

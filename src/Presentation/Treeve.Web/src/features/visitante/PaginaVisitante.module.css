@@ -1,10 +1,17 @@
 .encabezado {
-  position: sticky;
+  position: static;
   top: 0;
   z-index: 10;
   border-bottom: 1px solid var(--linea);
   background: rgb(251 246 236 / 94%);
   backdrop-filter: blur(8px);
+}
+
+/* En pantallas pequeñas el encabezado ocupa muchas filas: solo se queda fijo cuando cabe en una. */
+@media (min-width: 48rem) {
+  .encabezado {
+    position: sticky;
+  }
 }
 
 .encabezadoInterior,
@@ -267,6 +274,7 @@
 }
 
 .pasos {
+  counter-reset: paso;
   display: grid;
   gap: 1.25rem;
   width: 100%;
@@ -282,6 +290,7 @@
 }
 
 .paso {
+  counter-increment: paso;
   position: relative;
   display: grid;
   gap: 0.5rem;
@@ -302,7 +311,9 @@
   color: var(--acento);
 }
 
-.numero {
+/* Número decorativo en CSS: el orden ya lo da la lista numerada y no es texto que haya que leer. */
+.paso::before {
+  content: counter(paso, decimal-leading-zero);
   position: absolute;
   top: 1.5rem;
   right: 1.75rem;
