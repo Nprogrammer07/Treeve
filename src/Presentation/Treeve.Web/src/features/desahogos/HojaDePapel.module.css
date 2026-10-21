@@ -1,0 +1,43 @@
+.formulario {
+  display: grid;
+  gap: 0.75rem;
+  justify-items: center;
+}
+
+.etiqueta {
+  justify-self: start;
+  font-weight: 600;
+}
+
+/* Aspecto de hoja rayada: renglones fijos al desplazarse y margen a la izquierda. */
+.hoja {
+  --renglon: 2rem;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 18rem;
+  padding: 0 1rem 0 2.75rem;
+  border: 1px solid var(--linea);
+  border-radius: 0.5rem;
+  background-color: var(--hoja);
+  background-image:
+    linear-gradient(to right, transparent 2.25rem, var(--margen-hoja) 2.25rem, var(--margen-hoja) calc(2.25rem + 1px), transparent calc(2.25rem + 1px)),
+    repeating-linear-gradient(to bottom, transparent 0, transparent calc(var(--renglon) - 1px), var(--linea) calc(var(--renglon) - 1px), var(--linea) var(--renglon));
+  background-attachment: local;
+  box-shadow: 0 4px 14px rgb(36 51 43 / 12%);
+  color: var(--tinta);
+  font: inherit;
+  line-height: var(--renglon);
+  resize: vertical;
+}
+
+.hoja:focus-visible {
+  outline: 3px solid var(--foco);
+  outline-offset: 2px;
+}
+
+.contador {
+  justify-self: end;
+  margin: 0;
+  color: var(--tinta-suave);
+  font-size: 0.875rem;
+}

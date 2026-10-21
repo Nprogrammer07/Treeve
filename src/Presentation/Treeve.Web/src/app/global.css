@@ -1,32 +1,86 @@
-/* Tokens mínimos provisionales; los define el sistema de diseño (TEC-07).
-   Guía visual: fondo nunca blanco puro, contraste ≥ 4.5:1, foco visible. */
+/* Fuentes con licencia SIL OFL 1.1, empaquetadas en el repositorio (ver docs/licencias-de-terceros.md).
+   Solo el subconjunto latino: cubre el español completo. */
+@font-face {
+  font-family: 'Fraunces';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('./fuentes/fraunces-latin-wght-normal.woff2') format('woff2-variations');
+}
+
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 200 1000;
+  font-display: swap;
+  src: url('./fuentes/nunito-latin-wght-normal.woff2') format('woff2-variations');
+}
+
+/* Paleta provisional tomada del diseño de la página de visitante; el sistema de diseño final es TEC-07. */
 :root {
-  --color-fondo: #f3efe4;
-  --color-texto: #23402f;
-  --color-foco: #3d7a5a;
+  /* Fondo nunca blanco puro y sin rojos de alerta (guía visual). */
+  --fondo: #fbf6ec;
+  --superficie: #fefbf6;
+  --fondo-hundido: #f4edde;
+  --pastel: #d7ebd7;
+  --marco: #e5efdf;
+  --hoja: #fffcf4;
+  --margen-hoja: #c7b98f;
+  --tinta: #1f2a22;
+  --tinta-suave: #4a5a4f;
+  --linea: #e0d6c0;
+  --borde-control: #7a8c7e;
+  --acento: #245337;
+  --acento-oscuro: #1a3e29;
+  --tierra: #78553c;
+  --tierra-oscura: #5f432e;
+  --sobre-acento: #ffffff;
+  --foco: #1f4f9c;
+  --ambar-fondo: #fcefd2;
+  --ambar-borde: #e0a63a;
+  --ambar-texto: #5e3b00;
+
+  --fuente-titulo: 'Fraunces', ui-serif, Georgia, serif;
+  --fuente-texto: 'Nunito', ui-rounded, 'SF Pro Rounded', system-ui, sans-serif;
 
   color-scheme: light;
-  background-color: var(--color-fondo);
-  color: var(--color-texto);
-  font-family: ui-rounded, system-ui, sans-serif;
+  font-family: var(--fuente-texto);
+  font-size: 1rem;
   line-height: 1.5;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-padding-top: 5rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 body {
   margin: 0;
-  min-height: 100vh;
-  background-color: var(--color-fondo);
+  background: var(--fondo);
+  color: var(--tinta);
 }
 
 :focus-visible {
-  outline: 3px solid var(--color-foco);
+  outline: 3px solid var(--foco);
   outline-offset: 2px;
 }
 
-.app {
-  display: grid;
-  place-content: center;
-  min-height: 100vh;
-  padding: 16px;
-  text-align: center;
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }

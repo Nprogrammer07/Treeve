@@ -1,0 +1,30 @@
+.pantalla {
+  display: grid;
+  align-content: start;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 38rem;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+
+.cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+.marca {
+  margin: 0;
+  font-family: var(--fuente-titulo);
+  font-size: 1.75rem;
+}
+
+.saludo {
+  flex: 1;
+  margin: 0;
+  color: var(--tinta-suave);
+  text-align: right;
+}
