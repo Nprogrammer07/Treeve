@@ -1,0 +1,45 @@
+.boton {
+  min-height: 2.75rem; /* 44 px: objetivo táctil mínimo */
+  padding: 0.625rem 1.5rem;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 300ms ease,
+    opacity 300ms ease;
+}
+
+.principal {
+  background: var(--acento);
+  color: var(--sobre-acento);
+}
+
+.principal:hover:not(:disabled) {
+  background: var(--acento-oscuro);
+}
+
+.tierra {
+  background: var(--tierra);
+  color: var(--sobre-acento);
+}
+
+.tierra:hover:not(:disabled) {
+  background: var(--tierra-oscura);
+}
+
+.suave {
+  background: transparent;
+  border-color: var(--linea);
+  color: var(--tinta);
+}
+
+.suave:hover:not(:disabled) {
+  background: var(--fondo-hundido);
+}
+
+.boton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

@@ -1,0 +1,85 @@
+.tarjeta {
+  position: relative;
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 1.25rem;
+  border: 1px solid var(--linea);
+  border-radius: 1.75rem;
+  background: var(--superficie);
+}
+
+.cabecera {
+  display: flex;
+}
+
+.titulo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+}
+
+.estado {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  color: var(--tinta-suave);
+  font-size: 0.875rem;
+}
+
+.opciones {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(5.25rem, 1fr));
+  gap: 0.625rem;
+}
+
+.opcion {
+  display: grid;
+  justify-items: center;
+  gap: 0.25rem;
+  min-height: 4.75rem;
+  padding: 0.75rem 0.5rem;
+  border: 1.5px solid var(--linea);
+  border-radius: 1.25rem;
+  background: var(--superficie);
+  color: var(--tinta);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 300ms ease,
+    border-color 300ms ease;
+}
+
+.opcion:hover {
+  border-color: var(--acento);
+}
+
+.opcion[aria-pressed='true'] {
+  border-color: var(--acento);
+  background: var(--pastel);
+}
+
+.volumen {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 2.75rem;
+  font-weight: 600;
+}
+
+.volumen input {
+  flex: 1;
+  accent-color: var(--acento);
+}
+
+.visualmenteOculta {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

@@ -1,0 +1,24 @@
+.pantalla {
+  --altura-escena: 26rem;
+  display: grid;
+  gap: 1rem;
+  justify-items: center;
+}
+
+.pantalla > :first-child + div {
+  width: 100%;
+}
+
+.titulo {
+  margin: 0;
+  font-family: var(--fuente-titulo);
+  font-size: 1.75rem;
+}
+
+.aviso {
+  min-height: 1.5rem;
+  margin: 0;
+  color: var(--tinta-suave);
+  font-weight: 600;
+  text-align: center;
+}
