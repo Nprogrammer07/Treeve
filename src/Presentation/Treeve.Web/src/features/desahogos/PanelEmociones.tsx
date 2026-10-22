@@ -1,50 +1,29 @@
-import { useId, useState, type FormEvent } from 'react'
-import { Boton } from '../../shared/ui/Boton.tsx'
 import { ETIQUETAS } from './etiquetas.ts'
 import { IconoEmocion } from './IconoEmocion.tsx'
 import estilos from './PanelEmociones.module.css'
 import { EMOCIONES, type Emocion } from './tipos.ts'
 
 interface Props {
-  onContinuar: (emocion: Emocion) => void
+  onElegir: (emocion: Emocion) => void
 }
 
-/** HU-04: elegir la emoción con ícono y texto. Se opera con teclado (flechas) y con lector de pantalla. */
-export function PanelEmociones({ onContinuar }: Props) {
-  const nombreGrupo = useId()
-  const [elegida, setElegida] = useState<Emocion | null>(null)
-
-  function enviar(evento: FormEvent<HTMLFormElement>) {
-    evento.preventDefault()
-    if (elegida) onContinuar(elegida)
-  }
-
+/**
+ * HU-04: elegir la emoción, con ícono, nombre escrito y un color de apoyo (nunca solo color).
+ * Cada emoción es un botón: elegirla avanza al paso siguiente. Con botones y no con una lista de opciones
+ * (radios) se evita que moverse con las flechas del teclado cambie de pantalla sin querer.
+ */
+export function PanelEmociones({ onElegir }: Props) {
   return (
-    <form onSubmit={enviar} className={estilos.panel}>
-      <fieldset className={estilos.grupo}>
-        <legend className={estilos.pregunta}>¿Cómo te sientes ahora?</legend>
-        <div className={estilos.rejilla}>
-          {EMOCIONES.map((emocion) => (
-            <label key={emocion} className={estilos.opcion}>
-              <input
-                type="radio"
-                name={nombreGrupo}
-                value={emocion}
-                checked={elegida === emocion}
-                onChange={() => setElegida(emocion)}
-                className={estilos.entrada}
-              />
-              <span className={estilos.tarjeta}>
-                <IconoEmocion emocion={emocion} />
-                <span>{ETIQUETAS[emocion]}</span>
-              </span>
-            </label>
-          ))}
-        </div>
-      </fieldset>
-      <Boton type="submit" disabled={elegida === null}>
-        Continuar
-      </Boton>
-    </form>
+    <fieldset className={estilos.grupo}>
+      <legend className={estilos.soloLectores}>Elige cómo te sientes</legend>
+      <div className={estilos.rejilla}>
+        {EMOCIONES.map((emocion) => (
+          <button key={emocion} type="button" data-emocion={emocion} className={estilos.tarjeta} onClick={() => onElegir(emocion)}>
+            <IconoEmocion emocion={emocion} />
+            <span>{ETIQUETAS[emocion]}</span>
+          </button>
+        ))}
+      </div>
+    </fieldset>
   )
 }

@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useId, useState, useSyncExternalStore } from 'react'
 import { Icono, type NombreIcono } from '../../shared/ui/Icono.tsx'
 import { crearMotorSonido, type MotorSonido, type TipoSonido } from './motor.ts'
 import { guardarVolumen, leerVolumen } from './preferencias.ts'
@@ -13,34 +13,32 @@ const OPCIONES: { tipo: TipoSonido; etiqueta: string; icono: NombreIcono }[] = [
 ]
 
 interface Props {
-  /** Solo para pruebas: permite sustituir el motor de audio. */
+  /**
+   * El motor de audio. app/ crea uno solo y se lo da a todos los selectores, para que el sonido
+   * no se corte al cambiar de pantalla (HU-08) y todos muestren el mismo estado.
+   */
   motor?: MotorSonido
+  /** Versión en una sola fila para el encabezado de la app. */
+  compacto?: boolean
 }
 
 /**
  * HU-08: elegir un sonido de fondo. Empieza en silencio porque el navegador exige un gesto del usuario.
  * Pulsar otra vez el sonido activo lo detiene.
  */
-export function SelectorSonido({ motor: motorExterno }: Props) {
+export function SelectorSonido({ motor: motorExterno, compacto = false }: Props) {
   const idVolumen = useId()
   const [motor] = useState<MotorSonido>(() => motorExterno ?? crearMotorSonido())
-  const [elegido, setElegido] = useState<TipoSonido | null>(null)
+  const elegido = useSyncExternalStore(motor.suscribirse, motor.leerActual)
   const [volumen, setVolumen] = useState(leerVolumen)
 
   useEffect(() => {
     motor.fijarVolumen(volumen)
   }, [motor, volumen])
 
-  useEffect(() => () => motor.detener(), [motor])
-
   function alternar(tipo: TipoSonido) {
-    if (elegido === tipo) {
-      setElegido(null)
-      motor.detener()
-    } else {
-      setElegido(tipo)
-      motor.reproducir(tipo)
-    }
+    if (elegido === tipo) motor.detener()
+    else motor.reproducir(tipo)
   }
 
   function cambiarVolumen(porcentaje: number) {
@@ -52,20 +50,20 @@ export function SelectorSonido({ motor: motorExterno }: Props) {
   const activo = OPCIONES.find((o) => o.tipo === elegido)
 
   return (
-    <fieldset className={estilos.tarjeta}>
+    <fieldset className={compacto ? `${estilos.tarjeta} ${estilos.compacto}` : estilos.tarjeta}>
       <legend className={estilos.visualmenteOculta}>Sonido ambiental</legend>
       <div className={estilos.cabecera} aria-hidden="true">
         <span className={estilos.titulo}>
           <Icono nombre="altavoz" tamano={18} />
-          Sonido ambiental
+          <span className={compacto ? estilos.visualmenteOculta : undefined}>Sonido ambiental</span>
         </span>
       </div>
-      <output className={estilos.estado}>{activo ? `Sonando: ${activo.etiqueta}` : 'En silencio'}</output>
+      <output className={compacto ? estilos.visualmenteOculta : estilos.estado}>{activo ? `Sonando: ${activo.etiqueta}` : 'En silencio'}</output>
       <div className={estilos.opciones}>
         {OPCIONES.map(({ tipo, etiqueta, icono }) => (
           <button key={tipo} type="button" aria-pressed={elegido === tipo} onClick={() => alternar(tipo)} className={estilos.opcion}>
-            <Icono nombre={icono} tamano={26} />
-            {etiqueta}
+            <Icono nombre={icono} tamano={compacto ? 20 : 26} />
+            <span className={compacto ? estilos.etiquetaCompacta : undefined}>{etiqueta}</span>
           </button>
         ))}
       </div>
