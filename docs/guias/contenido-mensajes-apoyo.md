@@ -1,6 +1,6 @@
 # Contenido de los mensajes de apoyo · Cómo escribirlo
 
-Guía para quien escribe o revisa los fragmentos (HU-06a-3) y para la revisión psicológica. La decisión de fondo está en [ADR-001](../adr/ADR-001-mensajes-de-apoyo-grafo-de-composicion.md).
+Guía para quien escribe o revisa los fragmentos (HU-06a-1 y HU-06a-3) y para la revisión psicológica. La decisión de fondo está en [ADR-001](../adr/ADR-001-mensajes-de-apoyo-grafo-de-composicion.md).
 
 Todo el contenido vive en `src/Infrastructure/Treeve.Infrastructure/MensajesApoyo/Contenido/`. No hace falta tocar código para agregar o corregir frases.
 
@@ -46,7 +46,7 @@ Entre más etiquetas, más específico: si encaja, se prefiere sobre uno general
 - **Sin consejos médicos ni diagnósticos**, y sin fingir que escribe una persona ("te leo", "me alegra").
 - **Lenguaje neutro en género:** "nada te obliga", no "no estás obligado".
 - **Metáfora del puente por emoción:** tristeza = lluvia; rabia = tormenta que pasa; duda = niebla que se levanta; miedo = raíces que sostienen; felicidad = sol.
-- **Mínimo por emoción y ranura:** 6 fragmentos generales (sin tema ni intensidad), para que nunca se repita uno de las 5 respuestas anteriores. La meta de HU-06 es 8. Los saludos `GEN` cuentan para todas las emociones.
+- **Mínimo por emoción y ranura:** 8 fragmentos generales (sin tema ni intensidad), como pide HU-06. Así nunca se repite uno de las 5 respuestas anteriores. Los saludos `GEN` cuentan para todas las emociones.
 
 ## 4. Temas (`temas.json`)
 
@@ -66,4 +66,4 @@ Palabras o frases por tema, escritas con ortografía normal: al comparar se igno
 dotnet test tests/Treeve.Infrastructure.Tests
 ```
 
-`ContenidoDeMensajesTests` falla si un fragmento está mal escrito (id, marcador, puntuación), si una emoción no tiene al menos 6 fragmentos generales por ranura, si una respuesta repite fragmentos de las 5 anteriores o si la regla de crisis deja de reconocer los ejemplos. Para probar una frase de crisis nueva, agrégala como ejemplo en esa prueba.
+`ContenidoDeMensajesTests` falla si un fragmento está mal escrito (id, marcador, puntuación), si una emoción no tiene al menos 8 fragmentos generales por ranura, si una respuesta repite fragmentos de las 5 anteriores o si la regla de crisis deja de reconocer los ejemplos. Para probar una frase de crisis nueva, agrégala como ejemplo en esa prueba.

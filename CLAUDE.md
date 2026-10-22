@@ -470,7 +470,7 @@ IDs de tareas en ClickUp:
 - Stack decidido (ADR-003, 13-oct-2026).
 - **TEC-01 implementado en local con Onion** (pendiente de commit, repositorio remoto, PR y revisión): `Treeve.slnx` con los 5 proyectos de los anillos; `Treeve.ArchitectureTests` (13 pruebas: regla de dependencias, convenciones, estructura y lenguajes) y proyectos vacíos `Treeve.Domain.Tests` y `Treeve.Application.Tests`; `Treeve.Web` (React + TypeScript, `shared/api/clienteApi.ts`; herramientas: Vite, Vitest, Oxlint `jsx-a11y`, dependency-cruiser) en `src/Presentation`; CI de GitHub Actions; plantilla de PR; README; ADR-001, ADR-003 y ADR-004; guías en `docs/guias`.
 
-- **HU-06a-1 implementado en local** (rama `hu-06a-1-motor-grafo`, 22-oct-2026; pendiente de commit y PR): motor del grafo para las 5 emociones, crisis que sugiere una línea sin redirigir ni guardar nada, historial de fragmentos cifrado (solo las últimas 5 respuestas), contenido en JSON (borrador pendiente de revisión psicológica). Falta conectarlo al guardado del desahogo (HU-05).
+- **HU-06a-1 y HU-06a-3 en el PR #11** (rama `hu-06a-1-motor-grafo`, 22-oct-2026): motor del grafo para las 5 emociones, crisis que sugiere una línea sin redirigir ni guardar nada, historial de fragmentos cifrado (solo las últimas 5 respuestas) y contenido en JSON con 8 variantes generales por ranura y emoción (pendiente de revisión psicológica y de la revisión humana de 200 combinaciones). Falta conectarlo al guardado del desahogo (HU-05).
 
 **No iniciado**
 - Repositorio remoto (GitHub) y primer PR.

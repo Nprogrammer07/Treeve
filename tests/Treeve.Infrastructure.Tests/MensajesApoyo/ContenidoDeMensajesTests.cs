@@ -11,6 +11,9 @@ namespace Treeve.Infrastructure.Tests.MensajesApoyo;
 /// </summary>
 public class ContenidoDeMensajesTests
 {
+    /// <summary>HU-06: al menos 8 variantes por ranura y emoción. Con 6 ya bastaría para no repetir en 5 respuestas.</summary>
+    private const int VariantesMinimas = 8;
+
     private static readonly CatalogoDeMensajes Catalogo = RepositorioFragmentosJson.Cargar();
 
     public static TheoryData<Emocion, Ranura> EmocionesYRanuras()
@@ -29,14 +32,15 @@ public class ContenidoDeMensajesTests
 
     [Theory]
     [MemberData(nameof(EmocionesYRanuras))]
-    public void Cada_emocion_tiene_suficientes_fragmentos_generales_para_no_repetir(Emocion emocion, Ranura ranura)
+    public void Cada_emocion_tiene_al_menos_8_fragmentos_generales_por_ranura(Emocion emocion, Ranura ranura)
     {
+        // Generales (sin tema ni intensidad): sirven para cualquier desahogo de esa emoción, así que nunca se agotan
+        // aunque las 5 respuestas anteriores hayan usado 5 de ellos.
         var generales = Catalogo.DeLaRanura(ranura).Count(f => f.EsGeneralPara(emocion));
 
-        // Las 5 respuestas anteriores pueden haber usado 5 fragmentos de esta ranura: hace falta uno más.
         Assert.True(
-            generales > MotorDeRespuesta.RespuestasSinRepetir,
-            $"{emocion}/{ranura} tiene {generales} fragmentos generales; necesita al menos {MotorDeRespuesta.RespuestasSinRepetir + 1}.");
+            generales >= VariantesMinimas,
+            $"{emocion}/{ranura} tiene {generales} fragmentos generales; HU-06 pide al menos {VariantesMinimas}.");
     }
 
     [Fact]

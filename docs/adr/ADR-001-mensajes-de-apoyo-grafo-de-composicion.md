@@ -79,13 +79,14 @@ Una IA futura entraría como otra implementación de `IGeneradorMensajeApoyo` en
 ## Precisiones de la implementación (HU-06a-1, 22-oct-2026)
 
 1. **De lo general a lo específico.** Un fragmento sin etiqueta encaja en cualquier caso; cada etiqueta lo hace más específico (emoción 1, tema 2, intensidad 1). En cada ranura se elige entre los más específicos que encajan y no se usaron hace poco; el desempate es por peso con la semilla. `GEN` en el id marca los que sirven para cualquier emoción.
-2. **Nunca queda sin respuesta.** El catálogo exige al menos un fragmento general por emoción y ranura. Para que la anti-repetición se cumpla siempre, una prueba exige al menos 6 por emoción y ranura (5 respuestas + 1). Si aun así no hay disponibles, se repite el usado hace más tiempo.
+2. **Nunca queda sin respuesta.** El catálogo exige al menos un fragmento general por emoción y ranura. Una prueba exige al menos 8 generales por emoción y ranura (RNF de HU-06); con 6 ya bastaría para que la anti-repetición se cumpla siempre (5 respuestas + 1). Si aun así no hay disponibles, se repite el usado hace más tiempo.
 3. **Cada fragmento es una oración completa** (termina en punto, ! o ?), así encaja con cualquier vecino. El saludo nombra a la persona con `{apodo}`, el único marcador permitido.
 4. **Tema e intensidad.** Se detecta un solo tema: el que tenga más palabras clave. Al comparar se ignoran tildes, mayúsculas y signos, porque mucha gente escribe sin tildes; el contenido conserva su ortografía. Un `*` al final de una palabra acepta cualquier terminación (`trabaj*`). La intensidad suma pistas: texto largo, mayúsculas, signos repetidos y palabras absolutas.
 5. **Crisis.** Frases de riesgo por categoría, más excepciones para expresiones comunes ("me muero de risa", "me voy a matar estudiando") que se descartan antes de buscar. Ante la duda se sugiere la línea. El mensaje fijo **sugiere** una línea de atención: no redirige, no bloquea y no avisa a nadie. No se guarda nada: ni el historial ni un indicador de que hubo crisis (sería un dato de salud). `EsDeCrisis` solo viaja en la respuesta para que la interfaz muestre la sugerencia.
 6. **Historial cifrado y mínimo.** El id de un reflejo delata el tema detectado, así que `historial_respuestas` guarda los ids **cifrados** (AES-256-GCM, contexto persona + respuesta) y solo conserva las últimas 5 respuestas de cada persona.
 7. **Contenido como datos.** `fragmentos.json`, `temas.json` y `crisis.json` viven en `src/Infrastructure/Treeve.Infrastructure/MensajesApoyo/Contenido/`; `EstructuraDelRepositorioTests` admite JSON solo en esa carpeta. Guía para escribirlo: [contenido de los mensajes de apoyo](../guias/contenido-mensajes-apoyo.md).
-8. **Pendiente:** momento del día, tendencia, racha, primer desahogo e hito del árbol son HU-06a-2; el contenido completo (8 variantes) es HU-06a-3; la revisión psicológica y las líneas de ayuda verificadas siguen abiertas.
+8. **Contenido (HU-06a-3):** 8 variantes generales por ranura y emoción, más reflejos por tema y validaciones de intensidad alta.
+9. **Pendiente:** momento del día, tendencia, racha, primer desahogo e hito del árbol son HU-06a-2; la revisión psicológica, la revisión humana de 200 combinaciones y las líneas de ayuda verificadas siguen abiertas.
 
 ## Alternativas consideradas
 
