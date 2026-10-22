@@ -1,18 +1,15 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { FlujoDesahogo } from '../features/desahogos/FlujoDesahogo.tsx'
 import { PantallaEspacioVerde } from '../features/espacio-verde/PantallaEspacioVerde.tsx'
 import { FormularioLogin } from '../features/identidad/FormularioLogin.tsx'
 import { FormularioRegistro } from '../features/identidad/FormularioRegistro.tsx'
+import { crearMotorSonido } from '../features/sonidos/motor.ts'
 import { SelectorSonido } from '../features/sonidos/SelectorSonido.tsx'
 import { PaginaVisitante, type ModoDeAcceso } from '../features/visitante/PaginaVisitante.tsx'
-import type { EtapaArbol } from '../scene/EspacioVerde.tsx'
+import type { ControlEspacioVerde, EtapaArbol } from '../scene/EspacioVerde.tsx'
 import { borrarSesion } from '../shared/api/sesion.ts'
 import { useSesion } from '../shared/api/useSesion.ts'
-import { Boton } from '../shared/ui/Boton.tsx'
-import estilos from './App.module.css'
 import { BancoEscena } from './BancoEscena.tsx'
-
-type Pantalla = 'desahogo' | 'espacio-verde'
 
 // TEMPORAL: la etapa real la calcula el backend (HU-07a) y se pedirá a la API cuando exista su contrato.
 const ETAPA_TEMPORAL: EtapaArbol = 'tallo'
@@ -20,12 +17,16 @@ const ETAPA_TEMPORAL: EtapaArbol = 'tallo'
 /**
  * Composición de la aplicación: aquí se unen las features, que no se conocen entre sí.
  * Sin sesión se ve la página de visitante; al registrarse o iniciar sesión (HU-02, HU-03a) la sesión queda abierta
- * y la app pasa sola a la pantalla de desahogo.
+ * y la app pasa sola al espacio verde. Desde ahí, "Desahogarme" abre la elección de emoción y luego la hoja.
  */
 function App() {
   const sesion = useSesion()
+  // Un solo motor de audio para toda la app: el sonido sigue sonando al cambiar de pantalla (HU-08).
+  const [motor] = useState(crearMotorSonido)
   const [modoDeAcceso, setModoDeAcceso] = useState<ModoDeAcceso>('registro')
-  const [pantalla, setPantalla] = useState<Pantalla>('desahogo')
+  const [desahogoAbierto, setDesahogoAbierto] = useState(false)
+  const [aviso, setAviso] = useState('')
+  const espacioVerde = useRef<ControlEspacioVerde>(null)
 
   if (import.meta.env.DEV && window.location.hash === '#escena') return <BancoEscena />
 
@@ -40,7 +41,7 @@ function App() {
           )
         }
         onElegirAcceso={setModoDeAcceso}
-        controlesSonido={<SelectorSonido />}
+        controlesSonido={<SelectorSonido motor={motor} />}
         mostrarMetricas={import.meta.env.DEV}
       />
     )
@@ -48,25 +49,34 @@ function App() {
 
   function salir() {
     // Solo olvida el token en este navegador: la sesión sigue vigente en el servidor hasta que venza.
+    setDesahogoAbierto(false)
+    setAviso('')
     borrarSesion()
-    setPantalla('desahogo')
+  }
+
+  function alGuardar() {
+    setDesahogoAbierto(false)
+    setAviso('Tu desahogo regó tu espacio verde.')
+    espacioVerde.current?.regar()
   }
 
   return (
-    <main className={estilos.pantalla}>
-      <div className={estilos.cabecera}>
-        <h1 className={estilos.marca}>Treeve</h1>
-        <p className={estilos.saludo}>Hola, {sesion.apodo}</p>
-        <Boton variante="suave" onClick={salir}>
-          Salir
-        </Boton>
-      </div>
-      {pantalla === 'desahogo' ? (
-        <FlujoDesahogo alGuardar={() => setPantalla('espacio-verde')} />
-      ) : (
-        <PantallaEspacioVerde etapa={ETAPA_TEMPORAL} regarAlEntrar onEscribirOtro={() => setPantalla('desahogo')} mostrarMetricas={import.meta.env.DEV} />
-      )}
-    </main>
+    <>
+      <PantallaEspacioVerde
+        ref={espacioVerde}
+        apodo={sesion.apodo}
+        etapa={ETAPA_TEMPORAL}
+        aviso={aviso}
+        controlesSonido={<SelectorSonido motor={motor} compacto />}
+        onDesahogarme={() => {
+          setAviso('')
+          setDesahogoAbierto(true)
+        }}
+        onSalir={salir}
+        mostrarMetricas={import.meta.env.DEV}
+      />
+      <FlujoDesahogo abierto={desahogoAbierto} onCerrar={() => setDesahogoAbierto(false)} alGuardar={alGuardar} />
+    </>
   )
 }
 

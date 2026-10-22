@@ -1,13 +1,27 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import type { MotorSonido } from './motor.ts'
+import type { MotorSonido, TipoSonido } from './motor.ts'
 import { SelectorSonido } from './SelectorSonido.tsx'
 
-function motorFalso() {
+// Motor falso con el mismo comportamiento de estado que el real: recuerda qué sonido está activo y avisa de los cambios.
+function motorFalso(): MotorSonido {
+  let actual: TipoSonido | null = null
+  const oyentes = new Set<() => void>()
+  const cambiarA = (tipo: TipoSonido | null) => {
+    actual = tipo
+    for (const oyente of oyentes) oyente()
+  }
   return {
-    reproducir: vi.fn<MotorSonido['reproducir']>(),
-    detener: vi.fn<MotorSonido['detener']>(),
+    reproducir: vi.fn<MotorSonido['reproducir']>((tipo) => cambiarA(tipo)),
+    detener: vi.fn<MotorSonido['detener']>(() => cambiarA(null)),
     fijarVolumen: vi.fn<MotorSonido['fijarVolumen']>(),
+    leerActual: () => actual,
+    suscribirse: (oyente) => {
+      oyentes.add(oyente)
+      return () => {
+        oyentes.delete(oyente)
+      }
+    },
   }
 }
 
@@ -69,10 +83,27 @@ describe('SelectorSonido', () => {
     expect(motor.fijarVolumen).toHaveBeenLastCalledWith(0.3)
   })
 
-  it('detiene el audio al desmontarse', () => {
+  it('HU-08: el sonido sigue al cambiar de pantalla y otro selector muestra el mismo estado', () => {
     const motor = motorFalso()
-    render(<SelectorSonido motor={motor} />).unmount()
+    const primero = render(<SelectorSonido motor={motor} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Río' }))
 
-    expect(motor.detener).toHaveBeenCalled()
+    primero.unmount()
+    render(<SelectorSonido motor={motor} compacto />)
+
+    expect(motor.detener).not.toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: 'Río' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('status')).toHaveTextContent('Sonando: Río')
+  })
+
+  it('desde la versión compacta se puede apagar el sonido que empezó en otra pantalla', () => {
+    const motor = motorFalso()
+    motor.reproducir('lluvia')
+    render(<SelectorSonido motor={motor} compacto />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Lluvia' }))
+
+    expect(motor.detener).toHaveBeenCalledOnce()
+    expect(screen.getByRole('status')).toHaveTextContent('En silencio')
   })
 })

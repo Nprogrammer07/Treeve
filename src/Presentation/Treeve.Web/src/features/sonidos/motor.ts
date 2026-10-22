@@ -7,6 +7,9 @@ export interface MotorSonido {
   reproducir: (tipo: TipoSonido) => void
   detener: () => void
   fijarVolumen: (volumen: number) => void
+  /** Qué sonido está activo ahora (null = silencio). Permite que varios selectores muestren el mismo estado. */
+  leerActual: () => TipoSonido | null
+  suscribirse: (oyente: () => void) => () => void
 }
 
 type Parar = () => void
@@ -147,10 +150,18 @@ export function crearMotorSonido(): MotorSonido {
   let maestro: GainNode | null = null
   let parar: Parar | null = null
   let volumen = 0.6
+  let actual: TipoSonido | null = null
+  const oyentes = new Set<() => void>()
+
+  function cambiarA(tipo: TipoSonido | null) {
+    actual = tipo
+    for (const oyente of oyentes) oyente()
+  }
 
   function detener() {
     parar?.()
     parar = null
+    cambiarA(null)
   }
 
   return {
@@ -165,8 +176,16 @@ export function crearMotorSonido(): MotorSonido {
       void ctx.resume()
       detener()
       parar = AMBIENTES[tipo](ctx, maestro)
+      cambiarA(tipo)
     },
     detener,
+    leerActual: () => actual,
+    suscribirse(oyente) {
+      oyentes.add(oyente)
+      return () => {
+        oyentes.delete(oyente)
+      }
+    },
     fijarVolumen(nuevo) {
       volumen = nuevo
       if (maestro) maestro.gain.value = nuevo

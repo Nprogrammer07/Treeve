@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react'
-import { useImperativeHandle, type Ref } from 'react'
+import { createRef, useImperativeHandle, type Ref } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ControlEspacioVerde } from '../../scene/EspacioVerde.tsx'
 import { PantallaEspacioVerde } from './PantallaEspacioVerde.tsx'
@@ -13,38 +13,77 @@ vi.mock('../../scene/EspacioVerde.tsx', () => ({
   },
 }))
 
+const pantalla = (extra: Partial<Parameters<typeof PantallaEspacioVerde>[0]> = {}) => (
+  <PantallaEspacioVerde apodo="Luis" etapa="tallo" controlesSonido={<p>controles de sonido</p>} onDesahogarme={() => {}} onSalir={() => {}} {...extra} />
+)
+
 describe('PantallaEspacioVerde', () => {
   beforeEach(() => {
     regar.mockClear()
   })
 
-  it('dibuja la etapa que recibe', () => {
-    render(<PantallaEspacioVerde etapa="tallo" onEscribirOtro={() => {}} />)
+  it('saluda por el apodo con un único título principal', () => {
+    render(pantalla())
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Tu espacio verde' })).toBeInTheDocument()
-    expect(screen.getByText('escena tallo')).toBeInTheDocument()
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
+    expect(screen.getByRole('heading', { level: 1, name: 'Hola, Luis' })).toBeInTheDocument()
   })
 
-  it('riega al entrar y lo cuenta también con texto', () => {
-    render(<PantallaEspacioVerde etapa="brote" regarAlEntrar onEscribirOtro={() => {}} />)
+  it('dibuja la etapa que recibe y muestra los controles de sonido', () => {
+    render(pantalla())
 
-    expect(regar).toHaveBeenCalledOnce()
+    expect(screen.getByText('escena tallo')).toBeInTheDocument()
+    expect(screen.getByText('controles de sonido')).toBeInTheDocument()
+  })
+
+  it('"Desahogarme ahora" abre el camino para desahogarse', () => {
+    const onDesahogarme = vi.fn<() => void>()
+    render(pantalla({ onDesahogarme }))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Desahogarme ahora' }))
+
+    expect(onDesahogarme).toHaveBeenCalledOnce()
+  })
+
+  it('el menú inferior también lleva a desahogarse y marca la sección actual', () => {
+    const onDesahogarme = vi.fn<() => void>()
+    render(pantalla({ onDesahogarme }))
+    const menu = screen.getByRole('navigation', { name: 'Secciones' })
+
+    expect(menu).toHaveTextContent('Mi espacio verde')
+    expect(screen.getByRole('button', { name: 'Mi espacio verde' })).toHaveAttribute('aria-current', 'page')
+    fireEvent.click(screen.getByRole('button', { name: 'Desahogarme' }))
+
+    expect(onDesahogarme).toHaveBeenCalledOnce()
+  })
+
+  it('permite salir', () => {
+    const onSalir = vi.fn<() => void>()
+    render(pantalla({ onSalir }))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Salir' }))
+
+    expect(onSalir).toHaveBeenCalledOnce()
+  })
+
+  it('cuenta con texto lo que ocurre en la escena', () => {
+    render(pantalla({ aviso: 'Tu desahogo regó tu espacio verde.' }))
+
     expect(screen.getByRole('status')).toHaveTextContent('Tu desahogo regó tu espacio verde.')
   })
 
-  it('no riega si solo se está mirando el espacio verde', () => {
-    render(<PantallaEspacioVerde etapa="arbol-adulto" onEscribirOtro={() => {}} />)
+  it('deja regar la escena desde fuera', () => {
+    const control = createRef<ControlEspacioVerde>()
+    render(pantalla({ ref: control }))
 
-    expect(regar).not.toHaveBeenCalled()
-    expect(screen.getByRole('status')).toBeEmptyDOMElement()
+    control.current?.regar()
+
+    expect(regar).toHaveBeenCalledOnce()
   })
 
-  it('permite volver a escribir', () => {
-    const onEscribirOtro = vi.fn<() => void>()
-    render(<PantallaEspacioVerde etapa="arbol-adulto" onEscribirOtro={onEscribirOtro} />)
+  it('no muestra datos que la API todavía no entrega (días, niveles, nutrientes, historial)', () => {
+    const { container } = render(pantalla())
 
-    fireEvent.click(screen.getByRole('button', { name: 'Escribir otro desahogo' }))
-
-    expect(onEscribirOtro).toHaveBeenCalledOnce()
+    expect(container.textContent).not.toMatch(/día \d|nivel \d|nutrientes|racha|historial|\d+ desahogos/i)
   })
 })

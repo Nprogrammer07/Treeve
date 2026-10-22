@@ -83,3 +83,58 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+/* Versión para el encabezado: una fila baja, con los nombres ocultos cuando no caben. */
+.compacto {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.5rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 999px;
+}
+
+.compacto .cabecera {
+  display: none;
+}
+
+.compacto .opciones {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.compacto .opcion {
+  grid-auto-flow: column;
+  align-items: center;
+  min-height: 2.75rem;
+  min-width: 2.75rem;
+  padding: 0 0.625rem;
+  border-color: transparent;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.compacto .opcion[aria-pressed='true'] {
+  border-color: var(--acento);
+  background: var(--pastel);
+}
+
+.compacto .volumen {
+  min-height: 2.75rem;
+}
+
+.compacto .volumen input {
+  width: 6rem;
+}
+
+@media (max-width: 47.99rem) {
+  .etiquetaCompacta {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}

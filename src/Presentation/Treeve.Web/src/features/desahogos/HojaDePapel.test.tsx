@@ -19,7 +19,7 @@ describe('HojaDePapel', () => {
   it('no deja guardar una hoja vacía', () => {
     render(<HojaDePapel emocion="tristeza" onGuardado={() => {}} />)
 
-    expect(screen.getByRole('button', { name: 'Guardar' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Regar mi espacio verde' })).toBeDisabled()
   })
 
   it('no deja guardar una hoja con solo espacios', () => {
@@ -27,7 +27,14 @@ describe('HojaDePapel', () => {
 
     escribir('   ')
 
-    expect(screen.getByRole('button', { name: 'Guardar' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Regar mi espacio verde' })).toBeDisabled()
+  })
+
+  it('invita a escribir con el texto del diseño y no exige otra cosa que escribir', () => {
+    render(<HojaDePapel emocion="duda" onGuardado={() => {}} />)
+
+    expect(screen.getByPlaceholderText('Hoy me sentí...')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Regar mi espacio verde' })).toBeDisabled()
   })
 
   it('muestra cuántos caracteres lleva', () => {
@@ -43,7 +50,7 @@ describe('HojaDePapel', () => {
     render(<HojaDePapel emocion="rabia" onGuardado={onGuardado} />)
 
     escribir('texto de prueba')
-    fireEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Regar mi espacio verde' }))
 
     await waitFor(() => expect(onGuardado).toHaveBeenCalledOnce())
     expect(guardarDesahogo).toHaveBeenCalledWith({ emocion: 'rabia', texto: 'texto de prueba' })
@@ -55,7 +62,7 @@ describe('HojaDePapel', () => {
     render(<HojaDePapel emocion="duda" onGuardado={onGuardado} />)
 
     escribir('esto no se debe perder')
-    fireEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Regar mi espacio verde' }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent('No pudimos guardar tu desahogo')
     expect(screen.getByLabelText('Escribe lo que sientes')).toHaveValue('esto no se debe perder')
@@ -82,7 +89,7 @@ describe('HojaDePapel', () => {
       render(<HojaDePapel emocion="tristeza" onGuardado={onGuardado} />)
 
       escribir(SECRETO)
-      fireEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Regar mi espacio verde' }))
       await waitFor(() => expect(onGuardado).toHaveBeenCalledOnce())
 
       expect(almacenamientoContiene(SECRETO)).toBe(false)
@@ -96,7 +103,7 @@ describe('HojaDePapel', () => {
       render(<HojaDePapel emocion="miedo" onGuardado={() => {}} />)
 
       escribir(SECRETO)
-      fireEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Regar mi espacio verde' }))
       await screen.findByRole('alert')
 
       expect(almacenamientoContiene(SECRETO)).toBe(false)
@@ -109,7 +116,7 @@ describe('HojaDePapel', () => {
       render(<HojaDePapel emocion="rabia" onGuardado={() => {}} />)
 
       escribir(SECRETO)
-      fireEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Regar mi espacio verde' }))
 
       expect(await screen.findByRole('alert')).not.toHaveTextContent(SECRETO)
     })

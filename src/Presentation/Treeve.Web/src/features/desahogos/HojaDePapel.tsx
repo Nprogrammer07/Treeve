@@ -1,6 +1,7 @@
 import { useId, useState, type FormEvent } from 'react'
 import { Aviso } from '../../shared/ui/Aviso.tsx'
 import { Boton } from '../../shared/ui/Boton.tsx'
+import { Icono } from '../../shared/ui/Icono.tsx'
 import { guardarDesahogo } from './api.ts'
 import estilos from './HojaDePapel.module.css'
 import type { Emocion } from './tipos.ts'
@@ -39,7 +40,7 @@ export function HojaDePapel({ emocion, onGuardado }: Props) {
 
   return (
     <form onSubmit={enviar} className={estilos.formulario}>
-      <label htmlFor={idTexto} className={estilos.etiqueta}>
+      <label htmlFor={idTexto} className={estilos.soloLectores}>
         Escribe lo que sientes
       </label>
       <textarea
@@ -48,16 +49,20 @@ export function HojaDePapel({ emocion, onGuardado }: Props) {
         value={texto}
         maxLength={LONGITUD_MAXIMA}
         aria-describedby={idContador}
-        rows={10}
+        placeholder="Hoy me sentí..."
+        rows={9}
         onChange={(e) => setTexto(e.target.value)}
       />
-      <p id={idContador} className={estilos.contador}>
-        {texto.length} / {LONGITUD_MAXIMA}
-      </p>
       {error && <Aviso>No pudimos guardar tu desahogo. Inténtalo de nuevo en un momento.</Aviso>}
-      <Boton type="submit" disabled={guardando || texto.trim() === ''}>
-        Guardar
-      </Boton>
+      <div className={estilos.pie}>
+        <p id={idContador} className={estilos.contador}>
+          {texto.length} / {LONGITUD_MAXIMA}
+        </p>
+        <Boton type="submit" disabled={guardando || texto.trim() === ''} className={estilos.regar}>
+          <Icono nombre="gota" tamano={18} />
+          Regar mi espacio verde
+        </Boton>
+      </div>
     </form>
   )
 }

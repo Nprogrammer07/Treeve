@@ -1,12 +1,16 @@
 .formulario {
   display: grid;
   gap: 0.75rem;
-  justify-items: center;
 }
 
-.etiqueta {
-  justify-self: start;
-  font-weight: 600;
+.soloLectores {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 /* Aspecto de hoja rayada: renglones fijos al desplazarse y margen a la izquierda. */
@@ -14,20 +18,24 @@
   --renglon: 2rem;
   box-sizing: border-box;
   width: 100%;
-  min-height: 18rem;
+  min-height: 16rem;
   padding: 0 1rem 0 2.75rem;
   border: 1px solid var(--linea);
-  border-radius: 0.5rem;
+  border-radius: 1rem;
   background-color: var(--hoja);
   background-image:
     linear-gradient(to right, transparent 2.25rem, var(--margen-hoja) 2.25rem, var(--margen-hoja) calc(2.25rem + 1px), transparent calc(2.25rem + 1px)),
     repeating-linear-gradient(to bottom, transparent 0, transparent calc(var(--renglon) - 1px), var(--linea) calc(var(--renglon) - 1px), var(--linea) var(--renglon));
   background-attachment: local;
-  box-shadow: 0 4px 14px rgb(36 51 43 / 12%);
   color: var(--tinta);
   font: inherit;
   line-height: var(--renglon);
   resize: vertical;
+}
+
+.hoja::placeholder {
+  color: var(--tinta-suave);
+  opacity: 0.9;
 }
 
 .hoja:focus-visible {
@@ -35,9 +43,22 @@
   outline-offset: 2px;
 }
 
+.pie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
 .contador {
-  justify-self: end;
   margin: 0;
   color: var(--tinta-suave);
   font-size: 0.875rem;
+}
+
+.regar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }
