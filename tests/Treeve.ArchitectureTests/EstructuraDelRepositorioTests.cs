@@ -15,6 +15,9 @@ public class EstructuraDelRepositorioTests
     private const string Web = "src/Presentation/Treeve.Web/";
     private const string Despliegue = "deploy/";
 
+    /// <summary>ADR-001: el contenido de los mensajes de apoyo son datos (JSON versionado), no código.</summary>
+    private const string ContenidoDeMensajes = "src/Infrastructure/Treeve.Infrastructure/MensajesApoyo/Contenido/";
+
     private static readonly string[] CarpetasDelBackend =
         ["src/Core/", "src/Infrastructure/", "src/Presentation/Treeve.Api/", "tests/"];
 
@@ -46,10 +49,12 @@ public class EstructuraDelRepositorioTests
 
         var ajenos = Archivos
             .Where(a => CarpetasDelBackend.Any(c => a.StartsWith(c, StringComparison.Ordinal)))
-            .Where(a => !extensiones.Contains(Path.GetExtension(a)) && !EsConfiguracionDeAspNet(Path.GetFileName(a)))
+            .Where(a => !extensiones.Contains(Path.GetExtension(a)) && !EsConfiguracionDeAspNet(Path.GetFileName(a)) && !EsContenidoDeMensajes(a))
             .ToList();
 
-        SinArchivos(ajenos, "El backend solo admite C# (.cs y .csproj) y la configuración de ASP.NET Core (ADR-003).");
+        SinArchivos(ajenos,
+            "El backend solo admite C# (.cs y .csproj), la configuración de ASP.NET Core (ADR-003) " +
+            $"y el contenido JSON de los mensajes de apoyo en {ContenidoDeMensajes} (ADR-001).");
     }
 
     [Fact]
@@ -130,6 +135,11 @@ public class EstructuraDelRepositorioTests
         ruta is "CODEOWNERS" or "pull_request_template.md" ||
         (ruta.StartsWith("workflows/", StringComparison.Ordinal) && ruta.Count(c => c == '/') == 1 &&
          ruta.EndsWith(".yml", StringComparison.Ordinal));
+
+    private static bool EsContenidoDeMensajes(string ruta) =>
+        ruta.StartsWith(ContenidoDeMensajes, StringComparison.Ordinal) &&
+        !ruta[ContenidoDeMensajes.Length..].Contains('/', StringComparison.Ordinal) &&
+        ruta.EndsWith(".json", StringComparison.Ordinal);
 
     private static bool EsConfiguracionDeAspNet(string archivo) =>
         archivo == "launchSettings.json" ||

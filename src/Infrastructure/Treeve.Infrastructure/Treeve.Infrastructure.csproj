@@ -10,7 +10,11 @@
     <ProjectReference Include="..\..\Core\Treeve.Application\Treeve.Application.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <!-- Las pruebas del cifrador y del hash de contraseñas usan las clases internas. -->
+    <!-- ADR-001: el contenido de los mensajes de apoyo es JSON versionado y viaja dentro del ensamblado. -->
+    <EmbeddedResource Include="MensajesApoyo\Contenido\*.json" LogicalName="Treeve.Infrastructure.MensajesApoyo.Contenido.%(Filename)%(Extension)" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Las pruebas del cifrador, del hash de contraseñas y del contenido de los mensajes usan las clases internas. -->
     <InternalsVisibleTo Include="Treeve.Infrastructure.Tests" />
   </ItemGroup>
 </Project>

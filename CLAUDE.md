@@ -181,7 +181,7 @@ Ejemplo: `src/Core/Treeve.Domain/Desahogos/Nota.cs` → namespace `Treeve.Domain
 
 ---
 
-## 6. ADR-001 · Mensajes de apoyo con grafo de composición (Aceptado, pendiente de implementación)
+## 6. ADR-001 · Mensajes de apoyo con grafo de composición (Aceptado; motor implementado en HU-06a-1, ver precisiones en el ADR)
 
 **Decisión:** el mensaje de apoyo se arma con un motor de reglas sin IA. Cada mensaje combina 5 ranuras; cada ranura se llena con un fragmento elegido según señales del desahogo.
 
@@ -302,7 +302,7 @@ Propuestos y **aún no creados en ClickUp**: TEC-06 (ADR-002 y modelo conceptual
 | TEC-03 | Evento `NotaCreada` con bus en memoria | 2 | Habilitadora | Nicolás |
 | HU-07a | Lógica de nutrición y umbrales | 3 | Núcleo | Juan José |
 | HU-07b | Escena 2.5D y animación de riego | 8 | Núcleo | Luis + Nicolás |
-| HU-06a-1 | Motor del grafo: ranuras, anti-repetición y crisis (3 emociones) | 5 | Núcleo | Nicolás + Juan José |
+| HU-06a-1 | Motor del grafo: ranuras, anti-repetición y crisis (5 emociones, decidido el 22-oct-2026) | 5 | Núcleo | Nicolás + Juan José |
 
 Riesgo principal: HU-07b. Hacer un *spike* técnico de 1–2 días midiendo FPS en gama media. Plan B: animación simple y 2.5D completo en el Sprint 3.
 
@@ -469,6 +469,8 @@ IDs de tareas en ClickUp:
 
 - Stack decidido (ADR-003, 13-oct-2026).
 - **TEC-01 implementado en local con Onion** (pendiente de commit, repositorio remoto, PR y revisión): `Treeve.slnx` con los 5 proyectos de los anillos; `Treeve.ArchitectureTests` (13 pruebas: regla de dependencias, convenciones, estructura y lenguajes) y proyectos vacíos `Treeve.Domain.Tests` y `Treeve.Application.Tests`; `Treeve.Web` (React + TypeScript, `shared/api/clienteApi.ts`; herramientas: Vite, Vitest, Oxlint `jsx-a11y`, dependency-cruiser) en `src/Presentation`; CI de GitHub Actions; plantilla de PR; README; ADR-001, ADR-003 y ADR-004; guías en `docs/guias`.
+
+- **HU-06a-1 implementado en local** (rama `hu-06a-1-motor-grafo`, 22-oct-2026; pendiente de commit y PR): motor del grafo para las 5 emociones, crisis que sugiere una línea sin redirigir ni guardar nada, historial de fragmentos cifrado (solo las últimas 5 respuestas), contenido en JSON (borrador pendiente de revisión psicológica). Falta conectarlo al guardado del desahogo (HU-05).
 
 **No iniciado**
 - Repositorio remoto (GitHub) y primer PR.

@@ -1,0 +1,32 @@
+{
+  "estado": "Borrador de HU-06a-1, pendiente de revisión por alguien con formación en psicología (decisión abierta 9). Ante la duda se sugiere la línea: el mensaje solo sugiere, nunca redirige ni avisa a nadie.",
+  "frases": {
+    "querer morir o suicidarse": [
+      "quiero morir*", "quisiera morir*", "quiero estar muert*", "ojalá estuviera muert*", "quiero desaparecer",
+      "no quiero vivir", "no quiero seguir viviendo", "no quiero despertar", "quitarme la vida", "acabar con mi vida",
+      "terminar con mi vida", "quiero acabar con todo", "me voy a matar", "matarme", "suicid*"
+    ],
+    "hacerse daño": [
+      "cortarme", "me cort* los brazos", "me cort* las muñecas", "me cort* las piernas", "autolesi*", "hacerme daño",
+      "me hago daño", "lastimarme", "me lastimo a mí mism*"
+    ],
+    "plan o despedida": [
+      "esta es mi despedida", "carta de despedida", "me despido para siempre", "adiós para siempre"
+    ],
+    "desesperanza extrema": [
+      "estarían mejor sin mí", "soy una carga", "no hay salida", "no le veo salida", "la vida no tiene sentido",
+      "no vale la pena vivir"
+    ],
+    "estar en peligro por otra persona": [
+      "me pega", "me pegan", "me golpe*", "me maltrat*", "abus* de mí", "me viol*", "me va a matar", "me quiere matar"
+    ]
+  },
+  "excepciones": [
+    "morir* de risa", "morir* de la risa", "morir* de sueño", "morir* de hambre", "morir* de vergüenza",
+    "morir* de la vergüenza", "morir* de pena", "morir* de la pena", "morir* de ganas", "morir* de amor",
+    "morir* de frío", "morir* de calor", "morir* de aburrimiento", "morir* de los nervios",
+    "mat* estudiando", "mat* trabajando", "cortarme el pelo", "cortarme el cabello", "cortarme las uñas",
+    "despedida de solter*", "se me peg*", "me pega duro", "me pega muy duro", "me pega el sol", "me violent*"
+  ],
+  "mensaje": "{apodo}, gracias por confiar esto aquí. Lo que estás viviendo suena muy pesado, y no tienes que cargarlo sin compañía. Si quieres hablar con alguien ahora, hay personas disponibles para escucharte: TODO: verificar líneas de ayuda de Colombia. Tu espacio verde sigue aquí cuando lo necesites."
+}
