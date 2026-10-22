@@ -8,7 +8,6 @@ const TRAZOS = {
   olas: 'M3 8q3-3 6 0t6 0t6 0M3 13q3-3 6 0t6 0t6 0M3 18q3-3 6 0t6 0t6 0',
   bosque: 'M12 3l5 8h-3l4 6H6l4-6H7zM12 17v4',
   altavoz: 'M4 10v4h4l5 4V6l-5 4zM16 9a4 4 0 0 1 0 6M18.500 6.500a8 8 0 0 1 0 11',
-  candado: 'M6 11h12v9H6zM8 11V8a4 4 0 0 1 8 0v3',
 } as const
 
 export type NombreIcono = keyof typeof TRAZOS

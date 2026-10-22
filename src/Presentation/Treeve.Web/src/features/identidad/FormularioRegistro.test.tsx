@@ -12,7 +12,7 @@ function llenar(valores: Record<string, string>) {
   }
 }
 
-const enviar = () => fireEvent.click(screen.getByRole('button', { name: 'Registrarme gratis' }))
+const enviar = () => fireEvent.click(screen.getByRole('button', { name: 'Crear mi cuenta' }))
 const minimos = { 'Nombre completo': '  Ana López ', Apodo: 'Ani', Usuario: 'ana.l', Contraseña: 'Treeve2026' }
 
 describe('FormularioRegistro', () => {
@@ -60,6 +60,17 @@ describe('FormularioRegistro', () => {
     expect(registrar).not.toHaveBeenCalled()
     expect(screen.getByLabelText(/^Contraseña/)).toHaveFocus()
     expect(screen.getByLabelText(/^Contraseña/)).toHaveAccessibleDescription(/al menos una letra y un número/)
+  })
+
+  it.each(['josé', 'ñandú'])('no envía un usuario con tildes o ñ ("%s") y lo explica', (usuario) => {
+    render(<FormularioRegistro />)
+
+    llenar({ ...minimos, Usuario: usuario })
+    enviar()
+
+    expect(registrar).not.toHaveBeenCalled()
+    expect(screen.getByLabelText(/^Usuario/)).toHaveFocus()
+    expect(screen.getByLabelText(/^Usuario/)).toHaveAccessibleDescription(/sin tildes ni ñ/)
   })
 
   it('muestra tal cual el mensaje que escribe la API (usuario o correo ya en uso)', async () => {

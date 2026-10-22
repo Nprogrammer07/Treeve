@@ -2,12 +2,14 @@
 
 El frontend (`src/Presentation/Treeve.Web`) se despliega en **Vercel** y la API está en **Railway** (ADR-003 y ADR-005). Viven en dominios distintos, así que hay que configurar dos cosas: la dirección de la API en el frontend y el permiso de CORS en la API.
 
+> La API de producción está en `https://treeve-production.up.railway.app`. Ese es el valor de `VITE_API_URL`.
+
 ## 1. Crear el proyecto en Vercel
 
 1. En Vercel: **Add New → Project** e importar el repositorio de GitHub.
 2. **Root Directory:** `src/Presentation/Treeve.Web`.
 3. **Framework Preset:** Vite (se detecta solo). Comando de build `npm run build` y carpeta de salida `dist`.
-4. **Environment Variables:** `VITE_API_URL` = la URL pública de la API en Railway, sin barra final (por ejemplo `https://tu-api.up.railway.app`).
+4. **Environment Variables:** `VITE_API_URL` = la URL pública de la API en Railway, sin barra final (`https://treeve-production.up.railway.app`).
 5. **Deploy.** Vercel entrega una dirección del tipo `https://tu-frontend.vercel.app`.
 
 `VITE_API_URL` se fija al compilar: si se cambia, hay que volver a desplegar el frontend.

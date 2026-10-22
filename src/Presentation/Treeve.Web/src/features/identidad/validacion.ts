@@ -11,7 +11,9 @@ export const LIMITES = {
 } as const
 
 const CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const USUARIO = /^[\p{L}\p{N}._-]+$/u
+// Igual que ReglasDeIdentidad del backend: el usuario se pasa a minúsculas y luego debe cumplir [a-z0-9._-].
+// Por eso "Ana" vale (se guarda como "ana"), pero "josé" o "ñandú" no: las tildes y la ñ no están permitidas.
+const USUARIO = /^[a-z0-9._-]+$/
 
 const fueraDeRango = (texto: string, { min, max }: { min: number; max: number }) => texto.length < min || texto.length > max
 
@@ -19,7 +21,7 @@ export function validarRegistro(datos: RegistroRequest): ErroresRegistro {
   const errores: ErroresRegistro = {}
   const nombre = datos.nombreCompleto.trim()
   const apodo = datos.apodo.trim()
-  const usuario = datos.nombreDeUsuario.trim()
+  const usuario = datos.nombreDeUsuario.trim().toLowerCase()
   const { contrasena } = datos
 
   if (fueraDeRango(nombre, LIMITES.nombreCompleto)) {
@@ -29,7 +31,7 @@ export function validarRegistro(datos: RegistroRequest): ErroresRegistro {
     errores.apodo = `Elige un apodo de ${LIMITES.apodo.min} a ${LIMITES.apodo.max} caracteres.`
   }
   if (fueraDeRango(usuario, LIMITES.nombreDeUsuario) || !USUARIO.test(usuario)) {
-    errores.nombreDeUsuario = `Usa de ${LIMITES.nombreDeUsuario.min} a ${LIMITES.nombreDeUsuario.max} letras, números, punto, guion o guion bajo.`
+    errores.nombreDeUsuario = `El usuario debe tener de ${LIMITES.nombreDeUsuario.min} a ${LIMITES.nombreDeUsuario.max} caracteres: letras sin tildes ni ñ, números, punto, guion o guion bajo.`
   }
   if (datos.correo && datos.correo.trim() !== '' && !CORREO.test(datos.correo.trim())) {
     errores.correo = 'Escribe un correo válido o déjalo vacío.'

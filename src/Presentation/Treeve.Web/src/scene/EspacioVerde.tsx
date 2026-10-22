@@ -18,10 +18,10 @@ interface Props {
 }
 
 const DESCRIPCION: Record<EtapaArbol, string> = {
-  semilla: 'una semilla recién plantada',
   brote: 'un brote pequeño',
   tallo: 'un tallo joven con sus primeras hojas',
-  arbol: 'un árbol crecido y frondoso',
+  flor: 'un árbol joven con sus primeras flores',
+  'arbol-adulto': 'un árbol adulto, crecido y frondoso',
 }
 
 /**

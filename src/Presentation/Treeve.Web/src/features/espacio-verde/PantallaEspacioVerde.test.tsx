@@ -33,7 +33,7 @@ describe('PantallaEspacioVerde', () => {
   })
 
   it('no riega si solo se está mirando el espacio verde', () => {
-    render(<PantallaEspacioVerde etapa="arbol" onEscribirOtro={() => {}} />)
+    render(<PantallaEspacioVerde etapa="arbol-adulto" onEscribirOtro={() => {}} />)
 
     expect(regar).not.toHaveBeenCalled()
     expect(screen.getByRole('status')).toBeEmptyDOMElement()
@@ -41,7 +41,7 @@ describe('PantallaEspacioVerde', () => {
 
   it('permite volver a escribir', () => {
     const onEscribirOtro = vi.fn<() => void>()
-    render(<PantallaEspacioVerde etapa="arbol" onEscribirOtro={onEscribirOtro} />)
+    render(<PantallaEspacioVerde etapa="arbol-adulto" onEscribirOtro={onEscribirOtro} />)
 
     fireEvent.click(screen.getByRole('button', { name: 'Escribir otro desahogo' }))
 

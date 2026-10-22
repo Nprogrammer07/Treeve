@@ -132,11 +132,6 @@ export class Escena {
     const g = this.arbol.clear()
     this.arbol.pivot.set(cx, cy)
     this.arbol.position.set(cx, cy)
-    if (f.copas === 0) {
-      g.ellipse(cx, cy, 9 * escala, 4 * escala).fill(0x7a5a3a)
-      g.ellipse(cx, cy - 2 * escala, 4 * escala, 2 * escala).fill(0x5a4128)
-      return
-    }
     const h = f.alturaTronco * escala
     const grosor = f.grosorTronco * escala
     const r = f.radioCopa * escala
@@ -153,6 +148,19 @@ export class Escena {
     for (const [dx, dy, k] of usados) g.circle(cx + dx * r, centroY + dy * r, r * k).fill(0x4a8a56)
     for (const [dx, dy, k] of usados) g.circle(cx + dx * r - r * 0.08, centroY + dy * r - r * 0.1, r * k * 0.85).fill(0x5ea068)
     g.circle(cx - r * 0.25, centroY - r * 0.3, r * 0.5).fill(0x78b97a)
+    // Flores sobre la copa (etapa "flor"): pétalos rosados con centro amarillo.
+    const lugares = [
+      [-0.55, -0.1],
+      [0.5, -0.35],
+      [0.1, 0.4],
+      [-0.2, -0.7],
+      [0.65, 0.15],
+      [-0.7, 0.35],
+    ] as const
+    for (const [dx, dy] of lugares.slice(0, f.flores)) {
+      g.circle(cx + dx * r, centroY + dy * r, r * 0.13).fill(0xf4a9bd)
+      g.circle(cx + dx * r, centroY + dy * r, r * 0.055).fill(0xf6d365)
+    }
   }
 
   private dibujarAves(ms: number): void {

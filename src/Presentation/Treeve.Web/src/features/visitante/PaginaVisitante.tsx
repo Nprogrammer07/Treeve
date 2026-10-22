@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react'
 import { EspacioVerde } from '../../scene/EspacioVerde.tsx'
-import { Boton } from '../../shared/ui/Boton.tsx'
 import { Icono, type NombreIcono } from '../../shared/ui/Icono.tsx'
 import estilos from './PaginaVisitante.module.css'
 
@@ -12,25 +11,17 @@ interface Props {
   controlesSonido: ReactNode
   /** HU-01: accesos visibles a "Iniciar sesión" y "Registrarse". app/ decide qué formulario mostrar. */
   onElegirAcceso: (modo: ModoDeAcceso) => void
-  /** Mientras no exista el panel de staff (HU-10), el botón queda desactivado. */
-  onAccesoStaff?: () => void
   mostrarMetricas?: boolean
 }
 
 const PASOS: { icono: NombreIcono; titulo: string; texto: string }[] = [
-  { icono: 'chispas', titulo: 'Escribe cómo te sientes', texto: 'Un diario seguro y privado para desahogarte sin juicios, a tu ritmo.' },
-  { icono: 'hoja', titulo: 'Riega tus hábitos', texto: 'Cada pequeño logro diario hace brotar nuevas hojas en tu terrario.' },
+  { icono: 'chispas', titulo: 'Escribe cómo te sientes', texto: 'Un espacio seguro y privado para desahogarte sin juicios, a tu ritmo. Solo tú puedes leer lo que escribes.' },
+  { icono: 'hoja', titulo: 'Riega tu árbol', texto: 'Cada desahogo riega tu árbol y, poco a poco, lo hace crecer: brote, tallo, flor y árbol adulto.' },
   { icono: 'altavoz', titulo: 'Respira y relájate', texto: 'Acompaña tus momentos con sonidos de la naturaleza que calman la mente.' },
 ]
 
-const ESTADISTICAS: { icono: NombreIcono; nombre: string; valor: string }[] = [
-  { icono: 'hoja', nombre: 'Plantas', valor: '12' },
-  { icono: 'gota', nombre: 'Racha', valor: '7 días' },
-  { icono: 'chispas', nombre: 'Flores', valor: '3' },
-]
-
 /** HU-01: página de visitante. Muestra qué es Treeve e invita a registrarse. */
-export function PaginaVisitante({ acceso, controlesSonido, onElegirAcceso, onAccesoStaff, mostrarMetricas = false }: Props) {
+export function PaginaVisitante({ acceso, controlesSonido, onElegirAcceso, mostrarMetricas = false }: Props) {
   return (
     <>
       <header className={estilos.encabezado}>
@@ -50,10 +41,6 @@ export function PaginaVisitante({ acceso, controlesSonido, onElegirAcceso, onAcc
             <a href="#acceso" onClick={() => onElegirAcceso('registro')} className={estilos.registrarse}>
               Registrarse
             </a>
-            <Boton variante="suave" onClick={onAccesoStaff} disabled={!onAccesoStaff} className={estilos.staff}>
-              <Icono nombre="candado" tamano={18} />
-              Acceso Staff / Admins
-            </Boton>
           </nav>
         </div>
       </header>
@@ -63,10 +50,10 @@ export function PaginaVisitante({ acceso, controlesSonido, onElegirAcceso, onAcc
           <div className={estilos.presentacion}>
             <p className={estilos.pildora}>
               <Icono nombre="hoja" tamano={16} />
-              Bienestar emocional y hábitos
+              Bienestar emocional
             </p>
             <h1 className={estilos.titulo}>Cultiva tu paz interior</h1>
-            <p className={estilos.lema}>Desahógate expresando tus emociones y observa cómo tu mundo verde crece y florece en Treeve.</p>
+            <p className={estilos.lema}>Desahógate escribiendo lo que sientes y observa cómo tu espacio verde crece y florece en Treeve.</p>
             {controlesSonido}
             <a href="#acceso" onClick={() => onElegirAcceso('registro')} className={estilos.llamado}>
               Empieza a escribir
@@ -77,7 +64,7 @@ export function PaginaVisitante({ acceso, controlesSonido, onElegirAcceso, onAcc
 
         <section aria-labelledby="titulo-vista-previa" className={estilos.vistaPrevia}>
           <div className={estilos.escena}>
-            <EspacioVerde etapa="arbol" pajaros mostrarMetricas={mostrarMetricas} />
+            <EspacioVerde etapa="arbol-adulto" pajaros mostrarMetricas={mostrarMetricas} />
             <p className={estilos.insignia}>
               <span className={estilos.punto} aria-hidden="true" />
               Vista previa de tu espacio verde
@@ -86,21 +73,10 @@ export function PaginaVisitante({ acceso, controlesSonido, onElegirAcceso, onAcc
           <div className={estilos.banda}>
             <div>
               <h2 id="titulo-vista-previa" className={estilos.subtitulo}>
-                Tu terrario crece contigo
+                Tu espacio verde crece contigo
               </h2>
-              <p className={estilos.textoBanda}>Cada emoción que expresas y cada hábito que cumples riega una nueva planta.</p>
+              <p className={estilos.textoBanda}>Cada desahogo riega tu árbol y lo ayuda a pasar de brote a tallo, de tallo a flor y, con el tiempo, a árbol adulto.</p>
             </div>
-            <dl className={estilos.estadisticas}>
-              {ESTADISTICAS.map(({ icono, nombre, valor }) => (
-                <div key={nombre} className={estilos.dato}>
-                  <dt>
-                    <Icono nombre={icono} tamano={14} />
-                    {nombre}
-                  </dt>
-                  <dd>{valor}</dd>
-                </div>
-              ))}
-            </dl>
           </div>
         </section>
 

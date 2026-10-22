@@ -38,7 +38,7 @@ describe('EspacioVerde', () => {
   })
 
   it('libera la escena al desmontarse', async () => {
-    const { unmount } = render(<EspacioVerde etapa="arbol" />)
+    const { unmount } = render(<EspacioVerde etapa="arbol-adulto" />)
     await waitFor(() => expect(falsa.iniciar).toHaveBeenCalledOnce())
 
     unmount()
@@ -47,7 +47,7 @@ describe('EspacioVerde', () => {
   })
 
   it('si se desmonta antes de que PixiJS termine de descargarse, no crea la escena', async () => {
-    render(<EspacioVerde etapa="arbol" />).unmount()
+    render(<EspacioVerde etapa="arbol-adulto" />).unmount()
     await new Promise((resolver) => setTimeout(resolver, 20))
 
     expect(falsa.iniciar).not.toHaveBeenCalled()
@@ -84,7 +84,7 @@ describe('EspacioVerde', () => {
         disconnect() {}
       },
     )
-    render(<EspacioVerde etapa="arbol" />)
+    render(<EspacioVerde etapa="arbol-adulto" />)
     await new Promise((resolver) => setTimeout(resolver, 20))
     expect(falsa.iniciar).not.toHaveBeenCalled()
 
@@ -96,8 +96,8 @@ describe('EspacioVerde', () => {
   it('si no hay WebGL, no rompe y conserva la descripción', async () => {
     falsa.iniciar.mockRejectedValue(new Error('sin WebGL'))
 
-    render(<EspacioVerde etapa="semilla" />)
+    render(<EspacioVerde etapa="brote" />)
 
-    expect(await screen.findByText(/semilla/)).toBeInTheDocument()
+    expect(await screen.findByText(/brote pequeño/)).toBeInTheDocument()
   })
 })

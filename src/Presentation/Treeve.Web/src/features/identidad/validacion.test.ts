@@ -25,7 +25,15 @@ describe('validarRegistro', () => {
   it('el usuario solo admite letras, números, punto, guion y guion bajo', () => {
     expect(validarRegistro({ ...valido, nombreDeUsuario: 'ana l' }).nombreDeUsuario).toBeDefined()
     expect(validarRegistro({ ...valido, nombreDeUsuario: 'ana@l' }).nombreDeUsuario).toBeDefined()
-    expect(validarRegistro({ ...valido, nombreDeUsuario: 'Ana_L-2.0' })).toEqual({})
+    expect(validarRegistro({ ...valido, nombreDeUsuario: 'ana_l-2.0' })).toEqual({})
+  })
+
+  it.each(['josé', 'ñandú', 'pingüino', 'María', 'cañón', 'Ángel', 'ana€'])('rechaza el usuario "%s" porque lleva tildes, ñ u otros caracteres fuera de [a-z0-9._-]', (usuario) => {
+    expect(validarRegistro({ ...valido, nombreDeUsuario: usuario }).nombreDeUsuario).toMatch(/sin tildes ni ñ/)
+  })
+
+  it('acepta mayúsculas y espacios en los extremos, porque la API los normaliza a minúsculas', () => {
+    expect(validarRegistro({ ...valido, nombreDeUsuario: '  Ana_L-2.0 ' })).toEqual({})
   })
 
   it('la contraseña pide 8 a 128 caracteres con una letra y un número', () => {

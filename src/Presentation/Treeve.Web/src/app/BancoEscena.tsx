@@ -10,7 +10,7 @@ import estilos from './BancoEscena.module.css'
  */
 export function BancoEscena() {
   const escena = useRef<ControlEspacioVerde>(null)
-  const [etapa, setEtapa] = useState<EtapaArbol>('arbol')
+  const [etapa, setEtapa] = useState<EtapaArbol>('arbol-adulto')
   const [pajaros, setPajaros] = useState(true)
 
   return (

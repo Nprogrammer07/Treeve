@@ -74,7 +74,7 @@ export function FormularioRegistro({ onIrALogin }: Props) {
       <Campo id={`${base}-nombre`} etiqueta="Nombre completo" marca="obligatorio" placeholder="Ej. Ana María López" autoComplete="name" valor={datos.nombreCompleto} onCambio={poner('nombreCompleto')} error={errores.nombreCompleto} />
       <div className={estilos.fila}>
         <Campo id={`${base}-apodo`} etiqueta="Apodo" marca="obligatorio" placeholder="Ej. hojita" autoComplete="nickname" valor={datos.apodo} onCambio={poner('apodo')} error={errores.apodo} />
-        <Campo id={`${base}-usuario`} etiqueta="Usuario" marca="obligatorio" placeholder="Ej. ana.l" autoComplete="username" valor={datos.nombreDeUsuario} onCambio={poner('nombreDeUsuario')} error={errores.nombreDeUsuario} />
+        <Campo id={`${base}-usuario`} etiqueta="Usuario" marca="obligatorio" placeholder="Ej. ana.l" autoComplete="username" ayuda="Sin tildes ni ñ. No distingue mayúsculas." valor={datos.nombreDeUsuario} onCambio={poner('nombreDeUsuario')} error={errores.nombreDeUsuario} />
       </div>
       <Campo id={`${base}-correo`} etiqueta="Correo electrónico" marca="opcional" type="email" placeholder="tu@correo.com" autoComplete="email" ayuda="Solo sirve para recuperar tu contraseña." valor={datos.correo} onCambio={poner('correo')} error={errores.correo} />
       <Campo id={`${base}-contrasena`} etiqueta="Contraseña" marca="obligatorio" type="password" autoComplete="new-password" ayuda={`De ${LIMITES.contrasena.min} caracteres o más, con al menos una letra y un número.`} valor={datos.contrasena} onCambio={poner('contrasena')} error={errores.contrasena} />
@@ -82,7 +82,7 @@ export function FormularioRegistro({ onIrALogin }: Props) {
 
       {falloEnvio && <Aviso>{falloEnvio}</Aviso>}
       <Boton type="submit" disabled={enviando} className={estilos.enviar}>
-        Registrarme gratis
+        Crear mi cuenta
       </Boton>
       {onIrALogin && (
         <p className={estilos.cambio}>

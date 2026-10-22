@@ -26,7 +26,7 @@ describe('App', () => {
     render(<App />)
 
     expect(screen.getByRole('heading', { level: 1, name: 'Cultiva tu paz interior' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Registrarme gratis' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Crear mi cuenta' })).toBeInTheDocument()
     expect(screen.getByRole('status')).toHaveTextContent('En silencio')
   })
 
@@ -37,7 +37,7 @@ describe('App', () => {
     expect(screen.getByRole('button', { name: 'Iniciar sesión' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Regístrate' }))
 
-    expect(screen.getByRole('button', { name: 'Registrarme gratis' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Crear mi cuenta' })).toBeInTheDocument()
   })
 
   it('al registrarse queda con la sesión abierta y pasa a elegir emoción', async () => {
@@ -51,7 +51,7 @@ describe('App', () => {
     fireEvent.change(screen.getByLabelText(/^Apodo/), { target: { value: 'Ani' } })
     fireEvent.change(screen.getByLabelText(/^Usuario/), { target: { value: 'ana.l' } })
     fireEvent.change(screen.getByLabelText(/^Contraseña/), { target: { value: 'Treeve2026' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Registrarme gratis' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Crear mi cuenta' }))
 
     expect(await screen.findByRole('radio', { name: 'Tristeza' })).toBeInTheDocument()
     expect(screen.getByText('Hola, Ani')).toBeInTheDocument()
@@ -78,7 +78,7 @@ describe('App', () => {
     render(<App />)
 
     expect(screen.getByRole('radio', { name: 'Tristeza' })).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Registrarme gratis' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Crear mi cuenta' })).not.toBeInTheDocument()
   })
 
   it('"Salir" vuelve a la página de visitante', () => {

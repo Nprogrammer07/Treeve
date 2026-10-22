@@ -61,4 +61,57 @@ describe('HojaDePapel', () => {
     expect(screen.getByLabelText('Escribe lo que sientes')).toHaveValue('esto no se debe perder')
     expect(onGuardado).not.toHaveBeenCalled()
   })
+
+  describe('privacidad: el texto del desahogo no queda en el navegador', () => {
+    const SECRETO = 'texto-muy-privado-8731'
+
+    function almacenamientoContiene(texto: string) {
+      return [window.localStorage, window.sessionStorage].some((almacen) =>
+        Object.keys(almacen).some((clave) => clave.includes(texto) || (almacen.getItem(clave) ?? '').includes(texto)),
+      )
+    }
+
+    beforeEach(() => {
+      window.localStorage.clear()
+      window.sessionStorage.clear()
+    })
+
+    it('después de guardar, no queda en localStorage ni en sessionStorage', async () => {
+      const guardar = vi.spyOn(Storage.prototype, 'setItem')
+      const onGuardado = vi.fn<() => void>()
+      render(<HojaDePapel emocion="tristeza" onGuardado={onGuardado} />)
+
+      escribir(SECRETO)
+      fireEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+      await waitFor(() => expect(onGuardado).toHaveBeenCalledOnce())
+
+      expect(almacenamientoContiene(SECRETO)).toBe(false)
+      expect(guardar.mock.calls.flat().join(' ')).not.toContain(SECRETO)
+      guardar.mockRestore()
+    })
+
+    it('si falla al guardar, tampoco queda en el almacenamiento', async () => {
+      vi.mocked(guardarDesahogo).mockRejectedValue(new Error('caída'))
+      const guardar = vi.spyOn(Storage.prototype, 'setItem')
+      render(<HojaDePapel emocion="miedo" onGuardado={() => {}} />)
+
+      escribir(SECRETO)
+      fireEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+      await screen.findByRole('alert')
+
+      expect(almacenamientoContiene(SECRETO)).toBe(false)
+      expect(guardar.mock.calls.flat().join(' ')).not.toContain(SECRETO)
+      guardar.mockRestore()
+    })
+
+    it('un error de la API no repite el texto en el mensaje que se muestra', async () => {
+      vi.mocked(guardarDesahogo).mockRejectedValue(new Error(`falló ${SECRETO}`))
+      render(<HojaDePapel emocion="rabia" onGuardado={() => {}} />)
+
+      escribir(SECRETO)
+      fireEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+
+      expect(await screen.findByRole('alert')).not.toHaveTextContent(SECRETO)
+    })
+  })
 })

@@ -1,10 +1,10 @@
 // Geometría pura de la escena (sin PixiJS): se prueba sin navegador.
 
-export const ETAPAS = ['semilla', 'brote', 'tallo', 'arbol'] as const
+export const ETAPAS = ['brote', 'tallo', 'flor', 'arbol-adulto'] as const
 
 /**
- * Etapas PROVISIONALES para el spike. La etapa real la calcula el backend (HU-07a):
- * cuando se defina su contrato, estos nombres se alinean con él.
+ * Etapas del árbol definidas en el proyecto (CLAUDE.md): brote → tallo → flor → árbol adulto.
+ * La etapa la calcula el backend (HU-07a); los identificadores exactos se alinean con su contrato cuando exista.
  */
 export type EtapaArbol = (typeof ETAPAS)[number]
 
@@ -13,13 +13,14 @@ export interface FormaArbol {
   grosorTronco: number
   radioCopa: number
   copas: number
+  flores: number
 }
 
 const FORMAS: Record<EtapaArbol, FormaArbol> = {
-  semilla: { alturaTronco: 0, grosorTronco: 0, radioCopa: 0, copas: 0 },
-  brote: { alturaTronco: 22, grosorTronco: 4, radioCopa: 14, copas: 1 },
-  tallo: { alturaTronco: 46, grosorTronco: 6, radioCopa: 30, copas: 1 },
-  arbol: { alturaTronco: 78, grosorTronco: 10, radioCopa: 58, copas: 3 },
+  brote: { alturaTronco: 22, grosorTronco: 4, radioCopa: 14, copas: 1, flores: 0 },
+  tallo: { alturaTronco: 46, grosorTronco: 6, radioCopa: 30, copas: 1, flores: 0 },
+  flor: { alturaTronco: 62, grosorTronco: 8, radioCopa: 42, copas: 1, flores: 6 },
+  'arbol-adulto': { alturaTronco: 78, grosorTronco: 10, radioCopa: 58, copas: 3, flores: 0 },
 }
 
 export function formaArbol(etapa: EtapaArbol): FormaArbol {

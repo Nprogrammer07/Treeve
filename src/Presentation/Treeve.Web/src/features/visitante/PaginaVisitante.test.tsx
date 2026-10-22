@@ -28,7 +28,7 @@ describe('PaginaVisitante', () => {
   it('muestra el espacio verde ya crecido', () => {
     render(pagina())
 
-    expect(screen.getByText('escena arbol')).toBeInTheDocument()
+    expect(screen.getByText('escena arbol-adulto')).toBeInTheDocument()
     expect(screen.getByText('Vista previa de tu espacio verde')).toBeInTheDocument()
   })
 
@@ -71,22 +71,23 @@ describe('PaginaVisitante', () => {
 
     expect(pasos).toHaveLength(3)
     expect(pasos[0]).toHaveTextContent('Escribe cómo te sientes')
+    expect(pasos[1]).toHaveTextContent('Riega tu árbol')
+    expect(pasos[1]).toHaveTextContent('brote, tallo, flor y árbol adulto')
     expect(pasos[2]).toHaveTextContent('Respira y relájate')
   })
 
-  it('el acceso de staff está desactivado hasta que exista el panel', () => {
-    render(pagina())
+  it('usa el vocabulario de Treeve: sin hábitos, terrario ni promesas que el producto no tiene', () => {
+    const { container } = render(pagina())
 
-    expect(screen.getByRole('button', { name: 'Acceso Staff / Admins' })).toBeDisabled()
+    expect(container.textContent).not.toMatch(/hábito|terrario|gratis/i)
+    expect(container.textContent).toMatch(/espacio verde/)
   })
 
-  it('avisa cuando se pulsa el acceso de staff', () => {
-    const onAccesoStaff = vi.fn<() => void>()
-    render(pagina({ onAccesoStaff }))
+  it('no muestra estadísticas inventadas', () => {
+    render(pagina())
 
-    fireEvent.click(screen.getByRole('button', { name: 'Acceso Staff / Admins' }))
-
-    expect(onAccesoStaff).toHaveBeenCalledOnce()
+    expect(screen.queryByRole('term')).not.toBeInTheDocument()
+    expect(screen.queryByText(/racha|plantas|7 días/i)).not.toBeInTheDocument()
   })
 
   it('indica en el pie que es una versión piloto', () => {
