@@ -227,7 +227,7 @@ public sealed class Nota
 
     public bool PerteneceA(Guid usuarioId) => UsuarioId == usuarioId;
 
-    public NotaCreada Creada() => new(Id, UsuarioId, Emocion, CreadaEn);
+    public NotaCreada Creada() => new(Id, Id, UsuarioId, Emocion, CreadaEn);
 }
 ```
 
@@ -237,7 +237,8 @@ public sealed class Nota
 namespace Treeve.Domain.Desahogos;
 
 /// <summary>Evento de dominio. Solo IDs y metadatos: nunca el texto del desahogo.</summary>
-public sealed record NotaCreada(Guid NotaId, Guid UsuarioId, Emocion Emocion, DateTimeOffset Fecha);
+public sealed record NotaCreada(Guid EventoId, Guid NotaId, Guid UsuarioId, Emocion Emocion, DateTimeOffset Fecha)
+    : IEventoDeDominio;
 ```
 
 ### 4.2 Anillo 2 · Servicios de dominio
@@ -276,7 +277,14 @@ public interface IReloj
 public interface IPublicadorEventos
 {
     Task Publicar<TEvento>(TEvento evento, CancellationToken ct)
-        where TEvento : notnull;
+        where TEvento : IEventoDeDominio;
+}
+
+/// <summary>Reacciona a un evento (p. ej. EspacioVerde ante NotaCreada). Debe ser idempotente.</summary>
+public interface IManejadorDeEventos<in TEvento>
+    where TEvento : IEventoDeDominio
+{
+    Task Manejar(TEvento evento, CancellationToken ct);
 }
 
 public sealed class AccesoDenegado() : Exception("No tienes permiso para esta acción.");
@@ -399,6 +407,22 @@ services.AddSingleton<IRepositorioNotas, RepositorioNotasEnMemoria>();
 ```
 
 > El cifrador real (`ICifradorDesahogos`, por ejemplo con AES-GCM) se implementa aquí cuando ADR-002 defina dónde vive la llave. La llave **nunca** va en la base de datos ni en el código: llega por variable de entorno.
+
+### 4.4.1 Eventos de dominio (TEC-03)
+
+Para que un área reaccione a lo que pasa en otra (EspacioVerde ante `NotaCreada`) no se llama su caso de uso: se publica un evento y el área lo escucha.
+
+1. **El evento** vive en `Treeve.Domain/{Area}/`, es un `record` que implementa `IEventoDeDominio` y lleva solo ids y metadatos. Una prueba de `Treeve.Domain.Tests` falla si un evento tiene una propiedad de texto.
+2. **Quien lo origina** inyecta `IPublicadorEventos` y llama `Publicar(evento, ct)` después de guardar.
+3. **Quien lo escucha** escribe un manejador en `Treeve.Application/{Area}/` que implementa `IManejadorDeEventos<TEvento>` y lo registra en `Treeve.Api/Composition/ApplicationServices.cs`:
+
+   ```csharp
+   services.AddScoped<IManejadorDeEventos<NotaCreada>, AlCrearseNota>();
+   ```
+
+4. **Idempotencia.** El bus no le da dos veces el mismo `EventoId` al mismo manejador, pero lo olvida al reiniciarse. Por eso el manejador debe ser idempotente por sí mismo: por ejemplo, guardar el `EventoId` (o el `NotaId`) con una clave única, para que un evento repetido no haga crecer el árbol dos veces.
+5. **Si un manejador falla**, el error se registra en el log y quien publicó sigue adelante: guardar un desahogo no puede fallar porque el árbol no pudo crecer. Un manejador que lanza `OperationCanceledException` sí la propaga.
+6. **ID de correlación.** Cada petición lleva un `X-Correlation-Id` (se respeta el que manda el cliente si es sencillo; si no, se genera). Sale en la respuesta y en todas las líneas del log de esa petición (`CorrelacionId:...`), incluidas las del bus. Los logs del bus llevan el tipo y el id del evento, nunca su contenido.
 
 ### 4.5 Anillo externo · Presentación HTTP
 
@@ -523,7 +547,7 @@ internal sealed class PublicadorEventosFalso : IPublicadorEventos
     public List<object> Publicados { get; } = [];
 
     public Task Publicar<TEvento>(TEvento evento, CancellationToken ct)
-        where TEvento : notnull
+        where TEvento : IEventoDeDominio
     {
         Publicados.Add(evento);
         return Task.CompletedTask;
