@@ -11,7 +11,12 @@ public sealed record CrearNotaRequest(string? Emocion, string? Texto)
     public override string ToString() => $"CrearNotaRequest {{ Emocion = {Emocion} }}"; // lleva el texto: nunca se imprime
 }
 
-public sealed record CrearNotaResponse(Guid NotaId, DateTimeOffset CreadaEn);
+public sealed record MensajeDeApoyoResponse(string Texto, bool EsDeCrisis)
+{
+    public override string ToString() => "[mensaje de apoyo]"; // nombra a la persona: nunca se imprime
+}
+
+public sealed record CrearNotaResponse(Guid NotaId, DateTimeOffset CreadaEn, MensajeDeApoyoResponse MensajeDeApoyo);
 
 public sealed record NotaResponse(Guid NotaId, string Emocion, string Texto, DateTimeOffset CreadaEn)
 {
@@ -24,7 +29,8 @@ public static class DesahogosEndpoints
     {
         var grupo = app.MapGroup("/api/desahogos").RequireAuthorization();
 
-        // HU-05: guarda el desahogo cifrado. La persona sale del token, nunca del cuerpo de la petición.
+        // HU-05: guarda el desahogo cifrado y responde con el mensaje de apoyo (HU-06a-1).
+        // La persona sale del token, nunca del cuerpo de la petición.
         grupo.MapPost("/", async (CrearNotaRequest request, ClaimsPrincipal usuario, CrearNota crearNota, CancellationToken ct) =>
         {
             var guardada = await crearNota.Ejecutar(
@@ -32,7 +38,9 @@ public static class DesahogosEndpoints
                 new CrearNotaComando(LeerEmocion(request.Emocion), request.Texto),
                 ct);
 
-            return Results.Created($"/api/desahogos/{guardada.NotaId}", new CrearNotaResponse(guardada.NotaId, guardada.CreadaEn));
+            var mensaje = new MensajeDeApoyoResponse(guardada.MensajeDeApoyo.Texto, guardada.MensajeDeApoyo.EsDeCrisis);
+
+            return Results.Created($"/api/desahogos/{guardada.NotaId}", new CrearNotaResponse(guardada.NotaId, guardada.CreadaEn, mensaje));
         });
 
         // Solo la persona dueña puede leer su desahogo; si no existe o es de otra persona, responde igual (403).

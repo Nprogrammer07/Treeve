@@ -1,4 +1,5 @@
 using Treeve.Application.Comun;
+using Treeve.Application.MensajesApoyo;
 using Treeve.Domain.Desahogos;
 using Treeve.Domain.Services.Desahogos;
 
@@ -10,7 +11,8 @@ public sealed record CrearNotaComando(Emocion Emocion, string? Texto)
     public override string ToString() => $"CrearNotaComando {{ Emocion = {Emocion} }}";
 }
 
-public sealed record NotaGuardada(Guid NotaId, DateTimeOffset CreadaEn);
+/// <param name="MensajeDeApoyo">La respuesta a este desahogo (HU-06a-1); con <c>EsDeCrisis</c> la interfaz sugiere una línea de atención.</param>
+public sealed record NotaGuardada(Guid NotaId, DateTimeOffset CreadaEn, MensajeDeApoyoGenerado MensajeDeApoyo);
 
 /// <summary>Cómo se ata el texto cifrado de una nota a su fila y a su dueña: copiado a otra no se descifra.</summary>
 public static class ContextoDeNotas
@@ -19,14 +21,17 @@ public static class ContextoDeNotas
 }
 
 /// <summary>
-/// HU-05: guarda un desahogo cifrado y avisa al resto del sistema con <see cref="NotaCreada"/> (TEC-03).
-/// El texto solo se usa en memoria: se valida, se cifra y se descarta. La persona sale de la sesión, no de la petición.
+/// HU-05: guarda un desahogo cifrado, avisa al resto del sistema con <see cref="NotaCreada"/> (TEC-03) y arma el
+/// mensaje de apoyo (HU-06a-1) en la misma petición, no por evento, para cumplir los 2 s (ADR-001).
+/// El texto solo se usa en memoria: se valida, se cifra, alimenta al motor del mensaje y se descarta.
+/// La persona sale de la sesión, no de la petición.
 /// </summary>
 public sealed class CrearNota(
     IRepositorioNotas notas,
     ICifradorDeDatosSensibles cifrador,
     IReloj reloj,
-    IPublicadorEventos eventos)
+    IPublicadorEventos eventos,
+    GenerarMensajeApoyo mensajesDeApoyo)
 {
     public async Task<NotaGuardada> Ejecutar(Guid usuarioId, CrearNotaComando comando, CancellationToken ct)
     {
@@ -40,6 +45,8 @@ public sealed class CrearNota(
         await notas.Agregar(nota, ct);
         await eventos.Publicar(nota.Creada(), ct);
 
-        return new NotaGuardada(nota.Id, nota.CreadaEn);
+        var mensaje = await mensajesDeApoyo.Ejecutar(new GenerarMensajeApoyoComando(usuarioId, comando.Emocion, texto.Valor), ct);
+
+        return new NotaGuardada(nota.Id, nota.CreadaEn, mensaje);
     }
 }
