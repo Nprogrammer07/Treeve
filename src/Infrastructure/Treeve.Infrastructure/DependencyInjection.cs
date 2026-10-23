@@ -7,6 +7,7 @@ using Treeve.Application.MensajesApoyo;
 using Treeve.Domain.Services.Identidad;
 using Treeve.Domain.Services.MensajesApoyo;
 using Treeve.Infrastructure.Comun;
+using Treeve.Infrastructure.Eventos;
 using Treeve.Infrastructure.MensajesApoyo;
 using Treeve.Infrastructure.Persistence;
 using Treeve.Infrastructure.Persistence.Identidad;
@@ -45,6 +46,11 @@ public static class DependencyInjection
         services.AddScoped<IRepositorioUsuarios, RepositorioUsuariosPostgres>();
         services.AddScoped<IRepositorioCredenciales, RepositorioCredencialesPostgres>();
         services.AddScoped<IRepositorioSesiones, RepositorioSesionesPostgres>();
+
+        // Eventos de dominio (TEC-03): bus en memoria. Los manejadores se registran en Treeve.Api/Composition
+        // como IManejadorDeEventos<TEvento>.
+        services.AddSingleton<RegistroDeEventosProcesados>();
+        services.AddScoped<IPublicadorEventos, BusDeEventosEnMemoria>();
 
         // Mensajes de apoyo (HU-06a-1): el contenido se lee una vez del JSON; el historial va cifrado en la base.
         services.AddSingleton<IRepositorioFragmentos, RepositorioFragmentosJson>();

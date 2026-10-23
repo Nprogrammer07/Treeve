@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.HttpOverrides;
 using Treeve.Api.Composition;
+using Treeve.Api.Correlacion;
 using Treeve.Api.Endpoints.Identidad;
 using Treeve.Api.Endpoints.Salud;
 using Treeve.Api.Errores;
@@ -27,11 +28,12 @@ builder.Services.Configure<ForwardedHeadersOptions>(opciones =>
 
 // El frontend vive en otro dominio (Vercel): solo se aceptan los orígenes de Cors:Origenes.
 // En el entorno: Cors__Origenes__0=https://tu-frontend.vercel.app
-// Retry-After se expone para que el frontend sepa cuánto falta para desbloquear la cuenta (HU-03a);
-// sin esto, el navegador la oculta en peticiones entre dominios.
+// Retry-After se expone para que el frontend sepa cuánto falta para desbloquear la cuenta (HU-03a), y
+// X-Correlation-Id para poder citarlo al reportar un problema (TEC-03); sin esto, el navegador oculta las
+// cabeceras en peticiones entre dominios.
 var origenesPermitidos = builder.Configuration.GetSection("Cors:Origenes").Get<string[]>() ?? [];
 builder.Services.AddCors(opciones => opciones.AddDefaultPolicy(
-    politica => politica.WithOrigins(origenesPermitidos).AllowAnyHeader().AllowAnyMethod().WithExposedHeaders("Retry-After")));
+    politica => politica.WithOrigins(origenesPermitidos).AllowAnyHeader().AllowAnyMethod().WithExposedHeaders("Retry-After", CorrelacionMiddleware.Cabecera)));
 
 builder.Services
     .AddApplicationServices()
@@ -44,6 +46,7 @@ builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
+app.UsarIdDeCorrelacion(); // TEC-03: primero, para que todo el log de la petición lleve el id
 app.UseForwardedHeaders();
 app.UseExceptionHandler();
 
