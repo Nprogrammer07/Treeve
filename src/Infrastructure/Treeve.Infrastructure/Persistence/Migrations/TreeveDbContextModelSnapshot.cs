@@ -23,6 +23,40 @@ namespace Treeve.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Treeve.Domain.Desahogos.Nota", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreadaEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("creada_en");
+
+                    b.Property<string>("Emocion")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("emocion");
+
+                    b.Property<byte[]>("TextoCifrado")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("texto_cifrado");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("usuario_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UsuarioId", "CreadaEn")
+                        .HasDatabaseName("ix_desahogos_usuario_id_creada_en");
+
+                    b.ToTable("desahogos", "treeve");
+                });
+
             modelBuilder.Entity("Treeve.Domain.Identidad.Credencial", b =>
                 {
                     b.Property<Guid>("UsuarioId")
@@ -166,6 +200,15 @@ namespace Treeve.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_historial_respuestas_usuario_id_creada_en");
 
                     b.ToTable("historial_respuestas", "treeve");
+                });
+
+            modelBuilder.Entity("Treeve.Domain.Desahogos.Nota", b =>
+                {
+                    b.HasOne("Treeve.Domain.Identidad.Usuario", null)
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Treeve.Domain.Identidad.Credencial", b =>

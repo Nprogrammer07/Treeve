@@ -4,12 +4,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Treeve.Application.Comun;
 using Treeve.Application.Identidad;
 using Treeve.Application.MensajesApoyo;
+using Treeve.Domain.Services.Desahogos;
 using Treeve.Domain.Services.Identidad;
 using Treeve.Domain.Services.MensajesApoyo;
 using Treeve.Infrastructure.Comun;
 using Treeve.Infrastructure.Eventos;
 using Treeve.Infrastructure.MensajesApoyo;
 using Treeve.Infrastructure.Persistence;
+using Treeve.Infrastructure.Persistence.Desahogos;
 using Treeve.Infrastructure.Persistence.Identidad;
 using Treeve.Infrastructure.Persistence.MensajesApoyo;
 using Treeve.Infrastructure.Seguridad;
@@ -57,7 +59,10 @@ public static class DependencyInjection
         services.AddSingleton<IGeneradorDeSemillas, SemillasAleatorias>();
         services.AddScoped<IHistorialRespuestas, HistorialRespuestasPostgres>();
 
-        // Ejemplo: services.AddScoped<IRepositorioNotas, RepositorioNotasPostgres>();
+        // Desahogos (HU-05): el texto se guarda cifrado
+        services.AddScoped<IRepositorioNotas, RepositorioNotasPostgres>();
+
+        // Ejemplo: services.AddScoped<IRepositorioSugerencias, RepositorioSugerenciasPostgres>();
         return services;
     }
 

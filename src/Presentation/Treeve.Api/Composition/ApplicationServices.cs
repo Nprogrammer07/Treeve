@@ -1,4 +1,5 @@
 using Treeve.Application.Comun;
+using Treeve.Application.Desahogos;
 using Treeve.Application.Identidad;
 using Treeve.Application.MensajesApoyo;
 using Treeve.Domain.Services.MensajesApoyo;
@@ -26,7 +27,11 @@ public static class ApplicationServices
             proveedor => new MotorDeRespuesta(proveedor.GetRequiredService<IRepositorioFragmentos>().ObtenerCatalogo()));
         services.AddScoped<GenerarMensajeApoyo>();
 
-        // Ejemplo: services.AddScoped<CrearNota>();
+        // Desahogos (HU-05)
+        services.AddScoped<CrearNota>();
+        services.AddScoped<LeerNota>();
+
+        // Ejemplo: services.AddScoped<CrearSugerencia>();
         return services;
     }
 }
