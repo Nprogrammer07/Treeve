@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.HttpOverrides;
 using Treeve.Api.Composition;
 using Treeve.Api.Correlacion;
+using Treeve.Api.Endpoints.Desahogos;
 using Treeve.Api.Endpoints.Identidad;
 using Treeve.Api.Endpoints.Salud;
 using Treeve.Api.Errores;
@@ -70,6 +71,8 @@ app.MapHealthChecks("/health"); // el proceso está vivo (no consulta la base de
 app.MapSaludEndpoints();        // /health/ready: valida la conexión con la base de datos
 app.MapIdentidadEndpoints();    // HU-02: registro
 
-// Endpoints por área, definidos en Endpoints/. Ejemplo: app.MapDesahogosEndpoints();
+app.MapDesahogosEndpoints();    // HU-05: guardar y leer desahogos (solo la persona dueña)
+
+// Endpoints por área, definidos en Endpoints/. Ejemplo: app.MapSugerenciasEndpoints();
 
 app.Run();
