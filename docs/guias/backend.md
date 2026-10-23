@@ -337,6 +337,8 @@ public sealed class CrearNota(
 }
 ```
 
+> **Mensaje de apoyo (HU-06a-1, ya implementado).** Después de guardar la nota y publicar `NotaCreada`, `CrearNota` llama a `GenerarMensajeApoyo.Ejecutar(new GenerarMensajeApoyoComando(usuarioId, comando.Emocion, comando.Texto), ct)` y devuelve el resultado junto a la nota (por ejemplo, `NotaGuardada(NotaId, CreadaEn, MensajeDeApoyo)`). Va en la misma petición, no por evento, para cumplir los 2 s (ADR-001). La respuesta HTTP suma `mensajeDeApoyo: { texto, esDeCrisis }`; con `esDeCrisis` la interfaz muestra la línea de atención como sugerencia, sin redirigir.
+
 `src/Core/Treeve.Application/Desahogos/LeerNota.cs` muestra **dónde va la autorización**: en el caso de uso, no en el endpoint ni en el frontend.
 
 ```csharp

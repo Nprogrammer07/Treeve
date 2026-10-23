@@ -1,0 +1,12 @@
+{
+  "estado": "Borrador de HU-06a-1. Se escriben con ortografía normal; al comparar se ignoran tildes y mayúsculas. Un * al final acepta cualquier terminación (trabaj* → trabajo, trabajando).",
+  "temas": {
+    "trabajo": ["trabaj*", "jefe", "jefa", "jefes", "oficina", "empleo", "emplead*", "renunci*", "despid*", "turno", "turnos", "contrato", "reunión", "reuniones"],
+    "estudio": ["estudi*", "universidad", "colegio", "clase", "clases", "examen", "exámenes", "parcial", "parciales", "profesor*", "profe", "profes", "tarea", "tareas", "semestre", "carrera", "tesis", "materia", "materias"],
+    "familia": ["familia*", "familiar*", "mamá", "mami", "papá", "papi", "madre", "padre", "padres", "herman*", "hijo", "hijos", "hija", "hijas", "abuel*", "tío", "tíos", "tía", "tías", "primo", "primos", "prima", "primas", "en casa", "mi casa"],
+    "pareja": ["pareja", "novio", "novia", "novios", "noviazgo", "esposo", "esposa", "marido", "mi ex", "relación", "ruptura", "terminamos", "infiel", "infidelidad", "enamorad*", "despecho"],
+    "amistad": ["amig*", "amist*", "parche", "parcero", "parceros"],
+    "salud": ["salud", "enferm*", "hospital*", "médic*", "doctor*", "clínica", "diagnóstic*", "cirugía", "tratamiento", "medicamento*", "síntoma*", "eps"],
+    "dinero": ["dinero", "plata", "deuda*", "pagar", "pago", "pagos", "arriendo", "renta", "factura*", "sueldo", "salario", "préstamo*", "banco", "gastos", "quincena", "presupuesto"]
+  }
+}

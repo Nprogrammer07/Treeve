@@ -140,6 +140,34 @@ namespace Treeve.Infrastructure.Persistence.Migrations
                     b.ToTable("usuarios", "treeve");
                 });
 
+            modelBuilder.Entity("Treeve.Domain.MensajesApoyo.RespuestaRegistrada", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreadaEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("creada_en");
+
+                    b.Property<byte[]>("FragmentosCifrados")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("fragmentos_cifrados");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("usuario_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UsuarioId", "CreadaEn")
+                        .HasDatabaseName("ix_historial_respuestas_usuario_id_creada_en");
+
+                    b.ToTable("historial_respuestas", "treeve");
+                });
+
             modelBuilder.Entity("Treeve.Domain.Identidad.Credencial", b =>
                 {
                     b.HasOne("Treeve.Domain.Identidad.Usuario", null)
@@ -150,6 +178,15 @@ namespace Treeve.Infrastructure.Persistence.Migrations
                 });
 
             modelBuilder.Entity("Treeve.Domain.Identidad.Sesion", b =>
+                {
+                    b.HasOne("Treeve.Domain.Identidad.Usuario", null)
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Treeve.Domain.MensajesApoyo.RespuestaRegistrada", b =>
                 {
                     b.HasOne("Treeve.Domain.Identidad.Usuario", null)
                         .WithMany()

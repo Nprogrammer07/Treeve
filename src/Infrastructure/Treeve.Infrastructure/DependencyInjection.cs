@@ -3,10 +3,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Treeve.Application.Comun;
 using Treeve.Application.Identidad;
+using Treeve.Application.MensajesApoyo;
 using Treeve.Domain.Services.Identidad;
+using Treeve.Domain.Services.MensajesApoyo;
 using Treeve.Infrastructure.Comun;
+using Treeve.Infrastructure.MensajesApoyo;
 using Treeve.Infrastructure.Persistence;
 using Treeve.Infrastructure.Persistence.Identidad;
+using Treeve.Infrastructure.Persistence.MensajesApoyo;
 using Treeve.Infrastructure.Seguridad;
 
 namespace Treeve.Infrastructure;
@@ -41,6 +45,11 @@ public static class DependencyInjection
         services.AddScoped<IRepositorioUsuarios, RepositorioUsuariosPostgres>();
         services.AddScoped<IRepositorioCredenciales, RepositorioCredencialesPostgres>();
         services.AddScoped<IRepositorioSesiones, RepositorioSesionesPostgres>();
+
+        // Mensajes de apoyo (HU-06a-1): el contenido se lee una vez del JSON; el historial va cifrado en la base.
+        services.AddSingleton<IRepositorioFragmentos, RepositorioFragmentosJson>();
+        services.AddSingleton<IGeneradorDeSemillas, SemillasAleatorias>();
+        services.AddScoped<IHistorialRespuestas, HistorialRespuestasPostgres>();
 
         // Ejemplo: services.AddScoped<IRepositorioNotas, RepositorioNotasPostgres>();
         return services;
