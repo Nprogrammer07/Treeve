@@ -1,0 +1,8 @@
+.aviso {
+  margin: 0;
+  padding: 0.5rem 1rem;
+  background: var(--ambar-fondo);
+  color: var(--ambar-texto);
+  font-size: 0.875rem;
+  text-align: center;
+}

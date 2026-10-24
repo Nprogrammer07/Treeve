@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { lazy, Suspense, useRef, useState } from 'react'
 import { FlujoDesahogo } from '../features/desahogos/FlujoDesahogo.tsx'
 import { PantallaEspacioVerde } from '../features/espacio-verde/PantallaEspacioVerde.tsx'
 import { FormularioLogin } from '../features/identidad/FormularioLogin.tsx'
@@ -10,6 +10,9 @@ import type { ControlEspacioVerde, EtapaArbol } from '../scene/EspacioVerde.tsx'
 import { borrarSesion } from '../shared/api/sesion.ts'
 import { useSesion } from '../shared/api/useSesion.ts'
 import { BancoEscena } from './BancoEscena.tsx'
+
+// El banco de pruebas del panel de staff solo existe en desarrollo: en producción esta rama se elimina del paquete.
+const BancoStaff = import.meta.env.DEV ? lazy(() => import('./BancoStaff.tsx')) : null
 
 // TEMPORAL: la etapa real la calcula el backend (HU-07a) y se pedirá a la API cuando exista su contrato.
 const ETAPA_TEMPORAL: EtapaArbol = 'tallo'
@@ -29,6 +32,13 @@ function App() {
   const espacioVerde = useRef<ControlEspacioVerde>(null)
 
   if (import.meta.env.DEV && window.location.hash === '#escena') return <BancoEscena />
+  if (import.meta.env.DEV && BancoStaff && window.location.hash === '#staff') {
+    return (
+      <Suspense fallback={null}>
+        <BancoStaff />
+      </Suspense>
+    )
+  }
 
   if (!sesion) {
     return (
