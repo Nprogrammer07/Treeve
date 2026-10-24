@@ -7,7 +7,7 @@
   height: var(--altura-escena, 22rem);
   overflow: hidden;
   border-radius: 1.5rem;
-  background: linear-gradient(to bottom, #f3ead7, var(--marco));
+  background: linear-gradient(to bottom, #6fb23d, #5ea334);
 }
 
 .lienzo canvas {
