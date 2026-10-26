@@ -21,6 +21,7 @@ public static class ApplicationServices
         services.AddScoped<RegistrarUsuario>();
         services.AddScoped<IniciarSesion>();
         services.AddScoped<ValidarSesion>();
+        services.AddScoped<AutorizarAcceso>(); // HU-10
 
         // Mensajes de apoyo (HU-06a-1). El motor es un servicio de dominio puro; su contenido lo da Infrastructure.
         services.AddSingleton<IGeneradorMensajeApoyo>(

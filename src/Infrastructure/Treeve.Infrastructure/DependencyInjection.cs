@@ -49,6 +49,9 @@ public static class DependencyInjection
         services.AddScoped<IRepositorioCredenciales, RepositorioCredencialesPostgres>();
         services.AddScoped<IRepositorioSesiones, RepositorioSesionesPostgres>();
 
+        // Roles y auditoría de accesos (HU-10)
+        services.AddScoped<IRepositorioAuditoria, RepositorioAuditoriaPostgres>();
+
         // Eventos de dominio (TEC-03): bus en memoria. Los manejadores se registran en Treeve.Api/Composition
         // como IManejadorDeEventos<TEvento>.
         services.AddSingleton<RegistroDeEventosProcesados>();

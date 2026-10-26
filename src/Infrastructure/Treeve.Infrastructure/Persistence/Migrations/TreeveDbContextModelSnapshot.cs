@@ -57,6 +57,47 @@ namespace Treeve.Infrastructure.Persistence.Migrations
                     b.ToTable("desahogos", "treeve");
                 });
 
+            modelBuilder.Entity("Treeve.Domain.Identidad.AccesoNoAutorizado", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Ip")
+                        .IsRequired()
+                        .HasMaxLength(45)
+                        .HasColumnType("character varying(45)")
+                        .HasColumnName("ip");
+
+                    b.Property<DateTimeOffset>("OcurrioEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ocurrio_en");
+
+                    b.Property<string>("Recurso")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("recurso");
+
+                    b.Property<string>("RolRequerido")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("rol_requerido");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("usuario_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OcurrioEn")
+                        .HasDatabaseName("ix_auditoria_accesos_ocurrio_en");
+
+                    b.ToTable("auditoria_accesos", "treeve");
+                });
+
             modelBuilder.Entity("Treeve.Domain.Identidad.Credencial", b =>
                 {
                     b.Property<Guid>("UsuarioId")
@@ -160,6 +201,14 @@ namespace Treeve.Infrastructure.Persistence.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)")
                         .HasColumnName("nombre_de_usuario");
+
+                    b.Property<string>("Rol")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("Usuario")
+                        .HasColumnName("rol");
 
                     b.HasKey("Id");
 

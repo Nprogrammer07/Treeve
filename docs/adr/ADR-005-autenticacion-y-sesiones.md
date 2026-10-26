@@ -33,6 +33,15 @@ HU-02 exige contraseñas con hash y sal, registro con acceso automático y todo 
 - **Negativas:** una consulta a la base de datos por petición autenticada; el hash tarda unos 0,3 a 0,5 s por login, a propósito (hay que medirlo en Railway frente a la meta de 0,5 s del proyecto y, si hace falta, ajustar las iteraciones en un ADR).
 - **Verificación:** pruebas de dominio y de aplicación de HU-02 y HU-03a, y pruebas de punta a punta contra la API desplegada.
 
+## Roles y acceso de staff (HU-10)
+
+- **Dónde vive el rol:** columna `rol` de `usuarios` (`Usuario`, `Staff`, `Administrador`; por defecto `Usuario`). No va en el token ni en la respuesta del login.
+- **Cuándo se valida:** en cada petición a una ruta de staff o administración, el caso de uso `AutorizarAcceso` lee el rol de la base de datos. Así, revocar un rol (HU-12) vale desde la siguiente petición, sin esperar a que venza la sesión. El costo es una consulta por petición de staff (bajo volumen).
+- **Cómo se aplica:** `RequiereRol(Rol.Staff)` es un filtro de endpoint que llama al caso de uso; la regla está en el núcleo, no en los endpoints ni en el frontend.
+- **Auditoría:** cada acceso sin permiso se registra en `auditoria_accesos` (persona, fecha y hora, IP, método y ruta sin consulta, rol requerido). El puerto `IRepositorioAuditoria` solo ofrece `Registrar`. No hay llave foránea a `usuarios`: el registro no debe desaparecer con la persona. Si no se puede escribir el registro, la petición falla (se niega ante la duda).
+- **Primer administrador:** sin HU-12, se asigna con una consulta SQL (ver `docs/guias/api-staff.md`).
+- **Riesgo aceptado:** una persona con sesión puede generar muchos registros de auditoría golpeando una ruta de staff. Se mitiga con el límite de peticiones por IP pendiente (más arriba).
+
 ## Pendiente
 
 - Cierre de sesión y revocación (historia futura) y limpieza de sesiones vencidas.
