@@ -24,6 +24,10 @@ Toda persona se registra como usuario regular. El rol **no viaja en el token ni 
 
 Uso sugerido: al abrir la zona de staff, la interfaz llama a esta ruta. Con 200 muestra el panel; con 403 muestra "acceso denegado" o redirige a la pantalla principal; con 401 lleva al inicio de sesión. Las demás rutas de staff responden igual (401 y 403).
 
+## Sugerencias
+
+`GET /api/staff/sugerencias` (HU-09) lista las sugerencias con filtros y paginación; el contrato está en `api-sugerencias.md`.
+
 ## Auditoría
 
 Cada 403 en una ruta de staff o administración deja un registro en la tabla `auditoria_accesos`: persona, fecha y hora, IP, método y ruta (sin parámetros de consulta) y el rol que pedía la ruta. El registro solo se agrega: el código de la aplicación no tiene forma de modificarlo ni borrarlo. Los 401 no se registran (la persona ni siquiera se identificó).
