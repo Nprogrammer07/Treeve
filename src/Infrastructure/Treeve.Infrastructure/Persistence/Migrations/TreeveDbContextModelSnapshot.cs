@@ -251,6 +251,44 @@ namespace Treeve.Infrastructure.Persistence.Migrations
                     b.ToTable("historial_respuestas", "treeve");
                 });
 
+            modelBuilder.Entity("Treeve.Domain.Sugerencias.Sugerencia", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreadaEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("creada_en");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("estado");
+
+                    b.Property<string>("Texto")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("texto");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("usuario_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Estado", "CreadaEn")
+                        .HasDatabaseName("ix_sugerencias_estado_creada_en");
+
+                    b.HasIndex("UsuarioId", "CreadaEn")
+                        .HasDatabaseName("ix_sugerencias_usuario_id_creada_en");
+
+                    b.ToTable("sugerencias", "treeve");
+                });
+
             modelBuilder.Entity("Treeve.Domain.Desahogos.Nota", b =>
                 {
                     b.HasOne("Treeve.Domain.Identidad.Usuario", null)
@@ -279,6 +317,15 @@ namespace Treeve.Infrastructure.Persistence.Migrations
                 });
 
             modelBuilder.Entity("Treeve.Domain.MensajesApoyo.RespuestaRegistrada", b =>
+                {
+                    b.HasOne("Treeve.Domain.Identidad.Usuario", null)
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Treeve.Domain.Sugerencias.Sugerencia", b =>
                 {
                     b.HasOne("Treeve.Domain.Identidad.Usuario", null)
                         .WithMany()
