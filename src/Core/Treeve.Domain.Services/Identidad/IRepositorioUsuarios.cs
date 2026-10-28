@@ -11,4 +11,10 @@ public interface IRepositorioUsuarios
     Task Agregar(Usuario usuario, Credencial credencial, CancellationToken ct);
 
     Task<Usuario?> ObtenerPorId(Guid usuarioId, CancellationToken ct);
+
+    /// <summary>Busca por nombre de usuario (ya normalizado). HU-12: el administrador asciende a alguien por su usuario.</summary>
+    Task<Usuario?> ObtenerPorNombreDeUsuario(string nombreDeUsuario, CancellationToken ct);
+
+    /// <summary>Las personas con rol de staff o administración, ordenadas por nombre de usuario (HU-12).</summary>
+    Task<IReadOnlyList<Usuario>> ListarStaff(CancellationToken ct);
 }

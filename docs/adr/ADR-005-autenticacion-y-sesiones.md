@@ -38,8 +38,8 @@ HU-02 exige contraseñas con hash y sal, registro con acceso automático y todo 
 - **Dónde vive el rol:** columna `rol` de `usuarios` (`Usuario`, `Staff`, `Administrador`; por defecto `Usuario`). No va en el token ni en la respuesta del login.
 - **Cuándo se valida:** en cada petición a una ruta de staff o administración, el caso de uso `AutorizarAcceso` lee el rol de la base de datos. Así, revocar un rol (HU-12) vale desde la siguiente petición, sin esperar a que venza la sesión. El costo es una consulta por petición de staff (bajo volumen).
 - **Cómo se aplica:** `RequiereRol(Rol.Staff)` es un filtro de endpoint que llama al caso de uso; la regla está en el núcleo, no en los endpoints ni en el frontend.
-- **Auditoría:** cada acceso sin permiso se registra en `auditoria_accesos` (persona, fecha y hora, IP, método y ruta sin consulta, rol requerido). El puerto `IRepositorioAuditoria` solo ofrece `Registrar`. No hay llave foránea a `usuarios`: el registro no debe desaparecer con la persona. Si no se puede escribir el registro, la petición falla (se niega ante la duda).
-- **Primer administrador:** sin HU-12, se asigna con una consulta SQL (ver `docs/guias/api-staff.md`).
+- **Auditoría:** cada acceso sin permiso se registra en `auditoria_accesos` (persona, fecha y hora, IP, método y ruta sin consulta, rol requerido). El puerto `IRepositorioAuditoria` solo ofrece `Registrar` y, desde HU-12, `Listar` para que un administrador lo lea; la base de datos impide modificarlo (ADR-006). No hay llave foránea a `usuarios`: el registro no debe desaparecer con la persona. Si no se puede escribir el registro, la petición falla (se niega ante la duda).
+- **Administradores:** se asignan con una consulta SQL (ver `docs/guias/api-staff.md`). El staff lo gestiona un administrador desde la API (HU-12, ADR-006).
 - **Riesgo aceptado:** una persona con sesión puede generar muchos registros de auditoría golpeando una ruta de staff. Se mitiga con el límite de peticiones por IP pendiente (más arriba).
 
 ## Pendiente

@@ -23,6 +23,13 @@ internal sealed class RepositorioUsuariosFalso : IRepositorioUsuarios
 
     public Task<Usuario?> ObtenerPorId(Guid usuarioId, CancellationToken ct) =>
         Task.FromResult(Guardados.FirstOrDefault(u => u.Id == usuarioId));
+
+    public Task<Usuario?> ObtenerPorNombreDeUsuario(string nombreDeUsuario, CancellationToken ct) =>
+        Task.FromResult(Guardados.FirstOrDefault(u => u.NombreDeUsuario == nombreDeUsuario));
+
+    public Task<IReadOnlyList<Usuario>> ListarStaff(CancellationToken ct) =>
+        Task.FromResult<IReadOnlyList<Usuario>>(
+            [.. Guardados.Where(u => u.Rol is Rol.Staff or Rol.Administrador).OrderBy(u => u.NombreDeUsuario, StringComparer.Ordinal)]);
 }
 
 /// <summary>Busca en los mismos datos que <see cref="RepositorioUsuariosFalso"/>, como lo haría la base de datos.</summary>
@@ -107,4 +114,10 @@ internal sealed class RepositorioAuditoriaFalso : IRepositorioAuditoria
         Registrados.Add(acceso);
         return Task.CompletedTask;
     }
+
+    /// <summary>Del más reciente al más antiguo, como la base de datos. El nombre de usuario no se resuelve aquí.</summary>
+    public Task<IReadOnlyList<AccesoDenegadoConNombre>> Listar(int limite, int desplazamiento, CancellationToken ct) =>
+        Task.FromResult<IReadOnlyList<AccesoDenegadoConNombre>>(
+            [.. Registrados.OrderByDescending(a => a.OcurrioEn).Skip(desplazamiento).Take(limite)
+                .Select(a => new AccesoDenegadoConNombre(a.Id, a.UsuarioId, null, a.OcurrioEn, a.Ip, a.Recurso, a.RolRequerido))]);
 }

@@ -4,17 +4,21 @@ using Microsoft.Extensions.DependencyInjection;
 using Treeve.Application.Comun;
 using Treeve.Application.Identidad;
 using Treeve.Application.MensajesApoyo;
+using Treeve.Domain.Services.Administracion;
 using Treeve.Domain.Services.Desahogos;
 using Treeve.Domain.Services.Identidad;
 using Treeve.Domain.Services.MensajesApoyo;
+using Treeve.Domain.Services.Notificaciones;
 using Treeve.Domain.Services.Sugerencias;
 using Treeve.Infrastructure.Comun;
 using Treeve.Infrastructure.Eventos;
 using Treeve.Infrastructure.MensajesApoyo;
 using Treeve.Infrastructure.Persistence;
+using Treeve.Infrastructure.Persistence.Administracion;
 using Treeve.Infrastructure.Persistence.Desahogos;
 using Treeve.Infrastructure.Persistence.Identidad;
 using Treeve.Infrastructure.Persistence.MensajesApoyo;
+using Treeve.Infrastructure.Persistence.Notificaciones;
 using Treeve.Infrastructure.Persistence.Sugerencias;
 using Treeve.Infrastructure.Seguridad;
 
@@ -51,8 +55,10 @@ public static class DependencyInjection
         services.AddScoped<IRepositorioCredenciales, RepositorioCredencialesPostgres>();
         services.AddScoped<IRepositorioSesiones, RepositorioSesionesPostgres>();
 
-        // Roles y auditoría de accesos (HU-10)
+        // Roles y auditoría de accesos (HU-10); gestión de staff, su log y los avisos a la persona (HU-12)
         services.AddScoped<IRepositorioAuditoria, RepositorioAuditoriaPostgres>();
+        services.AddScoped<IRepositorioCambiosDeRol, RepositorioCambiosDeRolPostgres>();
+        services.AddScoped<IRepositorioNotificaciones, RepositorioNotificacionesPostgres>();
 
         // Eventos de dominio (TEC-03): bus en memoria. Los manejadores se registran en Treeve.Api/Composition
         // como IManejadorDeEventos<TEvento>.
