@@ -1,3 +1,5 @@
+using Treeve.Domain.Comun;
+
 namespace Treeve.Domain.Identidad;
 
 /// <summary>
@@ -13,6 +15,9 @@ public sealed class Usuario
     public string? Correo { get; }
     public byte[]? MotivoDeRegistroCifrado { get; }
     public DateTimeOffset CreadoEn { get; }
+
+    /// <summary>Rol en la plataforma (HU-10). Toda persona se registra como <see cref="Rol.Usuario"/>.</summary>
+    public Rol Rol { get; private set; } = Rol.Usuario;
 
     private Usuario(
         Guid id,
@@ -53,6 +58,22 @@ public sealed class Usuario
             datos.Correo,
             motivoDeRegistroCifrado,
             ahora);
+    }
+
+    /// <summary>
+    /// Cambia el rol (lo usará la gestión de staff, HU-12, que además deja su propio registro de auditoría).
+    /// Devuelve el rol anterior para que quien llama lo registre.
+    /// </summary>
+    public Rol CambiarRol(Rol nuevo)
+    {
+        if (!Enum.IsDefined(nuevo))
+        {
+            throw new ExcepcionDeDominio("El rol no es válido.");
+        }
+
+        var anterior = Rol;
+        Rol = nuevo;
+        return anterior;
     }
 
     /// <summary>El identificador de login (usuario o correo) se compara en minúsculas y sin espacios.</summary>

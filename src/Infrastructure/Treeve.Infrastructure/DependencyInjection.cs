@@ -7,6 +7,7 @@ using Treeve.Application.MensajesApoyo;
 using Treeve.Domain.Services.Desahogos;
 using Treeve.Domain.Services.Identidad;
 using Treeve.Domain.Services.MensajesApoyo;
+using Treeve.Domain.Services.Sugerencias;
 using Treeve.Infrastructure.Comun;
 using Treeve.Infrastructure.Eventos;
 using Treeve.Infrastructure.MensajesApoyo;
@@ -14,6 +15,7 @@ using Treeve.Infrastructure.Persistence;
 using Treeve.Infrastructure.Persistence.Desahogos;
 using Treeve.Infrastructure.Persistence.Identidad;
 using Treeve.Infrastructure.Persistence.MensajesApoyo;
+using Treeve.Infrastructure.Persistence.Sugerencias;
 using Treeve.Infrastructure.Seguridad;
 
 namespace Treeve.Infrastructure;
@@ -49,6 +51,9 @@ public static class DependencyInjection
         services.AddScoped<IRepositorioCredenciales, RepositorioCredencialesPostgres>();
         services.AddScoped<IRepositorioSesiones, RepositorioSesionesPostgres>();
 
+        // Roles y auditoría de accesos (HU-10)
+        services.AddScoped<IRepositorioAuditoria, RepositorioAuditoriaPostgres>();
+
         // Eventos de dominio (TEC-03): bus en memoria. Los manejadores se registran en Treeve.Api/Composition
         // como IManejadorDeEventos<TEvento>.
         services.AddSingleton<RegistroDeEventosProcesados>();
@@ -62,7 +67,8 @@ public static class DependencyInjection
         // Desahogos (HU-05): el texto se guarda cifrado
         services.AddScoped<IRepositorioNotas, RepositorioNotasPostgres>();
 
-        // Ejemplo: services.AddScoped<IRepositorioSugerencias, RepositorioSugerenciasPostgres>();
+        // Sugerencias (HU-09)
+        services.AddScoped<IRepositorioSugerencias, RepositorioSugerenciasPostgres>();
         return services;
     }
 

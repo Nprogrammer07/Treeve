@@ -2,6 +2,7 @@ using Treeve.Application.Comun;
 using Treeve.Application.Desahogos;
 using Treeve.Application.Identidad;
 using Treeve.Application.MensajesApoyo;
+using Treeve.Application.Sugerencias;
 using Treeve.Domain.Services.MensajesApoyo;
 
 namespace Treeve.Api.Composition;
@@ -21,6 +22,7 @@ public static class ApplicationServices
         services.AddScoped<RegistrarUsuario>();
         services.AddScoped<IniciarSesion>();
         services.AddScoped<ValidarSesion>();
+        services.AddScoped<AutorizarAcceso>(); // HU-10
 
         // Mensajes de apoyo (HU-06a-1). El motor es un servicio de dominio puro; su contenido lo da Infrastructure.
         services.AddSingleton<IGeneradorMensajeApoyo>(
@@ -31,7 +33,10 @@ public static class ApplicationServices
         services.AddScoped<CrearNota>();
         services.AddScoped<LeerNota>();
 
-        // Ejemplo: services.AddScoped<CrearSugerencia>();
+        // Sugerencias (HU-09)
+        services.AddScoped<EnviarSugerencia>();
+        services.AddScoped<ListarMisSugerencias>();
+        services.AddScoped<BuscarSugerencias>();
         return services;
     }
 }

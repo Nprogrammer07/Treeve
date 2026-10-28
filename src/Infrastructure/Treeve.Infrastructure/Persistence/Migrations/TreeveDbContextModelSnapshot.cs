@@ -57,6 +57,47 @@ namespace Treeve.Infrastructure.Persistence.Migrations
                     b.ToTable("desahogos", "treeve");
                 });
 
+            modelBuilder.Entity("Treeve.Domain.Identidad.AccesoNoAutorizado", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Ip")
+                        .IsRequired()
+                        .HasMaxLength(45)
+                        .HasColumnType("character varying(45)")
+                        .HasColumnName("ip");
+
+                    b.Property<DateTimeOffset>("OcurrioEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ocurrio_en");
+
+                    b.Property<string>("Recurso")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("recurso");
+
+                    b.Property<string>("RolRequerido")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("rol_requerido");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("usuario_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OcurrioEn")
+                        .HasDatabaseName("ix_auditoria_accesos_ocurrio_en");
+
+                    b.ToTable("auditoria_accesos", "treeve");
+                });
+
             modelBuilder.Entity("Treeve.Domain.Identidad.Credencial", b =>
                 {
                     b.Property<Guid>("UsuarioId")
@@ -161,6 +202,14 @@ namespace Treeve.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(30)")
                         .HasColumnName("nombre_de_usuario");
 
+                    b.Property<string>("Rol")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("Usuario")
+                        .HasColumnName("rol");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Correo")
@@ -202,6 +251,44 @@ namespace Treeve.Infrastructure.Persistence.Migrations
                     b.ToTable("historial_respuestas", "treeve");
                 });
 
+            modelBuilder.Entity("Treeve.Domain.Sugerencias.Sugerencia", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreadaEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("creada_en");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("estado");
+
+                    b.Property<string>("Texto")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("texto");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("usuario_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Estado", "CreadaEn")
+                        .HasDatabaseName("ix_sugerencias_estado_creada_en");
+
+                    b.HasIndex("UsuarioId", "CreadaEn")
+                        .HasDatabaseName("ix_sugerencias_usuario_id_creada_en");
+
+                    b.ToTable("sugerencias", "treeve");
+                });
+
             modelBuilder.Entity("Treeve.Domain.Desahogos.Nota", b =>
                 {
                     b.HasOne("Treeve.Domain.Identidad.Usuario", null)
@@ -230,6 +317,15 @@ namespace Treeve.Infrastructure.Persistence.Migrations
                 });
 
             modelBuilder.Entity("Treeve.Domain.MensajesApoyo.RespuestaRegistrada", b =>
+                {
+                    b.HasOne("Treeve.Domain.Identidad.Usuario", null)
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Treeve.Domain.Sugerencias.Sugerencia", b =>
                 {
                     b.HasOne("Treeve.Domain.Identidad.Usuario", null)
                         .WithMany()

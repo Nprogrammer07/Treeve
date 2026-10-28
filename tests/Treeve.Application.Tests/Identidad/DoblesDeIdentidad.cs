@@ -97,3 +97,14 @@ internal sealed class RelojManual(DateTimeOffset inicio) : IReloj
 
     public void Avanzar(TimeSpan tiempo) => Ahora += tiempo;
 }
+
+internal sealed class RepositorioAuditoriaFalso : IRepositorioAuditoria
+{
+    public List<AccesoNoAutorizado> Registrados { get; } = [];
+
+    public Task Registrar(AccesoNoAutorizado acceso, CancellationToken ct)
+    {
+        Registrados.Add(acceso);
+        return Task.CompletedTask;
+    }
+}
