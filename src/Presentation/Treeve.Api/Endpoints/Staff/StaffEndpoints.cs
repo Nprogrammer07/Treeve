@@ -35,11 +35,14 @@ public static class StaffEndpoints
 
         // HU-09 (RNF de mantenibilidad): el staff filtra las sugerencias por estado, fecha o usuario, con paginación.
         // Todos los parámetros son opcionales y se combinan; "hasta" no se incluye.
+        // El caso de uso autoriza por su cuenta (recibe quién pregunta y desde dónde); el filtro del grupo es la primera barrera.
         grupo.MapGet("/sugerencias", async (
             string? estado, string? desde, string? hasta, string? usuario, int? limite, int? desplazamiento,
-            BuscarSugerencias buscar, CancellationToken ct) =>
+            HttpContext http, BuscarSugerencias buscar, CancellationToken ct) =>
         {
             var pagina = await buscar.Ejecutar(
+                http.User.ObtenerUsuarioId(),
+                http.ObtenerContextoDeAcceso(),
                 new BuscarSugerenciasComando(
                     EstadosDeSugerenciaEnLaApi.Leer(estado),
                     EstadosDeSugerenciaEnLaApi.LeerFecha(desde, "desde"),

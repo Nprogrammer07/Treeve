@@ -46,7 +46,13 @@ public static class EstadosDeSugerenciaEnLaApi
             ?? throw new ExcepcionDeDominio("El estado debe ser pendiente, en_revision, implementada o rechazada.");
     }
 
-    /// <summary>Fecha ISO 8601 (por ejemplo 2026-10-01 o 2026-10-01T00:00:00-05:00). Sin zona horaria se toma como UTC.</summary>
+    /// <summary>Colombia no tiene horario de verano: su hora es siempre UTC-5. El staff escribe fechas en esa hora.</summary>
+    public static readonly TimeSpan DesfaseDeColombia = TimeSpan.FromHours(-5);
+
+    /// <summary>
+    /// Fecha ISO 8601, por ejemplo <c>2026-10-01</c> o <c>2026-10-01T08:00</c>. Sin zona horaria se toma como **hora de
+    /// Colombia** (UTC-5); con zona (<c>Z</c> o <c>-05:00</c>) se respeta la que traiga.
+    /// </summary>
     public static DateTimeOffset? LeerFecha(string? valor, string campo)
     {
         if (string.IsNullOrWhiteSpace(valor))
@@ -54,9 +60,15 @@ public static class EstadosDeSugerenciaEnLaApi
             return null;
         }
 
-        return DateTimeOffset.TryParse(valor, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var fecha)
-            ? fecha
-            : throw new ExcepcionDeDominio($"'{campo}' debe ser una fecha, por ejemplo 2026-10-01.");
+        // RoundtripKind distingue si la fecha trae zona: sin zona queda "Unspecified".
+        if (!DateTime.TryParse(valor, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var fecha))
+        {
+            throw new ExcepcionDeDominio($"'{campo}' debe ser una fecha, por ejemplo 2026-10-01.");
+        }
+
+        return fecha.Kind == DateTimeKind.Unspecified
+            ? new DateTimeOffset(fecha, DesfaseDeColombia)
+            : new DateTimeOffset(fecha);
     }
 }
 

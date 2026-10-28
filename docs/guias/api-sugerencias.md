@@ -58,7 +58,7 @@ Parámetros de consulta, todos opcionales y combinables:
 | Parámetro | Qué hace |
 |---|---|
 | `estado` | `pendiente`, `en_revision`, `implementada` o `rechazada` |
-| `desde` | Fecha ISO 8601 (`2026-10-01` o `2026-10-01T00:00:00-05:00`); incluida. Sin zona horaria se toma como UTC |
+| `desde` | Fecha ISO 8601 (`2026-10-01` o `2026-10-01T00:00:00-05:00`); incluida. Sin zona horaria se toma como **hora de Colombia** (UTC-5, sin horario de verano); con zona (`Z`, `-05:00`) se respeta la que se envíe |
 | `hasta` | Igual que `desde`; **no** incluida. Debe ser posterior a `desde` |
 | `usuario` | Nombre de usuario exacto (no distingue mayúsculas) |
 | `limite` | Filas por página, de 1 a 100 (por defecto 50) |
