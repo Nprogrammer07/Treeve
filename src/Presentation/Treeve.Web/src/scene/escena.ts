@@ -1,5 +1,18 @@
 import { Application, Graphics } from 'pixi.js'
-import { formaArbol, posicionPajaro, romboSuelo, type EtapaArbol } from './geometria.ts'
+import {
+  arbolesDelBosque,
+  casillas,
+  disenarMapa,
+  escalaDelArbol,
+  formaArbol,
+  poligonoAgua,
+  poligonoArena,
+  posicionPajaro,
+  rocas,
+  romboSuelo,
+  type EtapaArbol,
+  type Mapa,
+} from './geometria.ts'
 
 export interface Metricas {
   fps: number
@@ -16,10 +29,38 @@ export interface OpcionesEscena {
 const AVES = 4
 const DURACION_PULSO_MS = 900
 
+// Paleta propia de Treeve: verdes vivos y amables, de estilo isométrico para juego móvil.
+const COLORES = {
+  pastoExterior: 0x5ea334,
+  borde: 0x4c9428,
+  cesped: 0x8fd14a,
+  casillaClara: 0xb9e76e,
+  casillaOscura: 0x8fcd46,
+  lineaTablero: 0xc7ec82,
+  arena: 0xe6cb8e,
+  agua: 0x4aa6e0,
+  aguaClara: 0x86cdf2,
+  roca: 0x8c8f96,
+  rocaLuz: 0xb7bac1,
+  sombra: 0x1f4a17,
+  tronco: 0x8a5a2b,
+  troncoSombra: 0x6e4620,
+} as const
+
+// Tres variantes de copa para el bosque: oscuro, medio y luz.
+const COPAS: readonly (readonly [number, number, number])[] = [
+  [0x2f7d2a, 0x44a237, 0x6fcb4b],
+  [0x358a2c, 0x4eb03b, 0x7ad553],
+  [0x2a7326, 0x3c9833, 0x63bf45],
+]
+
+const aplanar = (puntos: readonly { x: number; y: number }[]): number[] => puntos.flatMap((p) => [p.x, p.y])
+
 /** Único lugar que habla con PixiJS. No contiene reglas de negocio: solo dibuja la etapa que recibe. */
 export class Escena {
   private readonly app = new Application()
   private readonly suelo = new Graphics()
+  private readonly bosque = new Graphics()
   private readonly arbol = new Graphics()
   private readonly lluvia = new Graphics()
   private readonly aves: Graphics[] = []
@@ -31,6 +72,7 @@ export class Escena {
   private cargaMs = 0
   private listo = false
   private riegoPendiente = false
+  private redibujoPendiente = false
   private destruida = false
 
   private opciones: OpcionesEscena
@@ -53,13 +95,13 @@ export class Escena {
       return
     }
     anfitrion.appendChild(this.app.canvas)
-    this.app.stage.addChild(this.suelo, this.arbol, this.lluvia)
+    this.app.stage.addChild(this.suelo, this.bosque, this.arbol, this.lluvia)
     for (let i = 0; i < AVES; i++) {
       const ave = new Graphics()
       this.aves.push(ave)
       this.app.stage.addChild(ave)
     }
-    this.app.renderer.on('resize', () => this.dibujarEstatico())
+    this.app.renderer.on('resize', () => this.pedirRedibujo())
     this.listo = true
     this.dibujarEstatico()
     this.app.ticker.add(() => this.animar())
@@ -99,31 +141,64 @@ export class Escena {
     if (this.listo) this.app.destroy(true, { children: true })
   }
 
+  /** Al cambiar de tamaño llegan muchos eventos seguidos: el terreno se vuelve a dibujar una sola vez por cuadro. */
+  private pedirRedibujo(): void {
+    if (this.redibujoPendiente) return
+    this.redibujoPendiente = true
+    requestAnimationFrame(() => {
+      this.redibujoPendiente = false
+      if (!this.destruida) this.dibujarEstatico()
+    })
+  }
+
   private dibujarEstatico(): void {
     const { width: ancho, height: alto } = this.app.screen
-    const a = Math.min(ancho * 0.42, alto * 0.5)
-    const cx = ancho / 2
-    const cy = alto * 0.62
-    const escala = a / 200
-    this.yTierra = cy
-    this.dibujarSuelo(cx, cy, a, escala)
-    this.dibujarArbol(cx, cy, escala)
+    const mapa = disenarMapa(ancho, alto)
+    this.yTierra = mapa.cy
+    this.dibujarTerreno(ancho, alto, mapa)
+    this.dibujarBosque(ancho, alto, mapa)
+    this.dibujarArbol(mapa.cx, mapa.cy, escalaDelArbol(mapa))
     this.dibujarAves(0)
   }
 
-  private dibujarSuelo(cx: number, cy: number, a: number, escala: number): void {
-    const r = romboSuelo(cx, cy, a)
-    const grosor = 14 * escala
+  /** Pasto, costa con rocas, borde y césped en cuadrícula. Todo estático: se dibuja una vez, no en cada cuadro. */
+  private dibujarTerreno(ancho: number, alto: number, mapa: Mapa): void {
     const g = this.suelo.clear()
-    g.poly([r.izquierda.x, r.izquierda.y, r.abajo.x, r.abajo.y, r.abajo.x, r.abajo.y + grosor, r.izquierda.x, r.izquierda.y + grosor]).fill(0x6b9a5e)
-    g.poly([r.derecha.x, r.derecha.y, r.abajo.x, r.abajo.y, r.abajo.x, r.abajo.y + grosor, r.derecha.x, r.derecha.y + grosor]).fill(0x5c8a52)
-    g.poly([r.arriba.x, r.arriba.y, r.derecha.x, r.derecha.y, r.abajo.x, r.abajo.y, r.izquierda.x, r.izquierda.y]).fill(0x8dbb7a)
-    for (let i = 0; i < 14; i++) {
-      const u = ((i * 37) % 100) / 100
-      const v = ((i * 61) % 100) / 100
-      const x = cx + (u - v) * a * 0.8
-      const y = cy + (u + v - 1) * a * 0.4
-      g.poly([x - 3 * escala, y, x, y - 8 * escala, x + 3 * escala, y]).fill(0x6fa466)
+    g.rect(0, 0, ancho, alto).fill(COLORES.pastoExterior)
+
+    // Costa: arena, agua, ondas y rocas. Se pinta antes del césped, que tapa lo que se le cruce.
+    g.poly(aplanar(poligonoArena(ancho, alto))).fill(COLORES.arena)
+    g.poly(aplanar(poligonoAgua(ancho, alto))).fill(COLORES.agua)
+    for (const [x0, x1, y] of [
+      [0.04, 0.09, 0.72],
+      [0.07, 0.14, 0.84],
+      [0.02, 0.1, 0.93],
+    ] as const) {
+      g.moveTo(x0 * ancho, y * alto).lineTo(x1 * ancho, y * alto).stroke({ width: 2.5, color: COLORES.aguaClara, alpha: 0.8, cap: 'round' })
+    }
+    for (const roca of rocas(ancho, alto)) {
+      g.ellipse(roca.x, roca.y + roca.radio * 0.3, roca.radio * 1.1, roca.radio * 0.6).fill({ color: COLORES.sombra, alpha: 0.25 })
+      g.ellipse(roca.x, roca.y, roca.radio, roca.radio * 0.75).fill(COLORES.roca)
+      g.ellipse(roca.x - roca.radio * 0.25, roca.y - roca.radio * 0.25, roca.radio * 0.5, roca.radio * 0.3).fill(COLORES.rocaLuz)
+    }
+
+    // Césped: un borde más oscuro, el rombo y encima el tablero de casillas claras y oscuras.
+    g.poly(aplanar(Object.values(romboSuelo(mapa.cx, mapa.cy, mapa.a * 1.05)))).fill(COLORES.borde)
+    g.poly(aplanar(Object.values(romboSuelo(mapa.cx, mapa.cy, mapa.a)))).fill(COLORES.cesped)
+    for (const casilla of casillas(mapa)) g.poly(casilla.puntos).fill(casilla.claro ? COLORES.casillaClara : COLORES.casillaOscura)
+    g.poly(aplanar(Object.values(romboSuelo(mapa.cx, mapa.cy, mapa.n * mapa.tw)))).stroke({ width: 2, color: COLORES.lineaTablero, alpha: 0.9 })
+  }
+
+  /** Bosque denso en los bordes: copas redondas en tres verdes, con sombra, pintadas de atrás hacia adelante. */
+  private dibujarBosque(ancho: number, alto: number, mapa: Mapa): void {
+    const g = this.bosque.clear()
+    for (const arbol of arbolesDelBosque(ancho, alto, mapa)) {
+      const [oscuro, medio, luz] = COPAS[arbol.tono] ?? COPAS[0] ?? [0x2f7d2a, 0x44a237, 0x6fcb4b]
+      const r = arbol.radio
+      g.ellipse(arbol.x + r * 0.1, arbol.y + r * 0.75, r * 0.95, r * 0.35).fill({ color: COLORES.sombra, alpha: 0.3 })
+      g.circle(arbol.x, arbol.y, r).fill(oscuro)
+      g.circle(arbol.x - r * 0.12, arbol.y - r * 0.18, r * 0.8).fill(medio)
+      g.circle(arbol.x - r * 0.28, arbol.y - r * 0.38, r * 0.42).fill(luz)
     }
   }
 
@@ -135,9 +210,9 @@ export class Escena {
     const h = f.alturaTronco * escala
     const grosor = f.grosorTronco * escala
     const r = f.radioCopa * escala
-    g.ellipse(cx, cy + 3 * escala, r * 0.9, r * 0.32).fill({ color: 0x24332b, alpha: 0.18 })
-    g.poly([cx - grosor / 2, cy, cx + grosor / 2, cy, cx + grosor * 0.35, cy - h, cx - grosor * 0.35, cy - h]).fill(0x7a5a3a)
-    g.poly([cx, cy, cx + grosor / 2, cy, cx + grosor * 0.35, cy - h, cx, cy - h]).fill(0x6a4c30)
+    g.ellipse(cx, cy + 3 * escala, r * 0.9, r * 0.32).fill({ color: COLORES.sombra, alpha: 0.3 })
+    g.poly([cx - grosor / 2, cy, cx + grosor / 2, cy, cx + grosor * 0.35, cy - h, cx - grosor * 0.35, cy - h]).fill(COLORES.tronco)
+    g.poly([cx, cy, cx + grosor / 2, cy, cx + grosor * 0.35, cy - h, cx, cy - h]).fill(COLORES.troncoSombra)
     const centroY = cy - h - r * 0.35
     const desplazamientos = [
       [-0.55, 0.35, 0.75],
@@ -145,9 +220,9 @@ export class Escena {
       [0, 0, 1],
     ] as const
     const usados = f.copas === 1 ? desplazamientos.slice(2) : desplazamientos
-    for (const [dx, dy, k] of usados) g.circle(cx + dx * r, centroY + dy * r, r * k).fill(0x4a8a56)
-    for (const [dx, dy, k] of usados) g.circle(cx + dx * r - r * 0.08, centroY + dy * r - r * 0.1, r * k * 0.85).fill(0x5ea068)
-    g.circle(cx - r * 0.25, centroY - r * 0.3, r * 0.5).fill(0x78b97a)
+    for (const [dx, dy, k] of usados) g.circle(cx + dx * r, centroY + dy * r, r * k).fill(0x2f8f2a)
+    for (const [dx, dy, k] of usados) g.circle(cx + dx * r - r * 0.08, centroY + dy * r - r * 0.1, r * k * 0.85).fill(0x45b238)
+    g.circle(cx - r * 0.25, centroY - r * 0.3, r * 0.5).fill(0x7bd44c)
     // Flores sobre la copa (etapa "flor"): pétalos rosados con centro amarillo.
     const lugares = [
       [-0.55, -0.1],
