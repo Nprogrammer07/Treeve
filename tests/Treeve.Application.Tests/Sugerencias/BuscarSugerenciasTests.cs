@@ -1,5 +1,9 @@
+using Treeve.Application.Comun;
+using Treeve.Application.Identidad;
 using Treeve.Application.Sugerencias;
+using Treeve.Application.Tests.Identidad;
 using Treeve.Domain.Comun;
+using Treeve.Domain.Identidad;
 using Treeve.Domain.Services.Sugerencias;
 using Treeve.Domain.Sugerencias;
 
@@ -9,13 +13,32 @@ public class BuscarSugerenciasTests
 {
     private static readonly DateTimeOffset Inicio = new(2026, 10, 26, 15, 0, 0, TimeSpan.FromHours(-5));
 
+    private static readonly ContextoDeAcceso Contexto = new("203.0.113.7", "GET /api/staff/sugerencias");
+
     private readonly RepositorioSugerenciasFalso repositorio = new();
+    private readonly RepositorioUsuariosFalso usuarios = new();
+    private readonly RepositorioAuditoriaFalso auditoria = new();
     private readonly BuscarSugerencias buscar;
+    private readonly Guid staffId;
 
     public BuscarSugerenciasTests()
     {
-        buscar = new BuscarSugerencias(repositorio);
+        buscar = new BuscarSugerencias(
+            new AutorizarAcceso(usuarios, auditoria, new RelojManual(Inicio)), repositorio);
+        staffId = RegistrarPersona(Rol.Staff).Id;
     }
+
+    private Usuario RegistrarPersona(Rol rol)
+    {
+        var datos = DatosDeRegistro.Crear("Persona de Prueba", "Pru", $"pru{usuarios.Guardados.Count}", null, null);
+        var persona = Usuario.Registrar(Guid.NewGuid(), datos, null, Inicio);
+        persona.CambiarRol(rol);
+        usuarios.Guardados.Add(persona);
+        return persona;
+    }
+
+    private Task<PaginaDeSugerencias> Buscar(BuscarSugerenciasComando comando) =>
+        buscar.Ejecutar(staffId, Contexto, comando, CancellationToken.None);
 
     private static BuscarSugerenciasComando Sin(int? limite = null, int? desplazamiento = null) =>
         new(null, null, null, null, limite, desplazamiento);
@@ -34,7 +57,7 @@ public class BuscarSugerenciasTests
     {
         Cargar(3);
 
-        var pagina = await buscar.Ejecutar(Sin(), CancellationToken.None);
+        var pagina = await Buscar(Sin());
 
         Assert.Equal(3, pagina.Sugerencias.Count);
         Assert.False(pagina.HayMas);
@@ -50,8 +73,7 @@ public class BuscarSugerenciasTests
     {
         var desde = Inicio.AddDays(-7);
 
-        await buscar.Ejecutar(
-            new BuscarSugerenciasComando(EstadoSugerencia.EnRevision, desde, Inicio, "  Ana.L ", 20, 40), CancellationToken.None);
+        await Buscar(new BuscarSugerenciasComando(EstadoSugerencia.EnRevision, desde, Inicio, "  Ana.L ", 20, 40));
 
         var filtro = repositorio.UltimoFiltro!;
         Assert.Equal(EstadoSugerencia.EnRevision, filtro.Estado);
@@ -68,7 +90,7 @@ public class BuscarSugerenciasTests
     [InlineData("   ")]
     public async Task Un_usuario_vacio_significa_sin_filtro(string? usuario)
     {
-        await buscar.Ejecutar(new BuscarSugerenciasComando(null, null, null, usuario, null, null), CancellationToken.None);
+        await Buscar(new BuscarSugerenciasComando(null, null, null, usuario, null, null));
 
         Assert.Null(repositorio.UltimoFiltro!.NombreDeUsuario);
     }
@@ -78,7 +100,7 @@ public class BuscarSugerenciasTests
     {
         Cargar(6);
 
-        var pagina = await buscar.Ejecutar(Sin(limite: 5), CancellationToken.None);
+        var pagina = await Buscar(Sin(limite: 5));
 
         Assert.Equal(5, pagina.Sugerencias.Count);
         Assert.True(pagina.HayMas);
@@ -89,7 +111,7 @@ public class BuscarSugerenciasTests
     {
         Cargar(6);
 
-        var pagina = await buscar.Ejecutar(Sin(limite: 5, desplazamiento: 5), CancellationToken.None);
+        var pagina = await Buscar(Sin(limite: 5, desplazamiento: 5));
 
         Assert.Single(pagina.Sugerencias);
         Assert.False(pagina.HayMas);
@@ -100,7 +122,7 @@ public class BuscarSugerenciasTests
     {
         Cargar(5);
 
-        var pagina = await buscar.Ejecutar(Sin(limite: 5), CancellationToken.None);
+        var pagina = await Buscar(Sin(limite: 5));
 
         Assert.Equal(5, pagina.Sugerencias.Count);
         Assert.False(pagina.HayMas);
@@ -113,7 +135,7 @@ public class BuscarSugerenciasTests
     [InlineData(null, -1)]
     public async Task Rechaza_paginas_fuera_de_rango(int? limite, int? desplazamiento)
     {
-        await Assert.ThrowsAsync<ExcepcionDeDominio>(() => buscar.Ejecutar(Sin(limite, desplazamiento), CancellationToken.None));
+        await Assert.ThrowsAsync<ExcepcionDeDominio>(() => Buscar(Sin(limite, desplazamiento)));
 
         Assert.Null(repositorio.UltimoFiltro);
     }
@@ -121,7 +143,7 @@ public class BuscarSugerenciasTests
     [Fact]
     public async Task Acepta_el_limite_maximo()
     {
-        await buscar.Ejecutar(Sin(limite: BuscarSugerencias.LimiteMaximo), CancellationToken.None);
+        await Buscar(Sin(limite: BuscarSugerencias.LimiteMaximo));
 
         Assert.Equal(BuscarSugerencias.LimiteMaximo + 1, repositorio.UltimoFiltro!.Limite);
     }
@@ -130,16 +152,65 @@ public class BuscarSugerenciasTests
     public async Task Rechaza_un_rango_de_fechas_al_reves_o_vacio()
     {
         await Assert.ThrowsAsync<ExcepcionDeDominio>(
-            () => buscar.Ejecutar(new BuscarSugerenciasComando(null, Inicio, Inicio.AddDays(-1), null, null, null), CancellationToken.None));
+            () => Buscar(new BuscarSugerenciasComando(null, Inicio, Inicio.AddDays(-1), null, null, null)));
         await Assert.ThrowsAsync<ExcepcionDeDominio>(
-            () => buscar.Ejecutar(new BuscarSugerenciasComando(null, Inicio, Inicio, null, null, null), CancellationToken.None));
+            () => Buscar(new BuscarSugerenciasComando(null, Inicio, Inicio, null, null, null)));
     }
 
     [Fact]
     public async Task Rechaza_un_estado_que_no_existe()
     {
         await Assert.ThrowsAsync<ExcepcionDeDominio>(
-            () => buscar.Ejecutar(new BuscarSugerenciasComando((EstadoSugerencia)99, null, null, null, null, null), CancellationToken.None));
+            () => Buscar(new BuscarSugerenciasComando((EstadoSugerencia)99, null, null, null, null, null)));
+    }
+
+    [Theory]
+    [InlineData(Rol.Staff)]
+    [InlineData(Rol.Administrador)]
+    public async Task Staff_y_administracion_pueden_buscar(Rol rol)
+    {
+        var persona = RegistrarPersona(rol);
+        Cargar(2);
+
+        var pagina = await buscar.Ejecutar(persona.Id, Contexto, Sin(), CancellationToken.None);
+
+        Assert.Equal(2, pagina.Sugerencias.Count);
+        Assert.Empty(auditoria.Registrados);
+    }
+
+    [Fact]
+    public async Task Un_usuario_normal_es_rechazado_auditado_y_no_llega_a_la_base_de_datos()
+    {
+        var persona = RegistrarPersona(Rol.Usuario);
+        Cargar(2);
+
+        await Assert.ThrowsAsync<AccesoDenegado>(
+            () => buscar.Ejecutar(persona.Id, Contexto, Sin(), CancellationToken.None));
+
+        Assert.Null(repositorio.UltimoFiltro);
+        var registro = Assert.Single(auditoria.Registrados);
+        Assert.Equal(persona.Id, registro.UsuarioId);
+        Assert.Equal(Rol.Staff, registro.RolRequerido);
+        Assert.Equal("GET /api/staff/sugerencias", registro.Recurso);
+    }
+
+    [Fact]
+    public async Task Una_persona_que_no_existe_es_rechazada()
+    {
+        await Assert.ThrowsAsync<AccesoDenegado>(
+            () => buscar.Ejecutar(Guid.NewGuid(), Contexto, Sin(), CancellationToken.None));
+
+        Assert.Null(repositorio.UltimoFiltro);
+    }
+
+    [Fact]
+    public async Task Se_autoriza_antes_de_validar_los_filtros()
+    {
+        var persona = RegistrarPersona(Rol.Usuario);
+
+        // Con filtros inválidos, quien no es staff recibe 403 y no el detalle de la validación.
+        await Assert.ThrowsAsync<AccesoDenegado>(
+            () => buscar.Ejecutar(persona.Id, Contexto, Sin(limite: 0), CancellationToken.None));
     }
 
     [Fact]

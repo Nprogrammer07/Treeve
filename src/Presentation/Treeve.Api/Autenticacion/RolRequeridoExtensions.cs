@@ -21,7 +21,7 @@ public static class RolRequeridoExtensions
             var rol = await autorizar.Ejecutar(
                 http.User.ObtenerUsuarioId(),
                 requerido,
-                new ContextoDeAcceso(LeerIp(http), $"{http.Request.Method} {http.Request.Path}"), // sin la consulta: puede llevar datos
+                http.ObtenerContextoDeAcceso(),
                 http.RequestAborted);
 
             // El rol sale de la base de datos, no del token: los endpoints pueden leerlo de aquí.
@@ -29,11 +29,4 @@ public static class RolRequeridoExtensions
 
             return await siguiente(contexto);
         });
-
-    /// <summary>IP de quien llama, ya corregida por los encabezados X-Forwarded-* del proxy (ver Program.cs).</summary>
-    private static string? LeerIp(HttpContext http)
-    {
-        var ip = http.Connection.RemoteIpAddress;
-        return ip is null ? null : (ip.IsIPv4MappedToIPv6 ? ip.MapToIPv4() : ip).ToString();
-    }
 }

@@ -1,3 +1,4 @@
+using Treeve.Application.Identidad;
 using Treeve.Domain.Comun;
 using Treeve.Domain.Identidad;
 using Treeve.Domain.Services.Sugerencias;
@@ -20,17 +21,23 @@ public sealed record PaginaDeSugerencias(IReadOnlyList<SugerenciaConAutor> Suger
 
 /// <summary>
 /// HU-09 (RNF de mantenibilidad): el staff filtra las sugerencias por estado, fecha o usuario, con paginación.
-/// La autorización (solo staff o administración) se valida en la ruta con <c>RequiereRol</c> (HU-10), que llama a
-/// <c>AutorizarAcceso</c> en cada petición; este caso de uso solo se invoca desde esa zona.
+/// La autorización vive aquí, como en <c>LeerNota</c>: antes de validar o buscar, <see cref="AutorizarAcceso"/> (HU-10)
+/// exige rol de staff o administración, lee el rol de la base de datos y, si no alcanza, deja el intento en la auditoría.
+/// Así el listado no queda abierto si algún día se llama desde otra ruta. La ruta <c>/api/staff</c> además lleva el
+/// filtro <c>RequiereRol</c>, como segunda barrera.
 /// </summary>
-public sealed class BuscarSugerencias(IRepositorioSugerencias sugerencias)
+public sealed class BuscarSugerencias(AutorizarAcceso autorizar, IRepositorioSugerencias sugerencias)
 {
     public const int LimitePorDefecto = 50;
     public const int LimiteMaximo = 100;
 
-    public async Task<PaginaDeSugerencias> Ejecutar(BuscarSugerenciasComando comando, CancellationToken ct)
+    public async Task<PaginaDeSugerencias> Ejecutar(
+        Guid usuarioId, ContextoDeAcceso contexto, BuscarSugerenciasComando comando, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(comando);
+
+        // Primero se autoriza: quien no es staff no llega a que se le validen los filtros ni a la base de datos.
+        await autorizar.Ejecutar(usuarioId, Rol.Staff, contexto, ct);
 
         var limite = comando.Limite ?? LimitePorDefecto;
         var desplazamiento = comando.Desplazamiento ?? 0;
