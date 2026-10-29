@@ -152,7 +152,7 @@ Como visitante, quiero registrarme con la menor cantidad de datos posible.
 ### Áreas funcionales (carpetas dentro de cada anillo, no proyectos)
 - **Identidad:** registro, login, roles, auditoría de accesos.
 - **Desahogos (notas):** emoción, escritura, cifrado.
-- **EspacioVerde (árbol):** nutrición, etapas, estado.
+- **EspacioVerde (lote):** riegos, nutrición y crecimiento de árbol, flores y bosque (HU-07a, ADR-007).
 - **MensajesApoyo:** motor del grafo de composición.
 - **Sugerencias:** envío, historial, gestión por staff.
 - **Administracion:** gestión de staff.
@@ -268,7 +268,7 @@ Puntos que el ADR resolvió:
 | 1 | HU-02 | `usuarios` |
 | 1 | HU-03a | Intentos fallidos y bloqueo |
 | 1 | HU-05 | `desahogos` (texto cifrado) |
-| 2 | HU-07a | `espacio_verde` / `arbol` (nivel, etapa) |
+| 2 | HU-07a | `riegos` (un riego por desahogo; el nivel de árbol, flores y bosque se calcula, ADR-007) |
 | 2 | HU-06a-1 | `historial_respuestas` (IDs de fragmentos); fragmentos si van en tabla |
 | 4 | HU-09 / HU-11 | `sugerencias` y respuestas del staff |
 | 4 | HU-10 / HU-12 | Roles y `auditoria` |
@@ -430,6 +430,7 @@ IDs de tareas en ClickUp:
 2. **Infraestructura:** el backend es **propio** (se deduce de la Onion Architecture: el núcleo concentra los casos de uso; descartadas las funciones de Supabase como backend). Proveedores: Supabase (solo PostgreSQL) y Railway (backend) confirmados en ADR-002; Vercel (frontend) por confirmar en TEC-02.
 3. ~~ADR-002 de persistencia.~~ **Aceptado (16-oct-2026):** solo el backend accede a PostgreSQL (Supabase solo como base de datos, esquema `treeve`), cifrado AES-256-GCM en la aplicación, migraciones con EF Core + Npgsql en `Treeve.Infrastructure`, backend en Railway con `deploy/Dockerfile`.
    - **Autenticación (ADR-005, aceptado el 20-oct-2026):** PBKDF2-SHA256 (600 000 iteraciones), sesiones con token opaco de 7 días (solo se guarda su hash), bloqueo de 15 minutos tras 5 intentos en la tabla `credenciales`, motivo de registro cifrado. Riesgo aceptado: se puede averiguar si un correo está registrado.
+   - **Crecimiento del espacio verde (ADR-007, aceptado el 29-oct-2026):** el lote tiene árbol, flores y bosque (4 niveles cada uno); cada 3 desahogos crece uno solo, por turnos; el estado se calcula a partir de la tabla `riegos`, que llena de forma idempotente el manejador de `NotaCreada`.
 4. **Definition of Done v2** por aprobar y copiar a ClickUp y a la plantilla de PR.
 5. **Planning Poker** pendiente: estimaciones aún no validadas por Luis y Juan José.
 6. **Fechas de los sprints** sin definir.
@@ -471,6 +472,8 @@ IDs de tareas en ClickUp:
 - **TEC-01 implementado en local con Onion** (pendiente de commit, repositorio remoto, PR y revisión): `Treeve.slnx` con los 5 proyectos de los anillos; `Treeve.ArchitectureTests` (13 pruebas: regla de dependencias, convenciones, estructura y lenguajes) y proyectos vacíos `Treeve.Domain.Tests` y `Treeve.Application.Tests`; `Treeve.Web` (React + TypeScript, `shared/api/clienteApi.ts`; herramientas: Vite, Vitest, Oxlint `jsx-a11y`, dependency-cruiser) en `src/Presentation`; CI de GitHub Actions; plantilla de PR; README; ADR-001, ADR-003 y ADR-004; guías en `docs/guias`.
 
 - **HU-06a-1 y HU-06a-3 en el PR #11** (rama `hu-06a-1-motor-grafo`, 22-oct-2026): motor del grafo para las 5 emociones, crisis que sugiere una línea sin redirigir ni guardar nada, historial de fragmentos cifrado (solo las últimas 5 respuestas) y contenido en JSON con 8 variantes generales por ranura y emoción (pendiente de revisión psicológica y de la revisión humana de 200 combinaciones). Falta conectarlo al guardado del desahogo (HU-05).
+
+- **HU-07a implementada (backend, rama `hu-07a-crecimiento-lote`, 29-oct-2026):** árbol, flores y bosque crecen por turnos cada 3 desahogos (ADR-007); `GET /api/espacio-verde`; los desahogos existentes cuentan como riegos. Contrato en `docs/guias/api-espacio-verde.md`; Luis reemplaza `ETAPA_TEMPORAL` y dibuja flores y bosque por nivel.
 
 **No iniciado**
 - Repositorio remoto (GitHub) y primer PR.

@@ -57,6 +57,28 @@ namespace Treeve.Infrastructure.Persistence.Migrations
                     b.ToTable("desahogos", "treeve");
                 });
 
+            modelBuilder.Entity("Treeve.Domain.EspacioVerde.Riego", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("nota_id");
+
+                    b.Property<DateTimeOffset>("OcurrioEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ocurrio_en");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("usuario_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UsuarioId")
+                        .HasDatabaseName("ix_riegos_usuario_id");
+
+                    b.ToTable("riegos", "treeve");
+                });
+
             modelBuilder.Entity("Treeve.Domain.Identidad.AccesoNoAutorizado", b =>
                 {
                     b.Property<Guid>("Id")
@@ -290,6 +312,15 @@ namespace Treeve.Infrastructure.Persistence.Migrations
                 });
 
             modelBuilder.Entity("Treeve.Domain.Desahogos.Nota", b =>
+                {
+                    b.HasOne("Treeve.Domain.Identidad.Usuario", null)
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Treeve.Domain.EspacioVerde.Riego", b =>
                 {
                     b.HasOne("Treeve.Domain.Identidad.Usuario", null)
                         .WithMany()

@@ -9,6 +9,7 @@ Cada decisión de arquitectura nueva, o cada cambio a una existente, se propone 
 | [ADR-003](ADR-003-stack-tecnologico.md) | Stack tecnológico | Aceptado |
 | [ADR-004](ADR-004-onion-architecture.md) | Onion Architecture | Aceptado |
 | [ADR-005](ADR-005-autenticacion-y-sesiones.md) | Autenticación y sesiones | Aceptado |
+| [ADR-007](ADR-007-crecimiento-del-espacio-verde.md) | Crecimiento del espacio verde | Aceptado |
 
 ## Plantilla
 
