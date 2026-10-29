@@ -616,6 +616,18 @@ public class CrearNotaTests
 }
 ```
 
+### 4.7 Pruebas con PostgreSQL real
+
+Lo que solo garantiza la base de datos (triggers, concurrencia, que una consulta de EF se traduzca bien) se prueba en `tests/Treeve.Infrastructure.Tests/BaseDeDatos` con `[FactConPostgres]` o `[TheoryConPostgres]`. Cada clase de prueba crea una base temporal, le aplica las migraciones reales y la borra al terminar (`PostgresDePruebas`).
+
+- **En la CI** corren siempre: el trabajo de backend levanta un PostgreSQL de pruebas. Si falta, fallan en vez de saltarse.
+- **En local** se saltan, salvo que definas la variable con un servidor PostgreSQL **de pruebas**, nunca Supabase:
+
+```powershell
+$env:TREEVE_PRUEBAS_POSTGRES = "Host=localhost;Port=5432;Username=postgres;Password=tu_clave_local"
+dotnet test Treeve.slnx
+```
+
 ---
 
 ## 5. Reglas no negociables

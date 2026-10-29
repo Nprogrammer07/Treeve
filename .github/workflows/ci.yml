@@ -16,6 +16,20 @@ jobs:
   backend:
     name: Backend (.NET) · build, pruebas, reglas del Onion y lenguajes permitidos
     runs-on: ubuntu-latest
+    # PostgreSQL de usar y tirar para las pruebas que solo la base garantiza (triggers de auditoría, concurrencia).
+    # Nunca es Supabase. En la CI esas pruebas no se saltan: si falta la base, fallan (ADR-006).
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-dotnet@v6
@@ -27,6 +41,8 @@ jobs:
       # si un proyecto queda fuera de la carpeta de su anillo, si hay código fuera de los
       # anillos o si el backend no es C# / el frontend no es TypeScript (ADR-003).
       - run: dotnet test Treeve.slnx --no-build --configuration Release
+        env:
+          TREEVE_PRUEBAS_POSTGRES: Host=localhost;Port=5432;Username=postgres;Password=postgres
 
   web:
     name: Presentación web (React) · lint, dependencias, pruebas y build

@@ -23,6 +23,48 @@ namespace Treeve.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Treeve.Domain.Administracion.CambioDeRol", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("AdministradorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("administrador_id");
+
+                    b.Property<DateTimeOffset>("OcurrioEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ocurrio_en");
+
+                    b.Property<string>("RolAnterior")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("rol_anterior");
+
+                    b.Property<string>("RolNuevo")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("rol_nuevo");
+
+                    b.Property<Guid>("UsuarioAfectadoId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("usuario_afectado_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OcurrioEn")
+                        .HasDatabaseName("ix_auditoria_roles_ocurrio_en");
+
+                    b.HasIndex("UsuarioAfectadoId")
+                        .HasDatabaseName("ix_auditoria_roles_usuario_afectado_id");
+
+                    b.ToTable("auditoria_roles", "treeve");
+                });
+
             modelBuilder.Entity("Treeve.Domain.Desahogos.Nota", b =>
                 {
                     b.Property<Guid>("Id")
@@ -225,6 +267,7 @@ namespace Treeve.Infrastructure.Persistence.Migrations
                         .HasColumnName("nombre_de_usuario");
 
                     b.Property<string>("Rol")
+                        .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
@@ -271,6 +314,47 @@ namespace Treeve.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_historial_respuestas_usuario_id_creada_en");
 
                     b.ToTable("historial_respuestas", "treeve");
+                });
+
+            modelBuilder.Entity("Treeve.Domain.Notificaciones.Notificacion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreadaEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("creada_en");
+
+                    b.Property<Guid>("EventoId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("evento_id");
+
+                    b.Property<DateTimeOffset?>("LeidaEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("leida_en");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("tipo");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("usuario_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventoId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_notificaciones_evento_id");
+
+                    b.HasIndex("UsuarioId", "CreadaEn")
+                        .HasDatabaseName("ix_notificaciones_usuario_id_creada_en");
+
+                    b.ToTable("notificaciones", "treeve");
                 });
 
             modelBuilder.Entity("Treeve.Domain.Sugerencias.Sugerencia", b =>
@@ -348,6 +432,15 @@ namespace Treeve.Infrastructure.Persistence.Migrations
                 });
 
             modelBuilder.Entity("Treeve.Domain.MensajesApoyo.RespuestaRegistrada", b =>
+                {
+                    b.HasOne("Treeve.Domain.Identidad.Usuario", null)
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Treeve.Domain.Notificaciones.Notificacion", b =>
                 {
                     b.HasOne("Treeve.Domain.Identidad.Usuario", null)
                         .WithMany()
