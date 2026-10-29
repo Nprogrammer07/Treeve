@@ -19,10 +19,11 @@ internal sealed class RepositorioUsuariosPostgres(TreeveDbContext contexto) : IR
         contexto.Set<Usuario>().FirstOrDefaultAsync(u => u.NombreDeUsuario == nombreDeUsuario, ct);
 
     // El rol se guarda como texto: se compara por igualdad, no con >= (que compararía letras).
-    public async Task<IReadOnlyList<Usuario>> ListarStaff(CancellationToken ct) =>
+    public async Task<IReadOnlyList<PersonaDelStaff>> ListarStaff(CancellationToken ct) =>
         await contexto.Set<Usuario>().AsNoTracking()
             .Where(u => u.Rol == Rol.Staff || u.Rol == Rol.Administrador)
             .OrderBy(u => u.NombreDeUsuario)
+            .Select(u => new PersonaDelStaff(u.Id, u.NombreDeUsuario, u.Apodo, u.Rol))
             .ToListAsync(ct);
 
     public async Task Agregar(Usuario usuario, Credencial credencial, CancellationToken ct)

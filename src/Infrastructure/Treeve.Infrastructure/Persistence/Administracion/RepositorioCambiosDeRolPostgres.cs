@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Treeve.Domain.Administracion;
+using Treeve.Domain.Comun;
 using Treeve.Domain.Identidad;
 using Treeve.Domain.Services.Administracion;
 
@@ -18,10 +19,22 @@ internal sealed class RepositorioCambiosDeRolPostgres(TreeveDbContext contexto) 
             contexto.Attach(usuarioAfectado);
         }
 
-        contexto.Entry(usuarioAfectado).Property(u => u.Rol).IsModified = true;
+        // El rol es token de concurrencia: el UPDATE lleva "WHERE rol = <rol anterior>". Si otro administrador lo
+        // cambió entre la lectura y este guardado, no se actualiza ninguna fila y la transacción entera se deshace.
+        var rol = contexto.Entry(usuarioAfectado).Property(u => u.Rol);
+        rol.OriginalValue = cambio.RolAnterior;
+        rol.IsModified = true;
         contexto.Set<CambioDeRol>().Add(cambio);
 
-        await contexto.SaveChangesAsync(ct);
+        try
+        {
+            await contexto.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            contexto.Entry(cambio).State = EntityState.Detached;
+            throw new ExcepcionDeDominio("El rol de esta persona cambió mientras tanto. Vuelve a cargar el listado e inténtalo de nuevo.");
+        }
     }
 
     public async Task<IReadOnlyList<CambioDeRolConNombres>> Listar(int limite, int desplazamiento, CancellationToken ct) =>

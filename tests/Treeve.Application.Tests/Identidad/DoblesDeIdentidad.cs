@@ -27,9 +27,10 @@ internal sealed class RepositorioUsuariosFalso : IRepositorioUsuarios
     public Task<Usuario?> ObtenerPorNombreDeUsuario(string nombreDeUsuario, CancellationToken ct) =>
         Task.FromResult(Guardados.FirstOrDefault(u => u.NombreDeUsuario == nombreDeUsuario));
 
-    public Task<IReadOnlyList<Usuario>> ListarStaff(CancellationToken ct) =>
-        Task.FromResult<IReadOnlyList<Usuario>>(
-            [.. Guardados.Where(u => u.Rol is Rol.Staff or Rol.Administrador).OrderBy(u => u.NombreDeUsuario, StringComparer.Ordinal)]);
+    public Task<IReadOnlyList<PersonaDelStaff>> ListarStaff(CancellationToken ct) =>
+        Task.FromResult<IReadOnlyList<PersonaDelStaff>>(
+            [.. Guardados.Where(u => u.Rol is Rol.Staff or Rol.Administrador).OrderBy(u => u.NombreDeUsuario, StringComparer.Ordinal)
+                .Select(u => new PersonaDelStaff(u.Id, u.NombreDeUsuario, u.Apodo, u.Rol))]);
 }
 
 /// <summary>Busca en los mismos datos que <see cref="RepositorioUsuariosFalso"/>, como lo haría la base de datos.</summary>

@@ -16,6 +16,6 @@ public sealed class ListarStaff(AutorizarAcceso autorizar, IRepositorioUsuarios 
 
         var staff = await usuarios.ListarStaff(ct);
 
-        return [.. staff.Select(u => new MiembroDelStaff(u.Id, u.NombreDeUsuario, u.Apodo, u.Rol))];
+        return [.. staff.Select(p => new MiembroDelStaff(p.UsuarioId, p.NombreDeUsuario, p.Apodo, p.Rol))];
     }
 }

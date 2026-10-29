@@ -29,7 +29,7 @@ Incluye al staff y a la administración, ordenados por nombre de usuario. Nunca 
 | Código | Cuándo | Cuerpo |
 |---|---|---|
 | 200 | Ascendida | `{ "usuarioId", "nombreDeUsuario", "apodo", "rolAnterior": "usuario", "rolNuevo": "staff", "ocurrioEn" }` |
-| 400 | No hay nadie con ese usuario, ya es staff o es administradora | `{ "codigo": "VALIDACION", "mensaje": "…" }` |
+| 400 | No hay nadie con ese usuario, ya es staff o es administradora, o el rol cambió mientras tanto porque otro administrador actuó a la vez | `{ "codigo": "VALIDACION", "mensaje": "…" }` |
 
 No distingue mayúsculas ni espacios en el nombre de usuario.
 
@@ -40,7 +40,7 @@ No distingue mayúsculas ni espacios en el nombre de usuario.
 | Código | Cuándo | Cuerpo |
 |---|---|---|
 | 200 | Revocado: vuelve a ser usuario regular desde su siguiente petición | `{ …, "rolAnterior": "staff", "rolNuevo": "usuario", "ocurrioEn" }` |
-| 400 | No es staff, es administradora (incluida la misma persona que pide) o no existe | `{ "codigo": "VALIDACION", "mensaje": "…" }` |
+| 400 | No es staff, es administradora (incluida la misma persona que pide), no existe, o el rol cambió mientras tanto | `{ "codigo": "VALIDACION", "mensaje": "…" }` |
 
 El rol de un administrador no se cambia desde la aplicación: se asigna con SQL (ver [api-staff.md](api-staff.md)).
 

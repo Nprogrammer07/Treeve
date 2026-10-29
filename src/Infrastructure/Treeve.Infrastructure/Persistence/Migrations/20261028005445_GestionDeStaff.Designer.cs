@@ -248,6 +248,7 @@ namespace Treeve.Infrastructure.Persistence.Migrations
                         .HasColumnName("nombre_de_usuario");
 
                     b.Property<string>("Rol")
+                        .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(20)

@@ -27,8 +27,11 @@ public sealed class UsuarioConfiguration : IEntityTypeConfiguration<Usuario>
 
         // HU-10: el rol se guarda como texto. El valor por defecto hace que las personas ya registradas queden como
         // "Usuario" al aplicar la migración; staff y administración se asignan después (HU-12).
+        // HU-12: también es token de concurrencia. El UPDATE solo aplica si el rol sigue siendo el que se leyó: si dos
+        // administradores cambian a la misma persona a la vez, el segundo falla en lugar de duplicar el registro.
         builder.Property(u => u.Rol).HasColumnName("rol")
-            .HasConversion<string>().HasMaxLength(20).IsRequired().HasDefaultValue(Rol.Usuario);
+            .HasConversion<string>().HasMaxLength(20).IsRequired().HasDefaultValue(Rol.Usuario)
+            .IsConcurrencyToken();
 
         // Los valores se guardan normalizados (minúsculas), así la unicidad no distingue mayúsculas.
         // Un correo vacío es NULL y PostgreSQL permite varios NULL en un índice único.
