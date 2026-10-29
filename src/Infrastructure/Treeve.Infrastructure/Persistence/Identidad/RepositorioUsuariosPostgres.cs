@@ -15,6 +15,17 @@ internal sealed class RepositorioUsuariosPostgres(TreeveDbContext contexto) : IR
     public Task<Usuario?> ObtenerPorId(Guid usuarioId, CancellationToken ct) =>
         contexto.Set<Usuario>().FirstOrDefaultAsync(u => u.Id == usuarioId, ct);
 
+    public Task<Usuario?> ObtenerPorNombreDeUsuario(string nombreDeUsuario, CancellationToken ct) =>
+        contexto.Set<Usuario>().FirstOrDefaultAsync(u => u.NombreDeUsuario == nombreDeUsuario, ct);
+
+    // El rol se guarda como texto: se compara por igualdad, no con >= (que compararía letras).
+    public async Task<IReadOnlyList<PersonaDelStaff>> ListarStaff(CancellationToken ct) =>
+        await contexto.Set<Usuario>().AsNoTracking()
+            .Where(u => u.Rol == Rol.Staff || u.Rol == Rol.Administrador)
+            .OrderBy(u => u.NombreDeUsuario)
+            .Select(u => new PersonaDelStaff(u.Id, u.NombreDeUsuario, u.Apodo, u.Rol))
+            .ToListAsync(ct);
+
     public async Task Agregar(Usuario usuario, Credencial credencial, CancellationToken ct)
     {
         // Un solo SaveChanges: el perfil y la credencial se guardan juntos o no se guarda ninguno.

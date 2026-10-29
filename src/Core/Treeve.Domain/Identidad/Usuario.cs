@@ -61,8 +61,8 @@ public sealed class Usuario
     }
 
     /// <summary>
-    /// Cambia el rol (lo usará la gestión de staff, HU-12, que además deja su propio registro de auditoría).
-    /// Devuelve el rol anterior para que quien llama lo registre.
+    /// Cambia el rol sin más reglas. La gestión de staff (HU-12) no lo usa directamente: pasa por
+    /// <see cref="AscenderAStaff"/> y <see cref="RevocarStaff"/>. Devuelve el rol anterior para que quien llama lo registre.
     /// </summary>
     public Rol CambiarRol(Rol nuevo)
     {
@@ -75,6 +75,25 @@ public sealed class Usuario
         Rol = nuevo;
         return anterior;
     }
+
+    /// <summary>
+    /// HU-12: un administrador suma a la persona al staff. Solo se asciende a un usuario regular: el rol de un
+    /// administrador no se toca desde la aplicación (se asigna con SQL, ADR-006). Devuelve el rol anterior.
+    /// </summary>
+    public Rol AscenderAStaff() => Rol switch
+    {
+        Rol.Usuario => CambiarRol(Rol.Staff),
+        Rol.Staff => throw new ExcepcionDeDominio("Esta persona ya es parte del staff."),
+        _ => throw new ExcepcionDeDominio("El rol de un administrador no se cambia desde aquí."),
+    };
+
+    /// <summary>HU-12: un administrador le quita el rol de staff a la persona, que vuelve a ser usuario regular.</summary>
+    public Rol RevocarStaff() => Rol switch
+    {
+        Rol.Staff => CambiarRol(Rol.Usuario),
+        Rol.Usuario => throw new ExcepcionDeDominio("Esta persona no es parte del staff."),
+        _ => throw new ExcepcionDeDominio("El rol de un administrador no se cambia desde aquí."),
+    };
 
     /// <summary>El identificador de login (usuario o correo) se compara en minúsculas y sin espacios.</summary>
     public static string NormalizarIdentificador(string? identificador) => ReglasDeIdentidad.Normalizar(identificador);

@@ -8,7 +8,7 @@ Todo lo que cuelga de `/api/staff` exige sesión (`Authorization: Bearer <token>
 |---|---|---|
 | Usuario | — | Lo suyo: desahogos, sugerencias propias. Nunca entra a `/api/staff` |
 | Staff | `staff` | Rutas de `/api/staff` |
-| Administrador | `administrador` | Todo lo de staff y, más adelante, la gestión de staff (HU-12) |
+| Administrador | `administrador` | Todo lo de staff y la gestión de staff con sus logs (HU-12, ver [api-administracion.md](api-administracion.md)) |
 
 Toda persona se registra como usuario regular. El rol **no viaja en el token ni en el login**: el frontend no debe deducirlo, solo preguntarlo a `/api/staff/acceso`.
 
@@ -30,13 +30,13 @@ Uso sugerido: al abrir la zona de staff, la interfaz llama a esta ruta. Con 200 
 
 ## Auditoría
 
-Cada 403 en una ruta de staff o administración deja un registro en la tabla `auditoria_accesos`: persona, fecha y hora, IP, método y ruta (sin parámetros de consulta) y el rol que pedía la ruta. El registro solo se agrega: el código de la aplicación no tiene forma de modificarlo ni borrarlo. Los 401 no se registran (la persona ni siquiera se identificó).
+Cada 403 en una ruta de staff o administración deja un registro en la tabla `auditoria_accesos`: persona, fecha y hora, IP, método y ruta (sin parámetros de consulta) y el rol que pedía la ruta. El registro solo se agrega: ni el código de la aplicación ni la base de datos permiten modificarlo o borrarlo (un trigger lo impide, ADR-006). Los 401 no se registran (la persona ni siquiera se identificó).
 
-La IP es la que informa el proxy de Railway (`X-Forwarded-For`). El panel de staff **no muestra** esta tabla todavía.
+La IP es la que informa el proxy de Railway (`X-Forwarded-For`). Un administrador la consulta con `GET /api/admin/auditoria/accesos` (HU-12); el panel de staff no la muestra.
 
-## Cómo se asigna el primer rol de staff o administración
+## Cómo se asigna el rol de administración
 
-La gestión de staff (HU-12) aún no existe. Mientras tanto, una persona con acceso a la base de datos lo hace con una consulta (Supabase → SQL Editor):
+El **staff** lo gestiona un administrador desde la API (HU-12, [api-administracion.md](api-administracion.md)). El rol de **administración**, en cambio, no se cambia desde la aplicación (ADR-006): una persona con acceso a la base de datos lo asigna con una consulta (Supabase → SQL Editor):
 
 ```sql
 update treeve.usuarios set rol = 'Administrador' where nombre_de_usuario = 'nombre.de.usuario';

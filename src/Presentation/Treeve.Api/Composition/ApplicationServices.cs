@@ -1,8 +1,11 @@
+using Treeve.Application.Administracion;
 using Treeve.Application.Comun;
 using Treeve.Application.Desahogos;
 using Treeve.Application.Identidad;
 using Treeve.Application.MensajesApoyo;
+using Treeve.Application.Notificaciones;
 using Treeve.Application.Sugerencias;
+using Treeve.Domain.Administracion;
 using Treeve.Domain.Services.MensajesApoyo;
 
 namespace Treeve.Api.Composition;
@@ -37,6 +40,18 @@ public static class ApplicationServices
         services.AddScoped<EnviarSugerencia>();
         services.AddScoped<ListarMisSugerencias>();
         services.AddScoped<BuscarSugerencias>();
+
+        // Gestión de staff y sus logs (HU-12)
+        services.AddScoped<RegistradorDeCambiosDeRol>();
+        services.AddScoped<ListarStaff>();
+        services.AddScoped<AscenderAStaff>();
+        services.AddScoped<RevocarStaff>();
+        services.AddScoped<ConsultarAuditoria>();
+
+        // Notificaciones dentro de la aplicación (HU-12): nacen de eventos de dominio (TEC-03).
+        services.AddScoped<IManejadorDeEventos<RolCambiado>, AlCambiarRol>();
+        services.AddScoped<ListarMisNotificaciones>();
+        services.AddScoped<MarcarNotificacionLeida>();
         return services;
     }
 }
