@@ -1,0 +1,37 @@
+.mensaje {
+  display: grid;
+  gap: 1.25rem;
+  justify-items: center;
+}
+
+.tarjeta {
+  width: 100%;
+  padding: 1.5rem 1.5rem 1.5rem 1.75rem;
+  border: 1px solid var(--linea);
+  border-left: 6px solid var(--acento);
+  border-radius: 1.25rem;
+  background: var(--hoja);
+}
+
+.tarjeta:focus {
+  outline: none;
+}
+
+.tarjeta:focus-visible {
+  outline: 3px solid var(--foco);
+  outline-offset: 3px;
+}
+
+/* En un mensaje de crisis el fondo es más cálido, nunca rojo: acompaña, no alarma. */
+.tarjeta[data-crisis='true'] {
+  border-left-color: var(--ambar-borde);
+  background: var(--ambar-fondo);
+}
+
+.texto {
+  margin: 0;
+  font-family: var(--fuente-manuscrita);
+  font-size: clamp(1.5rem, 4.5vw, 1.875rem);
+  line-height: 1.35;
+  white-space: pre-line;
+}
