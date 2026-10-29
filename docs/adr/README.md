@@ -11,6 +11,7 @@ Cada decisión de arquitectura nueva, o cada cambio a una existente, se propone 
 | [ADR-005](ADR-005-autenticacion-y-sesiones.md) | Autenticación y sesiones | Aceptado |
 | [ADR-006](ADR-006-gestion-de-staff-auditoria-y-notificaciones.md) | Gestión de staff, auditoría inmutable y notificaciones | Aceptado |
 | [ADR-007](ADR-007-crecimiento-del-espacio-verde.md) | Crecimiento del espacio verde | Aceptado |
+| [ADR-008](ADR-008-correo-saliente-y-recuperacion-de-contrasena.md) | Correo saliente y recuperación de contraseña | Propuesto |
 
 ## Plantilla
 

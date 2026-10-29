@@ -26,6 +26,7 @@ public sealed class ManejadorDeExcepciones : IExceptionHandler
 
         var (estado, error) = exception switch
         {
+            TokenDeRecuperacionInvalido e => (StatusCodes.Status400BadRequest, new ErrorResponse("TOKEN_INVALIDO", e.Message)),
             CredencialesInvalidas e => (StatusCodes.Status401Unauthorized, new ErrorResponse("CREDENCIALES_INVALIDAS", e.Message)),
             ExcepcionDeDominio e => (StatusCodes.Status400BadRequest, new ErrorResponse("VALIDACION", e.Message)),
             AccesoDenegado e => (StatusCodes.Status403Forbidden, new ErrorResponse("ACCESO_DENEGADO", e.Message)),

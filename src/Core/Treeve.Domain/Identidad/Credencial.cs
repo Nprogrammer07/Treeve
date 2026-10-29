@@ -14,7 +14,7 @@ public sealed class Credencial
     public static readonly TimeSpan DuracionDelBloqueo = TimeSpan.FromMinutes(15);
 
     public Guid UsuarioId { get; }
-    public string HashDeContrasena { get; }
+    public string HashDeContrasena { get; private set; }
 
     /// <summary>Intentos fallidos desde el último acceso exitoso o el último bloqueo.</summary>
     public int IntentosFallidos { get; private set; }
@@ -64,6 +64,20 @@ public sealed class Credencial
     /// <summary>Un acceso correcto borra los intentos fallidos: el criterio habla de intentos consecutivos.</summary>
     public void RegistrarAccesoExitoso(DateTimeOffset ahora)
     {
+        IntentosFallidos = 0;
+        BloqueadoHasta = null;
+        ActualizadaEn = ahora;
+    }
+
+    /// <summary>
+    /// HU-03b: cambia la contraseña tras una recuperación. También levanta el bloqueo y borra los intentos fallidos:
+    /// quien recupera su acceso no debería seguir encerrado por intentos anteriores.
+    /// </summary>
+    public void CambiarContrasena(string nuevoHash, DateTimeOffset ahora)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(nuevoHash);
+
+        HashDeContrasena = nuevoHash;
         IntentosFallidos = 0;
         BloqueadoHasta = null;
         ActualizadaEn = ahora;

@@ -20,6 +20,18 @@ public sealed record LoginRequest(string? Identificador, string? Contrasena)
     public override string ToString() => "[login]"; // lleva una contraseña: nunca se imprime
 }
 
+public sealed record SolicitudDeRecuperacionRequest(string? Correo)
+{
+    public override string ToString() => "[solicitud de recuperación]"; // lleva un correo: nunca se imprime
+}
+
+public sealed record RestablecerContrasenaRequest(string? Token, string? Contrasena)
+{
+    public override string ToString() => "[restablecer contraseña]"; // lleva el token y una contraseña: nunca se imprime
+}
+
+public sealed record MensajeResponse(string Mensaje);
+
 public sealed record SesionResponse(Guid UsuarioId, string Apodo, string Token, DateTimeOffset ExpiraEn)
 {
     public override string ToString() => "[sesión]";
@@ -55,6 +67,23 @@ public static class IdentidadEndpoints
             var sesion = await iniciarSesion.Ejecutar(new IniciarSesionComando(request.Identificador, request.Contrasena), ct);
 
             return Results.Ok(new SesionResponse(sesion.UsuarioId, sesion.Apodo, sesion.Token, sesion.ExpiraEn));
+        }).AllowAnonymous();
+
+        // HU-03b: pide el enlace de recuperación. Responde 202 con el mismo mensaje exista o no el correo.
+        grupo.MapPost("/recuperacion", async (SolicitudDeRecuperacionRequest request, SolicitarRecuperacion solicitar, CancellationToken ct) =>
+        {
+            await solicitar.Ejecutar(new SolicitarRecuperacionComando(request.Correo), ct);
+
+            return Results.Accepted(value: new MensajeResponse(
+                "Si el correo está registrado, te enviamos un enlace para restablecer tu contraseña. Revisa también la carpeta de spam."));
+        }).AllowAnonymous();
+
+        // HU-03b: cambia la contraseña con el token del enlace (un solo uso, vence a los 30 minutos).
+        grupo.MapPost("/recuperacion/restablecer", async (RestablecerContrasenaRequest request, RestablecerContrasena restablecer, CancellationToken ct) =>
+        {
+            await restablecer.Ejecutar(new RestablecerContrasenaComando(request.Token, request.Contrasena), ct);
+
+            return Results.NoContent();
         }).AllowAnonymous();
 
         // Sirve para comprobar que el token funciona. El resto de endpoints protegidos usarán RequireAuthorization().

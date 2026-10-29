@@ -12,6 +12,9 @@ internal sealed class RepositorioSesionesPostgres(TreeveDbContext contexto) : IR
         await contexto.SaveChangesAsync(ct);
     }
 
+    public Task RevocarDeUsuario(Guid usuarioId, CancellationToken ct) =>
+        contexto.Set<Sesion>().Where(s => s.UsuarioId == usuarioId).ExecuteDeleteAsync(ct);
+
     public Task<Sesion?> ObtenerVigentePorTokenHash(string tokenHash, DateTimeOffset ahora, CancellationToken ct) =>
         contexto.Set<Sesion>().FirstOrDefaultAsync(s => s.TokenHash == tokenHash && s.ExpiraEn > ahora, ct);
 }
