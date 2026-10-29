@@ -3,6 +3,7 @@ using Treeve.Api.Composition;
 using Treeve.Api.Correlacion;
 using Treeve.Api.Endpoints.Administracion;
 using Treeve.Api.Endpoints.Desahogos;
+using Treeve.Api.Endpoints.EspacioVerde;
 using Treeve.Api.Endpoints.Identidad;
 using Treeve.Api.Endpoints.Notificaciones;
 using Treeve.Api.Endpoints.Salud;
@@ -76,11 +77,12 @@ app.MapSaludEndpoints();        // /health/ready: valida la conexión con la bas
 app.MapIdentidadEndpoints();    // HU-02: registro
 
 app.MapDesahogosEndpoints();    // HU-05: guardar y leer desahogos (solo la persona dueña)
+app.MapEspacioVerdeEndpoints(); // HU-07a: el lote de la persona y cómo crece
 app.MapSugerenciasEndpoints();  // HU-09: enviar una sugerencia y ver el historial propio
 app.MapStaffEndpoints();        // HU-10: zona de staff (rol validado en cada petición)
 app.MapAdministracionEndpoints(); // HU-12: gestión de staff y sus logs (solo administración)
 app.MapNotificacionesEndpoints(); // HU-12: avisos dentro de la aplicación para cada persona
 
-// Endpoints por área, definidos en Endpoints/. Ejemplo: app.MapEspacioVerdeEndpoints();
+// Endpoints por área, definidos en Endpoints/.
 
 app.Run();

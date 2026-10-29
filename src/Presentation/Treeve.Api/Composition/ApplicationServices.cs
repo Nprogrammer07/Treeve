@@ -1,11 +1,14 @@
 using Treeve.Application.Administracion;
 using Treeve.Application.Comun;
 using Treeve.Application.Desahogos;
+using Treeve.Application.EspacioVerde;
 using Treeve.Application.Identidad;
 using Treeve.Application.MensajesApoyo;
 using Treeve.Application.Notificaciones;
 using Treeve.Application.Sugerencias;
 using Treeve.Domain.Administracion;
+using Treeve.Domain.Desahogos;
+using Treeve.Domain.EspacioVerde;
 using Treeve.Domain.Services.MensajesApoyo;
 
 namespace Treeve.Api.Composition;
@@ -35,6 +38,12 @@ public static class ApplicationServices
         // Desahogos (HU-05)
         services.AddScoped<CrearNota>();
         services.AddScoped<LeerNota>();
+
+        // Espacio verde (HU-07a). El umbral es configurable (HU-07): EspacioVerde:DesahogosPorCrecimiento.
+        services.AddSingleton(proveedor => new ReglaDeCrecimiento(
+            proveedor.GetRequiredService<IConfiguration>().GetValue("EspacioVerde:DesahogosPorCrecimiento", ReglaDeCrecimiento.DesahogosPorDefecto)));
+        services.AddScoped<IManejadorDeEventos<NotaCreada>, AlCrearseNota>();
+        services.AddScoped<ConsultarEspacioVerde>();
 
         // Sugerencias (HU-09)
         services.AddScoped<EnviarSugerencia>();

@@ -6,6 +6,7 @@ using Treeve.Application.Identidad;
 using Treeve.Application.MensajesApoyo;
 using Treeve.Domain.Services.Administracion;
 using Treeve.Domain.Services.Desahogos;
+using Treeve.Domain.Services.EspacioVerde;
 using Treeve.Domain.Services.Identidad;
 using Treeve.Domain.Services.MensajesApoyo;
 using Treeve.Domain.Services.Notificaciones;
@@ -16,6 +17,7 @@ using Treeve.Infrastructure.MensajesApoyo;
 using Treeve.Infrastructure.Persistence;
 using Treeve.Infrastructure.Persistence.Administracion;
 using Treeve.Infrastructure.Persistence.Desahogos;
+using Treeve.Infrastructure.Persistence.EspacioVerde;
 using Treeve.Infrastructure.Persistence.Identidad;
 using Treeve.Infrastructure.Persistence.MensajesApoyo;
 using Treeve.Infrastructure.Persistence.Notificaciones;
@@ -72,6 +74,9 @@ public static class DependencyInjection
 
         // Desahogos (HU-05): el texto se guarda cifrado
         services.AddScoped<IRepositorioNotas, RepositorioNotasPostgres>();
+
+        // Espacio verde (HU-07a): un riego por desahogo; el estado del lote se calcula a partir de ellos
+        services.AddScoped<IRepositorioRiegos, RepositorioRiegosPostgres>();
 
         // Sugerencias (HU-09)
         services.AddScoped<IRepositorioSugerencias, RepositorioSugerenciasPostgres>();
