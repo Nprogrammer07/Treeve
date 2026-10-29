@@ -79,4 +79,22 @@ describe('FormularioLogin', () => {
 
     expect(onIrARegistro).toHaveBeenCalledOnce()
   })
+
+  it('HU-03b: ofrece "¿Olvidaste tu contraseña?" solo si se le da a dónde llevar', () => {
+    const onOlvidoContrasena = vi.fn<() => void>()
+    const { unmount } = render(<FormularioLogin />)
+    expect(screen.queryByRole('button', { name: '¿Olvidaste tu contraseña?' })).not.toBeInTheDocument()
+    unmount()
+
+    render(<FormularioLogin onOlvidoContrasena={onOlvidoContrasena} />)
+    fireEvent.click(screen.getByRole('button', { name: '¿Olvidaste tu contraseña?' }))
+
+    expect(onOlvidoContrasena).toHaveBeenCalledOnce()
+  })
+
+  it('HU-03b: muestra en una región en vivo el aviso de éxito que le llega de otra pantalla', () => {
+    render(<FormularioLogin aviso="Tu contraseña se cambió. Inicia sesión con la nueva." />)
+
+    expect(screen.getByRole('status')).toHaveTextContent('Tu contraseña se cambió. Inicia sesión con la nueva.')
+  })
 })

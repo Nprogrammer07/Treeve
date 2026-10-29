@@ -12,13 +12,17 @@ import { validarLogin } from './validacion.ts'
 interface Props {
   /** Para quien todavía no tiene cuenta. */
   onIrARegistro?: () => void
+  /** HU-03b: lleva a pedir el enlace para restablecer la contraseña. Si no se entrega, el enlace no aparece. */
+  onOlvidoContrasena?: () => void
+  /** Aviso de éxito que llega de otra pantalla (por ejemplo, "Tu contraseña se cambió"). */
+  aviso?: string
 }
 
 /**
  * HU-03a: inicio de sesión con usuario o correo. El mensaje de error lo escribe la API y no dice qué dato falló;
  * tras 5 intentos fallidos la cuenta se bloquea y la API explica cuánto falta.
  */
-export function FormularioLogin({ onIrARegistro }: Props) {
+export function FormularioLogin({ onIrARegistro, onOlvidoContrasena, aviso = '' }: Props) {
   const base = useId()
   const formulario = useRef<HTMLFormElement>(null)
   const [datos, setDatos] = useState({ identificador: '', contrasena: '' })
@@ -60,9 +64,17 @@ export function FormularioLogin({ onIrARegistro }: Props) {
       </h2>
       <p className={estilos.subtitulo}>Entra con tu usuario o tu correo</p>
 
+      <output className={estilos.exito}>{aviso}</output>
       <Campo id={`${base}-identificador`} etiqueta="Usuario o correo" marca="obligatorio" autoComplete="username" valor={datos.identificador} onCambio={(identificador) => setDatos((previo) => ({ ...previo, identificador }))} error={errores.identificador} />
       <Campo id={`${base}-contrasena`} etiqueta="Contraseña" marca="obligatorio" type="password" autoComplete="current-password" valor={datos.contrasena} onCambio={(contrasena) => setDatos((previo) => ({ ...previo, contrasena }))} error={errores.contrasena} />
 
+      {onOlvidoContrasena && (
+        <p className={estilos.olvido}>
+          <button type="button" className={estilos.enlace} onClick={onOlvidoContrasena}>
+            ¿Olvidaste tu contraseña?
+          </button>
+        </p>
+      )}
       {falloEnvio && <Aviso>{falloEnvio}</Aviso>}
       <Boton type="submit" disabled={enviando} className={estilos.enviar}>
         Iniciar sesión

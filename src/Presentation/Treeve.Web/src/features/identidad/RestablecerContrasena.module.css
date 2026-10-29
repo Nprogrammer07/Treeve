@@ -1,0 +1,11 @@
+.pagina {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  min-height: 100dvh;
+  padding: 2rem 1rem;
+}
+
+.pagina > * {
+  width: min(100%, 30rem);
+}

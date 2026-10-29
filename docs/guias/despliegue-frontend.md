@@ -35,3 +35,14 @@ Después hay que reiniciar o volver a desplegar la API para que la lea. Si luego
 - En un proyecto nuevo, Vercel puede proteger las direcciones `*.vercel.app` con un inicio de sesión de Vercel; para que el sitio sea público hay que desactivar *Deployment Protection* en los ajustes del proyecto.
 - La API solo acepta conexiones HTTPS (ADR-005): `VITE_API_URL` debe empezar por `https://`.
 - Para probar contra la API de Railway desde `localhost`, hay que agregar `http://localhost:5173` temporalmente a `Cors__Origenes`.
+
+## Enlace del correo de recuperación (`/restablecer-contrasena`, HU-03b)
+
+El correo de recuperación trae un botón que abre `<Recuperacion__UrlBase>?token=…`. Hay que configurar dos cosas **antes** de probarlo en el sitio publicado:
+
+1. **En Railway (API):** la variable `Recuperacion__UrlBase` con la dirección completa de la pantalla, por ejemplo `https://treeve.onrender.com/restablecer-contrasena` (sin `?token=`, sin barra final). La API la lee al arrancar: hay que reiniciarla.
+2. **En Render (sitio estático):** como el frontend es una sola página, el servidor debe devolver `index.html` cuando alguien abre `/restablecer-contrasena` directamente; si no, el enlace del correo responde "Not Found". En *Redirects/Rewrites* agregar una regla de tipo **Rewrite** con origen `/*` y destino `/index.html`, y comprobar después que la página principal y esa dirección cargan sus archivos con normalidad.
+
+La pantalla lee el token una sola vez, lo borra de la barra de direcciones y lo guarda solo en memoria. No se escribe en consola, ni en logs, ni en ningún almacenamiento del navegador. Al cambiar la contraseña la API cierra todas las sesiones, y la interfaz olvida la sesión guardada en el navegador.
+
+En desarrollo (`npm run dev`) no hace falta nada: Vite responde `index.html` en cualquier ruta.
