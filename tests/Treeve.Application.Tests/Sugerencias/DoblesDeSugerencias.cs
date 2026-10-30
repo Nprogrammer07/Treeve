@@ -12,9 +12,21 @@ internal sealed class RepositorioSugerenciasFalso : IRepositorioSugerencias
 
     public FiltroDeSugerencias? UltimoFiltro { get; private set; }
 
+    /// <summary>Cuántas veces se llamó a <see cref="Guardar"/> (HU-11).</summary>
+    public int VecesGuardada { get; private set; }
+
     public Task Agregar(Sugerencia sugerencia, CancellationToken ct)
     {
         Guardadas.Add(sugerencia);
+        return Task.CompletedTask;
+    }
+
+    public Task<Sugerencia?> ObtenerPorId(Guid sugerenciaId, CancellationToken ct) =>
+        Task.FromResult(Guardadas.SingleOrDefault(s => s.Id == sugerenciaId));
+
+    public Task Guardar(Sugerencia sugerencia, CancellationToken ct)
+    {
+        VecesGuardada++;
         return Task.CompletedTask;
     }
 

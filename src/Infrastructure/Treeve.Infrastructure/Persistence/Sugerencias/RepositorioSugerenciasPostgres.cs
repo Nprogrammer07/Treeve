@@ -15,6 +15,11 @@ internal sealed class RepositorioSugerenciasPostgres(TreeveDbContext contexto) :
         await contexto.SaveChangesAsync(ct);
     }
 
+    public Task<Sugerencia?> ObtenerPorId(Guid sugerenciaId, CancellationToken ct) =>
+        contexto.Set<Sugerencia>().FirstOrDefaultAsync(s => s.Id == sugerenciaId, ct);
+
+    public Task Guardar(Sugerencia sugerencia, CancellationToken ct) => contexto.SaveChangesAsync(ct);
+
     public async Task<IReadOnlyList<Sugerencia>> ListarDeUsuario(Guid usuarioId, int limite, CancellationToken ct) =>
         await contexto.Set<Sugerencia>().AsNoTracking()
             .Where(s => s.UsuarioId == usuarioId)
@@ -55,9 +60,22 @@ internal sealed class RepositorioSugerenciasPostgres(TreeveDbContext contexto) :
             consulta = consulta.Where(x => x.NombreDeUsuario == nombre);
         }
 
-        return await consulta
-            .OrderByDescending(x => x.Sugerencia.CreadaEn)
-            .ThenByDescending(x => x.Sugerencia.Id)
+        // HU-11: el orden lo resuelve la base de datos, con un desempate estable para que la paginación no repita filas.
+        var ordenada = filtro.Orden switch
+        {
+            OrdenDeSugerencias.Antiguas => consulta
+                .OrderBy(x => x.Sugerencia.CreadaEn)
+                .ThenBy(x => x.Sugerencia.Id),
+            OrdenDeSugerencias.Usuario => consulta
+                .OrderBy(x => x.NombreDeUsuario)
+                .ThenByDescending(x => x.Sugerencia.CreadaEn)
+                .ThenByDescending(x => x.Sugerencia.Id),
+            _ => consulta
+                .OrderByDescending(x => x.Sugerencia.CreadaEn)
+                .ThenByDescending(x => x.Sugerencia.Id),
+        };
+
+        return await ordenada
             .Skip(filtro.Desplazamiento)
             .Take(filtro.Limite)
             .Select(x => new SugerenciaConAutor(
@@ -66,7 +84,9 @@ internal sealed class RepositorioSugerenciasPostgres(TreeveDbContext contexto) :
                 x.NombreDeUsuario,
                 x.Sugerencia.Texto,
                 x.Sugerencia.Estado,
-                x.Sugerencia.CreadaEn))
+                x.Sugerencia.CreadaEn,
+                x.Sugerencia.Comentario,
+                x.Sugerencia.GestionadaEn))
             .ToListAsync(ct);
     }
 }

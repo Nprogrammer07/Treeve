@@ -71,6 +71,10 @@ public class ListarMisSugerenciasTests
     {
         public Task Agregar(Sugerencia sugerencia, CancellationToken ct) => interno.Agregar(sugerencia, ct);
 
+        public Task<Sugerencia?> ObtenerPorId(Guid sugerenciaId, CancellationToken ct) => interno.ObtenerPorId(sugerenciaId, ct);
+
+        public Task Guardar(Sugerencia sugerencia, CancellationToken ct) => interno.Guardar(sugerencia, ct);
+
         public Task<IReadOnlyList<Sugerencia>> ListarDeUsuario(Guid usuarioId, int limite, CancellationToken ct) =>
             Task.FromResult<IReadOnlyList<Sugerencia>>([.. interno.Guardadas]);
 

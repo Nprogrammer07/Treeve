@@ -38,6 +38,7 @@ public static class NotificacionesEndpoints
     {
         TipoDeNotificacion.AscendidoAStaff => "ascendido_a_staff",
         TipoDeNotificacion.StaffRevocado => "staff_revocado",
+        TipoDeNotificacion.SugerenciaRespondida => "sugerencia_respondida",
         _ => throw new ArgumentOutOfRangeException(nameof(tipo)),
     };
 }

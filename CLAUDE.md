@@ -271,7 +271,7 @@ Puntos que el ADR resolvió:
 | 1 | HU-05 | `desahogos` (texto cifrado) |
 | 2 | HU-07a | `riegos` (un riego por desahogo; el nivel de árbol, flores y bosque se calcula, ADR-007) |
 | 2 | HU-06a-1 | `historial_respuestas` (IDs de fragmentos); fragmentos si van en tabla |
-| 4 | HU-09 / HU-11 | `sugerencias` y respuestas del staff |
+| 4 | HU-09 / HU-11 | `sugerencias`; HU-11 agrega `comentario_del_staff`, `gestionada_por` y `gestionada_en` |
 | 4 | HU-10 / HU-12 | Roles y `auditoria` |
 
 ---
@@ -478,6 +478,7 @@ IDs de tareas en ClickUp:
 - **HU-12 fusionada (backend, PR #19, 29-oct-2026):** listar staff, ascender y revocar, logs de roles y de accesos para el administrador, log inmutable por trigger y notificación dentro de la app (ADR-006). Contrato para el frontend en `docs/guias/api-administracion.md`; la pantalla es de Luis.
 
 - **HU-07a en el PR #21 (backend, 29-oct-2026):** árbol, flores y bosque crecen por turnos cada 3 desahogos (ADR-007); `GET /api/espacio-verde`; los desahogos existentes cuentan como riegos. Contrato en `docs/guias/api-espacio-verde.md`; Luis reemplaza `ETAPA_TEMPORAL` y dibuja flores y bosque por nivel.
+- **HU-11 en curso (backend, rama `hu-11-gestion-sugerencias`, 30-oct-2026):** el staff cambia el estado (libre entre los 4), deja un comentario por sugerencia (500 caracteres, visible en el historial de quien sugirió) y ordena el listado (`recientes`, `antiguas`, `usuario`); quien sugirió recibe un aviso `sugerencia_respondida` por el evento `SugerenciaGestionada`. Contrato en `docs/guias/api-sugerencias.md`; el panel es de Luis.
 
 **No iniciado**
 - Repositorio remoto (GitHub) y primer PR.

@@ -26,7 +26,7 @@ Uso sugerido: al abrir la zona de staff, la interfaz llama a esta ruta. Con 200 
 
 ## Sugerencias
 
-`GET /api/staff/sugerencias` (HU-09) lista las sugerencias con filtros y paginación; el contrato está en `api-sugerencias.md`.
+`GET /api/staff/sugerencias` (HU-09) lista las sugerencias con filtros, orden y paginación, y `PATCH /api/staff/sugerencias/{sugerenciaId}` (HU-11) cambia su estado y deja un comentario para quien sugirió. El contrato está en [api-sugerencias.md](api-sugerencias.md).
 
 ## Auditoría
 

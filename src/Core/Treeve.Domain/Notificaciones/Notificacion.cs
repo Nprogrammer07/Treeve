@@ -1,5 +1,6 @@
 using Treeve.Domain.Administracion;
 using Treeve.Domain.Identidad;
+using Treeve.Domain.Sugerencias;
 
 namespace Treeve.Domain.Notificaciones;
 
@@ -10,6 +11,9 @@ public enum TipoDeNotificacion
 
     /// <summary>La persona dejó de formar parte del staff (HU-12).</summary>
     StaffRevocado,
+
+    /// <summary>El staff cambió el estado de una sugerencia de la persona o le dejó un comentario (HU-11).</summary>
+    SugerenciaRespondida,
 }
 
 /// <summary>
@@ -46,6 +50,7 @@ public sealed class Notificacion
     {
         TipoDeNotificacion.AscendidoAStaff => "Ahora formas parte del staff de Treeve. Ya puedes entrar al panel de staff.",
         TipoDeNotificacion.StaffRevocado => "Ya no formas parte del staff de Treeve. Tu espacio verde y tus desahogos siguen igual.",
+        TipoDeNotificacion.SugerenciaRespondida => "El staff revisó una de tus sugerencias. Mira su estado y su comentario en tu historial de sugerencias.",
         _ => throw new InvalidOperationException("Tipo de notificación desconocido."),
     };
 
@@ -65,6 +70,18 @@ public sealed class Notificacion
         };
 
         return new Notificacion(Guid.NewGuid(), evento.UsuarioId, tipo, evento.EventoId, evento.Fecha, leidaEn: null);
+    }
+
+    /// <summary>
+    /// HU-11: el aviso que recibe quien sugirió cuando el staff gestiona su sugerencia. El mensaje no repite el comentario
+    /// ni el texto de la sugerencia: la persona los ve en su historial, y la tabla de notificaciones no guarda texto libre.
+    /// </summary>
+    public static Notificacion PorSugerenciaGestionada(SugerenciaGestionada evento)
+    {
+        ArgumentNullException.ThrowIfNull(evento);
+
+        return new Notificacion(
+            Guid.NewGuid(), evento.UsuarioId, TipoDeNotificacion.SugerenciaRespondida, evento.EventoId, evento.Fecha, leidaEn: null);
     }
 
     public bool PerteneceA(Guid usuarioId) => UsuarioId == usuarioId;

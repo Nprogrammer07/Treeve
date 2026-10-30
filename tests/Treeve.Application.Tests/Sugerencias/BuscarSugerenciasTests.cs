@@ -214,6 +214,33 @@ public class BuscarSugerenciasTests
     }
 
     [Fact]
+    public async Task Sin_orden_lista_de_la_mas_reciente_a_la_mas_antigua()
+    {
+        await Buscar(Sin());
+
+        Assert.Equal(OrdenDeSugerencias.Recientes, repositorio.UltimoFiltro!.Orden);
+    }
+
+    [Theory]
+    [InlineData(OrdenDeSugerencias.Antiguas)]
+    [InlineData(OrdenDeSugerencias.Usuario)]
+    public async Task HU_11_el_staff_elige_el_orden(OrdenDeSugerencias orden)
+    {
+        await Buscar(new BuscarSugerenciasComando(null, null, null, null, null, null, orden));
+
+        Assert.Equal(orden, repositorio.UltimoFiltro!.Orden);
+    }
+
+    [Fact]
+    public async Task Un_orden_que_no_existe_es_rechazado()
+    {
+        await Assert.ThrowsAsync<ExcepcionDeDominio>(
+            () => Buscar(new BuscarSugerenciasComando(null, null, null, null, null, null, (OrdenDeSugerencias)9)));
+
+        Assert.Null(repositorio.UltimoFiltro);
+    }
+
+    [Fact]
     public void La_pagina_no_imprime_los_textos()
     {
         Cargar(2);
