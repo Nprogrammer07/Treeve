@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Treeve.Api.Autenticacion;
 using Treeve.Application.Sugerencias;
 using Treeve.Domain.Comun;
+using Treeve.Domain.Services.Sugerencias;
 using Treeve.Domain.Sugerencias;
 
 namespace Treeve.Api.Endpoints.Sugerencias;
@@ -14,7 +15,14 @@ public sealed record EnviarSugerenciaRequest(string? Texto)
 
 public sealed record SugerenciaEnviadaResponse(Guid SugerenciaId, DateTimeOffset CreadaEn, string Estado);
 
-public sealed record SugerenciaPropiaResponse(Guid SugerenciaId, string Texto, string Estado, DateTimeOffset CreadaEn)
+/// <param name="Comentario">La respuesta del staff (HU-11), o null si no hay.</param>
+public sealed record SugerenciaPropiaResponse(
+    Guid SugerenciaId,
+    string Texto,
+    string Estado,
+    DateTimeOffset CreadaEn,
+    string? Comentario,
+    DateTimeOffset? RespondidaEn)
 {
     public override string ToString() => "[sugerencia]";
 }
@@ -45,6 +53,16 @@ public static class EstadosDeSugerenciaEnLaApi
             .FirstOrDefault(e => ATexto(e!.Value) == valor.Trim().ToLowerInvariant())
             ?? throw new ExcepcionDeDominio("El estado debe ser pendiente, en_revision, implementada o rechazada.");
     }
+
+    /// <summary>HU-11: orden del listado de staff. Vacío = de la más reciente a la más antigua.</summary>
+    public static OrdenDeSugerencias? LeerOrden(string? valor) => (valor?.Trim().ToLowerInvariant()) switch
+    {
+        null or "" => null,
+        "recientes" => OrdenDeSugerencias.Recientes,
+        "antiguas" => OrdenDeSugerencias.Antiguas,
+        "usuario" => OrdenDeSugerencias.Usuario,
+        _ => throw new ExcepcionDeDominio("El orden debe ser recientes, antiguas o usuario."),
+    };
 
     /// <summary>Colombia no tiene horario de verano: su hora es siempre UTC-5. El staff escribe fechas en esa hora.</summary>
     public static readonly TimeSpan DesfaseDeColombia = TimeSpan.FromHours(-5);
@@ -94,7 +112,8 @@ public static class SugerenciasEndpoints
             var propias = await listar.Ejecutar(usuario.ObtenerUsuarioId(), ct);
 
             return Results.Ok(new MisSugerenciasResponse(
-                [.. propias.Select(s => new SugerenciaPropiaResponse(s.SugerenciaId, s.Texto, EstadosDeSugerenciaEnLaApi.ATexto(s.Estado), s.CreadaEn))]));
+                [.. propias.Select(s => new SugerenciaPropiaResponse(
+                    s.SugerenciaId, s.Texto, EstadosDeSugerenciaEnLaApi.ATexto(s.Estado), s.CreadaEn, s.Comentario, s.RespondidaEn))]));
         });
 
         return app;

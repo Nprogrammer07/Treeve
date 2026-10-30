@@ -405,6 +405,11 @@ namespace Treeve.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("Comentario")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("comentario_del_staff");
+
                     b.Property<DateTimeOffset>("CreadaEn")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("creada_en");
@@ -414,6 +419,14 @@ namespace Treeve.Infrastructure.Persistence.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
                         .HasColumnName("estado");
+
+                    b.Property<DateTimeOffset?>("GestionadaEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("gestionada_en");
+
+                    b.Property<Guid?>("GestionadaPor")
+                        .HasColumnType("uuid")
+                        .HasColumnName("gestionada_por");
 
                     b.Property<string>("Texto")
                         .IsRequired()
@@ -426,6 +439,9 @@ namespace Treeve.Infrastructure.Persistence.Migrations
                         .HasColumnName("usuario_id");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("GestionadaPor")
+                        .HasDatabaseName("ix_sugerencias_gestionada_por");
 
                     b.HasIndex("Estado", "CreadaEn")
                         .HasDatabaseName("ix_sugerencias_estado_creada_en");
@@ -501,6 +517,11 @@ namespace Treeve.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Treeve.Domain.Sugerencias.Sugerencia", b =>
                 {
+                    b.HasOne("Treeve.Domain.Identidad.Usuario", null)
+                        .WithMany()
+                        .HasForeignKey("GestionadaPor")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Treeve.Domain.Identidad.Usuario", null)
                         .WithMany()
                         .HasForeignKey("UsuarioId")

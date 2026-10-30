@@ -47,6 +47,10 @@ Ya existen los roles y su validación en cada petición (HU-10, ADR-005), la aud
 2. Si procede, una **migración versionada** (nunca un cambio a mano en producción, ADR-002) quita el trigger de la tabla, reemplaza en las filas de esa persona la IP por `suprimida` y el id por un id anónimo fijo, y vuelve a poner el trigger, todo en una sola transacción.
 3. Las filas **no se borran**: el log conserva cuántos intentos y cambios hubo y cuándo, sin identificar a la persona. La migración queda en el historial del repositorio como rastro de la excepción.
 
+## Precisión (HU-11, 30-oct-2026)
+
+Las notificaciones dentro de la app también avisan cuando el staff gestiona una sugerencia: el área Notificaciones escucha el evento `SugerenciaGestionada` (solo ids, estado y si cambió el estado o el comentario) y crea un aviso de tipo `SugerenciaRespondida`, idempotente por `evento_id` como los de cambio de rol. El aviso no copia el comentario ni el texto de la sugerencia: la tabla `notificaciones` sigue sin guardar texto libre, y la persona lee el comentario en su historial de sugerencias. No cambia ninguna decisión de este ADR.
+
 ## Verificación
 
 - **Pruebas de dominio:** reglas de ascenso y revocación, registro de auditoría, evento y notificación.

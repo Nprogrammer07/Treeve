@@ -77,7 +77,7 @@ Si la persona ya no existe, su nombre llega como `null`. Para la siguiente pági
 { "notificaciones": [ { "notificacionId": "…", "tipo": "ascendido_a_staff", "mensaje": "Ahora formas parte del staff de Treeve. Ya puedes entrar al panel de staff.", "creadaEn": "…", "leida": false } ] }
 ```
 
-`tipo` es `ascendido_a_staff` o `staff_revocado`. Muestra el `mensaje` tal cual: el texto lo decide el backend.
+`tipo` es `ascendido_a_staff`, `staff_revocado` o `sugerencia_respondida` (HU-11: el staff cambió el estado o el comentario de una sugerencia de la persona; ver [api-sugerencias.md](api-sugerencias.md)). Muestra el `mensaje` tal cual: el texto lo decide el backend.
 
 ### Marcar como leído
 

@@ -12,7 +12,8 @@ public sealed record BuscarSugerenciasComando(
     DateTimeOffset? Hasta,
     string? NombreDeUsuario,
     int? Limite,
-    int? Desplazamiento);
+    int? Desplazamiento,
+    OrdenDeSugerencias? Orden = null);
 
 public sealed record PaginaDeSugerencias(IReadOnlyList<SugerenciaConAutor> Sugerencias, bool HayMas)
 {
@@ -21,6 +22,7 @@ public sealed record PaginaDeSugerencias(IReadOnlyList<SugerenciaConAutor> Suger
 
 /// <summary>
 /// HU-09 (RNF de mantenibilidad): el staff filtra las sugerencias por estado, fecha o usuario, con paginación.
+/// HU-11 (RNF de usabilidad): además las ordena por fecha (recientes o antiguas primero) o por usuario.
 /// La autorización vive aquí, como en <c>LeerNota</c>: antes de validar o buscar, <see cref="AutorizarAcceso"/> (HU-10)
 /// exige rol de staff o administración, lee el rol de la base de datos y, si no alcanza, deja el intento en la auditoría.
 /// Así el listado no queda abierto si algún día se llama desde otra ruta. La ruta <c>/api/staff</c> además lleva el
@@ -57,6 +59,11 @@ public sealed class BuscarSugerencias(AutorizarAcceso autorizar, IRepositorioSug
             throw new ExcepcionDeDominio("El estado no es válido.");
         }
 
+        if (comando.Orden is { } orden && !Enum.IsDefined(orden))
+        {
+            throw new ExcepcionDeDominio("El orden no es válido.");
+        }
+
         if (comando.Desde is { } desde && comando.Hasta is { } hasta && desde >= hasta)
         {
             throw new ExcepcionDeDominio("La fecha 'desde' debe ser anterior a 'hasta'.");
@@ -66,7 +73,8 @@ public sealed class BuscarSugerencias(AutorizarAcceso autorizar, IRepositorioSug
 
         // Se pide una fila de más: si llega, hay otra página, y no hace falta contar toda la tabla.
         var filas = await sugerencias.Buscar(
-            new FiltroDeSugerencias(comando.Estado, comando.Desde, comando.Hasta, nombre.Length == 0 ? null : nombre, limite + 1, desplazamiento),
+            new FiltroDeSugerencias(comando.Estado, comando.Desde, comando.Hasta, nombre.Length == 0 ? null : nombre, limite + 1, desplazamiento,
+                comando.Orden ?? OrdenDeSugerencias.Recientes),
             ct);
 
         return new PaginaDeSugerencias([.. filas.Take(limite)], filas.Count > limite);
