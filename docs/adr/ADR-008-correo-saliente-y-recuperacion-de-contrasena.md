@@ -1,6 +1,6 @@
 # ADR-008 · Correo saliente y recuperación de contraseña
 
-- **Estado:** Propuesto (2026-10-29), pendiente de aprobación de Nicolás
+- **Estado:** Aceptado (2026-10-30) por Nicolás, con dos condiciones: el correo sale de una cuenta de Gmail del proyecto (no de una personal) y la aplicación OAuth de Google se publica "En producción" para que el refresh token no venza a los 7 días
 - **Fecha:** 2026-10-29
 - **Decisores:** Nicolás (arquitecto), Juan José (backend)
 - **Historias relacionadas:** HU-03b
