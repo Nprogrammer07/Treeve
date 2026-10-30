@@ -18,6 +18,16 @@ public sealed record TokenDeSesion(string Valor, string Hash)
     public override string ToString() => "[token de sesión]";
 }
 
+/// <summary>
+/// HU-03b: avisa a la persona, por correo, cómo restablecer su contraseña. Quien implementa arma el enlace (con la
+/// dirección del frontend) y el texto del correo; el núcleo solo entrega el token en claro, una vez. Si el correo no
+/// sale, lanza <see cref="ErrorDeEnvioDeCorreo"/>.
+/// </summary>
+public interface INotificadorDeRecuperacion
+{
+    Task Enviar(string correo, string apodo, string token, DateTimeOffset expiraEn, CancellationToken ct);
+}
+
 public interface IEmisorDeTokens
 {
     /// <summary>Genera un token aleatorio y su hash. Solo el hash se guarda.</summary>

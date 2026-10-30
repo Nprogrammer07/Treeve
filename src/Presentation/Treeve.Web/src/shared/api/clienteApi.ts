@@ -8,6 +8,7 @@ interface DetalleDelError {
   codigo?: string
   mensajeParaUsuario?: string
   reintentarEnSeg?: number
+  correlacionId?: string
 }
 
 export class ErrorApi extends Error {
@@ -18,6 +19,8 @@ export class ErrorApi extends Error {
   readonly mensajeParaUsuario?: string
   /** Segundos de espera de la cabecera Retry-After (cuenta bloqueada). */
   readonly reintentarEnSeg?: number
+  /** Identificador de la petición (cabecera X-Correlation-Id): sirve para reportar un fallo sin compartir contenido. */
+  readonly correlacionId?: string
 
   constructor(estado: number, detalle: DetalleDelError = {}) {
     // Nunca incluir el cuerpo de la petición: puede contener el texto de un desahogo o una contraseña.
@@ -27,12 +30,15 @@ export class ErrorApi extends Error {
     this.codigo = detalle.codigo
     this.mensajeParaUsuario = detalle.mensajeParaUsuario
     this.reintentarEnSeg = detalle.reintentarEnSeg
+    this.correlacionId = detalle.correlacionId
   }
 }
 
 /** Los errores de la API tienen la forma { codigo, mensaje } (docs/guias/api-identidad.md). */
 async function leerDetalle(respuesta: Response): Promise<DetalleDelError> {
   const detalle: DetalleDelError = {}
+  const correlacionId = respuesta.headers.get('X-Correlation-Id')
+  if (correlacionId) detalle.correlacionId = correlacionId
   const espera = Number(respuesta.headers.get('Retry-After'))
   if (respuesta.headers.has('Retry-After') && Number.isFinite(espera)) detalle.reintentarEnSeg = espera
   try {

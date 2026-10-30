@@ -31,6 +31,9 @@ internal sealed class RepositorioUsuariosFalso : IRepositorioUsuarios
         Task.FromResult<IReadOnlyList<PersonaDelStaff>>(
             [.. Guardados.Where(u => u.Rol is Rol.Staff or Rol.Administrador).OrderBy(u => u.NombreDeUsuario, StringComparer.Ordinal)
                 .Select(u => new PersonaDelStaff(u.Id, u.NombreDeUsuario, u.Apodo, u.Rol))]);
+
+    public Task<Usuario?> ObtenerPorCorreo(string correoNormalizado, CancellationToken ct) =>
+        Task.FromResult(Guardados.FirstOrDefault(u => u.Correo == correoNormalizado));
 }
 
 /// <summary>Busca en los mismos datos que <see cref="RepositorioUsuariosFalso"/>, como lo haría la base de datos.</summary>
@@ -44,6 +47,9 @@ internal sealed class RepositorioCredencialesFalso(RepositorioUsuariosFalso usua
         return Task.FromResult(usuario is null ? null : usuarios.Credenciales.FirstOrDefault(c => c.UsuarioId == usuario.Id));
     }
 
+    public Task<Credencial?> ObtenerPorUsuarioId(Guid usuarioId, CancellationToken ct) =>
+        Task.FromResult(usuarios.Credenciales.FirstOrDefault(c => c.UsuarioId == usuarioId));
+
     public Task Actualizar(Credencial credencial, CancellationToken ct) => Task.CompletedTask;
 }
 
@@ -54,6 +60,12 @@ internal sealed class RepositorioSesionesFalso : IRepositorioSesiones
     public Task Agregar(Sesion sesion, CancellationToken ct)
     {
         Guardadas.Add(sesion);
+        return Task.CompletedTask;
+    }
+
+    public Task RevocarDeUsuario(Guid usuarioId, CancellationToken ct)
+    {
+        Guardadas.RemoveAll(s => s.UsuarioId == usuarioId);
         return Task.CompletedTask;
     }
 
@@ -121,4 +133,55 @@ internal sealed class RepositorioAuditoriaFalso : IRepositorioAuditoria
         Task.FromResult<IReadOnlyList<AccesoDenegadoConNombre>>(
             [.. Registrados.OrderByDescending(a => a.OcurrioEn).Skip(desplazamiento).Take(limite)
                 .Select(a => new AccesoDenegadoConNombre(a.Id, a.UsuarioId, null, a.OcurrioEn, a.Ip, a.Recurso, a.RolRequerido))]);
+}
+
+internal sealed class RepositorioRecuperacionesFalso : IRepositorioRecuperaciones
+{
+    public List<RecuperacionDeContrasena> Guardadas { get; } = [];
+
+    public Task Agregar(RecuperacionDeContrasena recuperacion, CancellationToken ct)
+    {
+        Guardadas.Add(recuperacion);
+        return Task.CompletedTask;
+    }
+
+    public Task<bool> HayEmitidaDesde(Guid usuarioId, DateTimeOffset desde, CancellationToken ct) =>
+        Task.FromResult(Guardadas.Any(r => r.UsuarioId == usuarioId && r.CreadaEn > desde));
+
+    public Task InvalidarPendientes(Guid usuarioId, DateTimeOffset ahora, CancellationToken ct)
+    {
+        foreach (var recuperacion in Guardadas.Where(r => r.UsuarioId == usuarioId))
+        {
+            recuperacion.MarcarComoUsada(ahora);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task<Guid?> Consumir(string tokenHash, DateTimeOffset ahora, CancellationToken ct)
+    {
+        var recuperacion = Guardadas.FirstOrDefault(r => r.TokenHash == tokenHash && r.EstaVigente(ahora));
+        recuperacion?.MarcarComoUsada(ahora);
+
+        return Task.FromResult<Guid?>(recuperacion?.UsuarioId);
+    }
+}
+
+internal sealed class NotificadorDeRecuperacionFalso : INotificadorDeRecuperacion
+{
+    public List<(string Correo, string Apodo, string Token, DateTimeOffset ExpiraEn)> Enviados { get; } = [];
+
+    /// <summary>Si se define, el envío falla como si Gmail estuviera caído.</summary>
+    public bool Falla { get; set; }
+
+    public Task Enviar(string correo, string apodo, string token, DateTimeOffset expiraEn, CancellationToken ct)
+    {
+        if (Falla)
+        {
+            throw new ErrorDeEnvioDeCorreo("Gmail respondió 500.");
+        }
+
+        Enviados.Add((correo, apodo, token, expiraEn));
+        return Task.CompletedTask;
+    }
 }

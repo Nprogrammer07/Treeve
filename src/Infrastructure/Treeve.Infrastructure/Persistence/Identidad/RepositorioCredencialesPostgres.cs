@@ -12,5 +12,8 @@ internal sealed class RepositorioCredencialesPostgres(TreeveDbContext contexto) 
                 (u.NombreDeUsuario == identificadorNormalizado || u.Correo == identificadorNormalizado)),
             ct);
 
+    public Task<Credencial?> ObtenerPorUsuarioId(Guid usuarioId, CancellationToken ct) =>
+        contexto.Set<Credencial>().FirstOrDefaultAsync(c => c.UsuarioId == usuarioId, ct);
+
     public Task Actualizar(Credencial credencial, CancellationToken ct) => contexto.SaveChangesAsync(ct);
 }

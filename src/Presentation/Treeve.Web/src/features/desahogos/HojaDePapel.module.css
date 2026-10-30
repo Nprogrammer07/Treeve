@@ -62,3 +62,9 @@
   align-items: center;
   gap: 0.5rem;
 }
+
+.seguimiento {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+}

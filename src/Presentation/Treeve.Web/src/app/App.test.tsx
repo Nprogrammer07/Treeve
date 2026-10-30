@@ -51,7 +51,7 @@ const navegacion = () => within(screen.getByRole('navigation', { name: 'Principa
 beforeEach(() => {
   regar.mockClear()
   vi.mocked(guardarDesahogo).mockReset()
-  vi.mocked(guardarDesahogo).mockResolvedValue({ notaId: 'n-1', creadaEn: '2026-10-22T20:00:00-05:00' })
+  vi.mocked(guardarDesahogo).mockResolvedValue({ notaId: 'n-1', creadaEn: '2026-10-22T20:00:00-05:00', mensajeDeApoyo: { texto: 'Hola, Luis. Gracias por contarlo.', esDeCrisis: false } })
 })
 
 afterEach(() => {
@@ -164,7 +164,7 @@ describe('pasos 2 y 3: desahogarse', () => {
     expect(screen.getByPlaceholderText('Hoy me sentí...')).toBeInTheDocument()
   })
 
-  it('al guardar cierra la ventana, riega el espacio verde y lo cuenta con texto', async () => {
+  it('al guardar muestra el mensaje de apoyo y, al cerrarlo, riega el espacio verde y lo cuenta con texto', async () => {
     render(<App />)
 
     fireEvent.click(screen.getByRole('button', { name: 'Desahogarme ahora' }))
@@ -172,11 +172,31 @@ describe('pasos 2 y 3: desahogarse', () => {
     fireEvent.change(screen.getByLabelText('Escribe lo que sientes'), { target: { value: 'no sé' } })
     fireEvent.click(screen.getByRole('button', { name: 'Regar mi espacio verde' }))
 
-    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    expect(await screen.findByRole('dialog', { name: 'Un mensaje para ti' })).toHaveTextContent('Hola, Luis. Gracias por contarlo.')
     expect(guardarDesahogo).toHaveBeenCalledWith({ emocion: 'duda', texto: 'no sé' })
+    expect(regar).not.toHaveBeenCalled()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Seguir' }))
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
     expect(regar).toHaveBeenCalledOnce()
     // Hay dos avisos de estado en pantalla (sonido y riego): se busca el del riego por su texto.
     expect(screen.getByText('Tu desahogo regó tu espacio verde.').tagName).toBe('OUTPUT')
+  })
+
+  it('si cierra el mensaje con la X, el desahogo igual se guardó y el espacio verde se riega', async () => {
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Desahogarme ahora' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Miedo' }))
+    fireEvent.change(screen.getByLabelText('Escribe lo que sientes'), { target: { value: 'tengo miedo' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Regar mi espacio verde' }))
+    await screen.findByRole('dialog', { name: 'Un mensaje para ti' })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    expect(regar).toHaveBeenCalledOnce()
   })
 
   it('si cierra la ventana a medias no se guarda nada ni se riega', () => {

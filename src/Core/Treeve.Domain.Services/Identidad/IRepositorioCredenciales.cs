@@ -10,6 +10,9 @@ public interface IRepositorioCredenciales
     /// </summary>
     Task<Credencial?> ObtenerPorIdentificador(string identificadorNormalizado, CancellationToken ct);
 
+    /// <summary>Credencial de la persona (HU-03b: restablecer la contraseña).</summary>
+    Task<Credencial?> ObtenerPorUsuarioId(Guid usuarioId, CancellationToken ct);
+
     /// <summary>Guarda los cambios de una credencial obtenida con este mismo repositorio.</summary>
     Task Actualizar(Credencial credencial, CancellationToken ct);
 }
