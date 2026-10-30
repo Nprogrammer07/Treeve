@@ -78,6 +78,15 @@ describe('pedirApi', () => {
     expect(leerSesion()).toBeNull()
   })
 
+  it('guarda el código de seguimiento de la petición para poder reportar un fallo', async () => {
+    const respuesta = new Response(JSON.stringify({ codigo: 'ERROR', mensaje: 'Algo falló.' }), { status: 500, headers: { 'X-Correlation-Id': 'abc-123' } })
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(respuesta))
+
+    const error = await pedirApi('/api/desahogos', { method: 'POST', body: '{}' }).catch((e: unknown) => e)
+
+    expect(error).toMatchObject({ estado: 500, correlacionId: 'abc-123' })
+  })
+
   it('una respuesta de error que no es JSON deja solo el estado', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('<html>', { status: 502 })))
 

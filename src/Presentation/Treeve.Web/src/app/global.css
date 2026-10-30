@@ -9,6 +9,14 @@
 }
 
 @font-face {
+  font-family: 'Caveat';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('./fuentes/caveat-latin-wght-normal.woff2') format('woff2-variations');
+}
+
+@font-face {
   font-family: 'Nunito';
   font-style: normal;
   font-weight: 200 1000;
@@ -41,6 +49,8 @@
   --ambar-texto: #5e3b00;
 
   --fuente-titulo: 'Fraunces', ui-serif, Georgia, serif;
+  /* La tipografía manuscrita se usa solo para el mensaje de apoyo. */
+  --fuente-manuscrita: 'Caveat', 'Segoe Print', 'Bradley Hand', cursive;
   --fuente-texto: 'Nunito', ui-rounded, 'SF Pro Rounded', system-ui, sans-serif;
 
   color-scheme: light;
