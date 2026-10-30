@@ -3,7 +3,7 @@ import { EspacioVerde } from '../../scene/EspacioVerde.tsx'
 import { Icono, type NombreIcono } from '../../shared/ui/Icono.tsx'
 import estilos from './PaginaVisitante.module.css'
 
-export type ModoDeAcceso = 'registro' | 'login'
+export type ModoDeAcceso = 'registro' | 'login' | 'recuperar'
 
 interface Props {
   /** Las features no se importan entre sí: app/ entrega el formulario de acceso (registro o login) y el selector de sonido. */

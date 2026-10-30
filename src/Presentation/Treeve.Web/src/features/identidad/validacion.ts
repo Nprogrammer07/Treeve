@@ -1,4 +1,4 @@
-import type { ErroresLogin, ErroresRegistro, LoginRequest, RegistroRequest } from './tipos.ts'
+import type { ErroresLogin, ErroresRegistro, ErroresRestablecer, LoginRequest, RegistroRequest } from './tipos.ts'
 
 // Ayudas de UX que reflejan las reglas de la API (docs/guias/api-identidad.md).
 // Quien decide es el backend, que siempre vuelve a validar.
@@ -16,6 +16,14 @@ const CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const USUARIO = /^[a-z0-9._-]+$/
 
 const fueraDeRango = (texto: string, { min, max }: { min: number; max: number }) => texto.length < min || texto.length > max
+
+/** La política de contraseña es la misma al registrarse y al recuperarla: 8 a 128 caracteres, con una letra y un número. */
+export function mensajeDeContrasena(contrasena: string): string | undefined {
+  if (fueraDeRango(contrasena, LIMITES.contrasena) || !/\p{L}/u.test(contrasena) || !/\p{Nd}/u.test(contrasena)) {
+    return `La contraseña debe tener de ${LIMITES.contrasena.min} a ${LIMITES.contrasena.max} caracteres, con al menos una letra y un número.`
+  }
+  return undefined
+}
 
 export function validarRegistro(datos: RegistroRequest): ErroresRegistro {
   const errores: ErroresRegistro = {}
@@ -36,9 +44,8 @@ export function validarRegistro(datos: RegistroRequest): ErroresRegistro {
   if (datos.correo && datos.correo.trim() !== '' && !CORREO.test(datos.correo.trim())) {
     errores.correo = 'Escribe un correo válido o déjalo vacío.'
   }
-  if (fueraDeRango(contrasena, LIMITES.contrasena) || !/\p{L}/u.test(contrasena) || !/\p{Nd}/u.test(contrasena)) {
-    errores.contrasena = `La contraseña debe tener de ${LIMITES.contrasena.min} a ${LIMITES.contrasena.max} caracteres, con al menos una letra y un número.`
-  }
+  const problemaDeContrasena = mensajeDeContrasena(contrasena)
+  if (problemaDeContrasena) errores.contrasena = problemaDeContrasena
   return errores
 }
 
@@ -46,5 +53,14 @@ export function validarLogin(datos: LoginRequest): ErroresLogin {
   const errores: ErroresLogin = {}
   if (datos.identificador.trim() === '') errores.identificador = 'Escribe tu usuario o tu correo.'
   if (datos.contrasena === '') errores.contrasena = 'Escribe tu contraseña.'
+  return errores
+}
+
+/** HU-03b: la contraseña nueva cumple la política y la confirmación coincide. */
+export function validarContrasenaNueva(contrasena: string, confirmacion: string): ErroresRestablecer {
+  const errores: ErroresRestablecer = {}
+  const problema = mensajeDeContrasena(contrasena)
+  if (problema) errores.contrasena = problema
+  if (confirmacion !== contrasena) errores.confirmacion = 'Las contraseñas no coinciden.'
   return errores
 }

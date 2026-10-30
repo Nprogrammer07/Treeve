@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { validarLogin, validarRegistro } from './validacion.ts'
+import { mensajeDeContrasena, validarContrasenaNueva, validarLogin, validarRegistro } from './validacion.ts'
 
 const valido = { nombreCompleto: 'Ana López', apodo: 'Ani', nombreDeUsuario: 'ana.l', contrasena: 'Treeve2026' }
 
@@ -58,5 +58,28 @@ describe('validarLogin', () => {
 
   it('acepta ambos datos', () => {
     expect(validarLogin({ identificador: 'ana.l', contrasena: 'x' })).toEqual({})
+  })
+})
+
+describe('validarContrasenaNueva (HU-03b)', () => {
+  it('acepta una contraseña que cumple la política y una confirmación igual', () => {
+    expect(validarContrasenaNueva('NuevaClave2026', 'NuevaClave2026')).toEqual({})
+  })
+
+  it('usa la misma política que el registro: 8 a 128 caracteres con una letra y un número', () => {
+    expect(validarContrasenaNueva('corta1', 'corta1').contrasena).toMatch(/de 8 a 128 caracteres/)
+    expect(validarContrasenaNueva('solo-letras', 'solo-letras').contrasena).toBeDefined()
+    expect(validarContrasenaNueva('12345678', '12345678').contrasena).toBeDefined()
+    expect(validarContrasenaNueva(`a1${'x'.repeat(127)}`, `a1${'x'.repeat(127)}`).contrasena).toBeDefined()
+    expect(validarContrasenaNueva('Contraseña2026', 'Contraseña2026')).toEqual({})
+    expect(mensajeDeContrasena('Treeve2026')).toBeUndefined()
+  })
+
+  it('la confirmación tiene que coincidir', () => {
+    expect(validarContrasenaNueva('NuevaClave2026', 'NuevaClave2025')).toEqual({ confirmacion: 'Las contraseñas no coinciden.' })
+  })
+
+  it('avisa de los dos problemas a la vez', () => {
+    expect(Object.keys(validarContrasenaNueva('corta', 'otra'))).toEqual(['contrasena', 'confirmacion'])
   })
 })
