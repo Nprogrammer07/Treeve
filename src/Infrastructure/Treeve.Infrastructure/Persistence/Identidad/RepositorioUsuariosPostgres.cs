@@ -26,6 +26,9 @@ internal sealed class RepositorioUsuariosPostgres(TreeveDbContext contexto) : IR
             .Select(u => new PersonaDelStaff(u.Id, u.NombreDeUsuario, u.Apodo, u.Rol))
             .ToListAsync(ct);
 
+    public Task<Usuario?> ObtenerPorCorreo(string correoNormalizado, CancellationToken ct) =>
+        contexto.Set<Usuario>().FirstOrDefaultAsync(u => u.Correo == correoNormalizado, ct);
+
     public async Task Agregar(Usuario usuario, Credencial credencial, CancellationToken ct)
     {
         // Un solo SaveChanges: el perfil y la credencial se guardan juntos o no se guarda ninguno.

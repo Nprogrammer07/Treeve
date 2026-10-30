@@ -191,6 +191,47 @@ namespace Treeve.Infrastructure.Persistence.Migrations
                     b.ToTable("credenciales", "treeve");
                 });
 
+            modelBuilder.Entity("Treeve.Domain.Identidad.RecuperacionDeContrasena", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreadaEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("creada_en");
+
+                    b.Property<DateTimeOffset>("ExpiraEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expira_en");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("token_hash");
+
+                    b.Property<DateTimeOffset?>("UsadaEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("usada_en");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("usuario_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique()
+                        .HasDatabaseName("ux_recuperaciones_contrasena_token_hash");
+
+                    b.HasIndex("UsuarioId", "CreadaEn")
+                        .HasDatabaseName("ix_recuperaciones_contrasena_usuario_id_creada_en");
+
+                    b.ToTable("recuperaciones_contrasena", "treeve");
+                });
+
             modelBuilder.Entity("Treeve.Domain.Identidad.Sesion", b =>
                 {
                     b.Property<Guid>("Id")
@@ -418,6 +459,15 @@ namespace Treeve.Infrastructure.Persistence.Migrations
                     b.HasOne("Treeve.Domain.Identidad.Usuario", null)
                         .WithOne()
                         .HasForeignKey("Treeve.Domain.Identidad.Credencial", "UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Treeve.Domain.Identidad.RecuperacionDeContrasena", b =>
+                {
+                    b.HasOne("Treeve.Domain.Identidad.Usuario", null)
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
