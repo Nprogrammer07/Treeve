@@ -23,4 +23,7 @@ public interface IRepositorioUsuarios
     /// <see cref="PersonaDelStaff"/>: minimización de datos.
     /// </summary>
     Task<IReadOnlyList<PersonaDelStaff>> ListarStaff(CancellationToken ct);
+
+    /// <summary>Persona registrada con ese correo, que llega normalizado (HU-03b). Null si ninguna lo usa.</summary>
+    Task<Usuario?> ObtenerPorCorreo(string correoNormalizado, CancellationToken ct);
 }
