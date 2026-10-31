@@ -14,7 +14,7 @@ vi.mock('../../scene/EspacioVerde.tsx', () => ({
 }))
 
 const pantalla = (extra: Partial<Parameters<typeof PantallaEspacioVerde>[0]> = {}) => (
-  <PantallaEspacioVerde apodo="Luis" etapa="tallo" controlesSonido={<p>controles de sonido</p>} onDesahogarme={() => {}} onSalir={() => {}} {...extra} />
+  <PantallaEspacioVerde apodo="Luis" etapa="tallo" controlesSonido={<p>controles de sonido</p>} onDesahogarme={() => {}} onSugerir={() => {}} onSalir={() => {}} {...extra} />
 )
 
 describe('PantallaEspacioVerde', () => {
@@ -55,6 +55,17 @@ describe('PantallaEspacioVerde', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Desahogarme' }))
 
     expect(onDesahogarme).toHaveBeenCalledOnce()
+  })
+
+  it('la tarjeta de sugerencias y el menú abren las sugerencias', () => {
+    const onSugerir = vi.fn<() => void>()
+    render(pantalla({ onSugerir }))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Enviar una sugerencia' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Sugerencias' }))
+
+    expect(screen.getByRole('heading', { level: 2, name: 'Sugerencias' })).toBeInTheDocument()
+    expect(onSugerir).toHaveBeenCalledTimes(2)
   })
 
   it('permite salir', () => {

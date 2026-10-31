@@ -7,6 +7,7 @@ import { FormularioRegistro } from '../features/identidad/FormularioRegistro.tsx
 import { RestablecerContrasena } from '../features/identidad/RestablecerContrasena.tsx'
 import { crearMotorSonido } from '../features/sonidos/motor.ts'
 import { SelectorSonido } from '../features/sonidos/SelectorSonido.tsx'
+import { VentanaSugerencias } from '../features/sugerencias/VentanaSugerencias.tsx'
 import { PaginaVisitante, type ModoDeAcceso } from '../features/visitante/PaginaVisitante.tsx'
 import type { ControlEspacioVerde, EtapaArbol } from '../scene/EspacioVerde.tsx'
 import { borrarSesion } from '../shared/api/sesion.ts'
@@ -32,6 +33,7 @@ function App() {
   // Aviso de éxito que se muestra en "Iniciar sesión" (por ejemplo, después de cambiar la contraseña).
   const [avisoDeAcceso, setAvisoDeAcceso] = useState('')
   const [desahogoAbierto, setDesahogoAbierto] = useState(false)
+  const [sugerenciasAbierto, setSugerenciasAbierto] = useState(false)
   const [aviso, setAviso] = useState('')
   const espacioVerde = useRef<ControlEspacioVerde>(null)
 
@@ -81,6 +83,7 @@ function App() {
   function salir() {
     // Solo olvida el token en este navegador: la sesión sigue vigente en el servidor hasta que venza.
     setDesahogoAbierto(false)
+    setSugerenciasAbierto(false)
     setAviso('')
     borrarSesion()
   }
@@ -103,9 +106,11 @@ function App() {
           setAviso('')
           setDesahogoAbierto(true)
         }}
+        onSugerir={() => setSugerenciasAbierto(true)}
         onSalir={salir}
         mostrarMetricas={import.meta.env.DEV}
       />
+      <VentanaSugerencias abierto={sugerenciasAbierto} onCerrar={() => setSugerenciasAbierto(false)} />
       <FlujoDesahogo abierto={desahogoAbierto} onCerrar={() => setDesahogoAbierto(false)} alGuardar={alGuardar} />
     </>
   )

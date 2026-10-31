@@ -1,0 +1,44 @@
+.formulario {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.ayuda {
+  margin: 0;
+  color: var(--tinta-suave);
+}
+
+.soloLectores {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.texto {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1.5px solid var(--borde-control);
+  border-radius: 1rem;
+  background: var(--fondo);
+  color: var(--tinta);
+  font: inherit;
+  resize: vertical;
+}
+
+.pie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.contador {
+  margin: 0;
+  color: var(--tinta-suave);
+  font-size: 0.875rem;
+}
