@@ -1,0 +1,20 @@
+.cambio {
+  justify-self: start;
+}
+
+.confirmacion {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.gracias {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
