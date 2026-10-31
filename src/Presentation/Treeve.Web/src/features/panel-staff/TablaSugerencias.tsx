@@ -1,13 +1,15 @@
+import { formatearFecha } from '../../shared/formato.ts'
+import { EtiquetaEstadoSugerencia } from '../../shared/ui/EtiquetaEstadoSugerencia.tsx'
 import { Icono } from '../../shared/ui/Icono.tsx'
-import { EtiquetaEstado } from './EtiquetaEstado.tsx'
-import { formatearFecha } from './formato.ts'
+import { codigoCorto } from './formato.ts'
 import estilos from './PanelSugerencias.module.css'
-import { ESTADOS, ETIQUETA_ESTADO, type EstadoSugerencia, type Sugerencia } from './tipos.ts'
+import { ESTADOS_SUGERENCIA, ETIQUETA_ESTADO_SUGERENCIA, type EstadoSugerencia, type Sugerencia } from './tipos.ts'
 
 interface Props {
   items: Sugerencia[]
   ocupado: boolean
-  onCambiarEstado: (sugerencia: Sugerencia, estado: EstadoSugerencia) => void
+  /** Solo si la API permite cambiar el estado (HU-11). Si no, el estado se muestra y no se puede tocar. */
+  onCambiarEstado?: (sugerencia: Sugerencia, estado: EstadoSugerencia) => void
   onVer: (sugerencia: Sugerencia) => void
 }
 
@@ -34,38 +36,43 @@ export function TablaSugerencias({ items, ocupado, onCambiarEstado, onVer }: Pro
               </td>
             </tr>
           )}
-          {items.map((sugerencia) => (
-            <tr key={sugerencia.id}>
-              <td className={estilos.codigo}>#{sugerencia.id}</td>
-              <td className={estilos.usuario}>{sugerencia.usuario}</td>
-              <td className={estilos.fecha}>{formatearFecha(sugerencia.fecha)}</td>
-              <td>
-                <span className={estilos.recorte}>{sugerencia.texto}</span>
-              </td>
-              <td>
-                <EtiquetaEstado estado={sugerencia.estado} />
-              </td>
-              <td>
-                <div className={estilos.acciones}>
-                  <select
-                    className={estilos.selector}
-                    aria-label={`Estado de la sugerencia ${sugerencia.id}`}
-                    value={sugerencia.estado}
-                    onChange={(e) => onCambiarEstado(sugerencia, e.target.value as EstadoSugerencia)}
-                  >
-                    {ESTADOS.map((estado) => (
-                      <option key={estado} value={estado}>
-                        {ETIQUETA_ESTADO[estado]}
-                      </option>
-                    ))}
-                  </select>
-                  <button type="button" className={estilos.ver} aria-label={`Ver la sugerencia ${sugerencia.id}`} onClick={() => onVer(sugerencia)}>
-                    <Icono nombre="ojo" tamano={20} />
-                  </button>
-                </div>
-              </td>
-            </tr>
-          ))}
+          {items.map((sugerencia) => {
+            const codigo = codigoCorto(sugerencia.id)
+            return (
+              <tr key={sugerencia.id}>
+                <td className={estilos.codigo}>#{codigo}</td>
+                <td className={estilos.usuario}>{sugerencia.usuario}</td>
+                <td className={estilos.fecha}>{formatearFecha(sugerencia.fecha)}</td>
+                <td>
+                  <span className={estilos.recorte}>{sugerencia.texto}</span>
+                </td>
+                <td>
+                  <EtiquetaEstadoSugerencia estado={sugerencia.estado} />
+                </td>
+                <td>
+                  <div className={estilos.acciones}>
+                    {onCambiarEstado && (
+                      <select
+                        className={estilos.selector}
+                        aria-label={`Estado de la sugerencia ${codigo}`}
+                        value={sugerencia.estado}
+                        onChange={(e) => onCambiarEstado(sugerencia, e.target.value as EstadoSugerencia)}
+                      >
+                        {ESTADOS_SUGERENCIA.map((estado) => (
+                          <option key={estado} value={estado}>
+                            {ETIQUETA_ESTADO_SUGERENCIA[estado]}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                    <button type="button" className={estilos.ver} aria-label={`Ver la sugerencia ${codigo}`} onClick={() => onVer(sugerencia)}>
+                      <Icono nombre="ojo" tamano={20} />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            )
+          })}
         </tbody>
       </table>
     </section>
