@@ -1,15 +1,17 @@
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useId, useState, type FormEvent } from 'react'
 import { Aviso } from '../../shared/ui/Aviso.tsx'
 import { Boton } from '../../shared/ui/Boton.tsx'
 import { Icono } from '../../shared/ui/Icono.tsx'
 import { DetalleSugerencia } from './DetalleSugerencia.tsx'
+import { codigoCorto } from './formato.ts'
 import estilos from './PanelSugerencias.module.css'
 import { Paginacion } from './Paginacion.tsx'
 import { TablaSugerencias } from './TablaSugerencias.tsx'
 import { TarjetasResumen } from './TarjetasResumen.tsx'
 import {
-  ESTADOS,
-  ETIQUETA_ESTADO,
+  ESTADOS_SUGERENCIA,
+  ETIQUETA_ESTADO_SUGERENCIA,
+  ETIQUETA_ORDEN,
   type CambiosDeSugerencia,
   type ConsultaSugerencias,
   type EstadoSugerencia,
@@ -27,21 +29,20 @@ interface Props {
   onSalir: () => void
   /** Solo para administradores (HU-12). Si no se entrega, el botón no aparece. */
   onAdministracion?: () => void
-  /** Espera antes de buscar mientras se escribe. Se puede poner en 0 en las pruebas. */
-  retardoBusquedaMs?: number
 }
 
 const TAMANO_PAGINA = 10
-const CONSULTA_INICIAL: ConsultaSugerencias = { busqueda: '', estado: 'todos', orden: 'recientes', pagina: 1, tamano: TAMANO_PAGINA }
+const CONSULTA_INICIAL: ConsultaSugerencias = { orden: 'recientes', limite: TAMANO_PAGINA, desplazamiento: 0 }
 
 /**
- * HU-11: bandeja de sugerencias para el staff. Los filtros, el orden y la paginación los resuelve el servidor,
- * porque habrá más de mil sugerencias. Este panel nunca recibe ni muestra el texto de un desahogo.
+ * HU-11: bandeja de sugerencias para el staff. Los filtros y la paginación los resuelve el servidor, porque habrá
+ * más de mil sugerencias. Este panel nunca recibe ni muestra el texto de un desahogo.
  * La seguridad (que solo entre staff o admin) es del backend en cada petición (HU-10): esta pantalla no la reemplaza.
+ * Lo que la API aún no ofrece (el resumen con cifras) no se muestra.
  */
-export function PanelSugerencias({ fuente, apodo, onSalir, onAdministracion, retardoBusquedaMs = 300 }: Props) {
-  const idBusqueda = useId()
-  const [escrito, setEscrito] = useState('')
+export function PanelSugerencias({ fuente, apodo, onSalir, onAdministracion }: Props) {
+  const idUsuario = useId()
+  const [escritoUsuario, setEscritoUsuario] = useState('')
   const [consulta, setConsulta] = useState<ConsultaSugerencias>(CONSULTA_INICIAL)
   const [datos, setDatos] = useState<PaginaDeSugerencias | null>(null)
   const [resumen, setResumen] = useState<ResumenSugerencias | null>(null)
@@ -75,6 +76,7 @@ export function PanelSugerencias({ fuente, apodo, onSalir, onAdministracion, ret
   }, [fuente, consulta, version])
 
   useEffect(() => {
+    if (!fuente.resumen) return
     let vigente = true
     fuente
       .resumen()
@@ -85,43 +87,45 @@ export function PanelSugerencias({ fuente, apodo, onSalir, onAdministracion, ret
     }
   }, [fuente, version])
 
-  useEffect(() => {
-    const espera = setTimeout(() => {
-      const busqueda = escrito.trim()
-      setConsulta((previa) => (previa.busqueda === busqueda ? previa : { ...previa, busqueda, pagina: 1 }))
-    }, retardoBusquedaMs)
-    return () => clearTimeout(espera)
-  }, [escrito, retardoBusquedaMs])
-
   const cargando = respondido?.consulta !== consulta || respondido.version !== version
   const falloAlCargar = fallo?.consulta === consulta && fallo.version === version
 
-  const filtrar = (cambios: Partial<ConsultaSugerencias>) => setConsulta((previa) => ({ ...previa, ...cambios, pagina: 1 }))
+  const filtrar = (cambios: Partial<ConsultaSugerencias>) => setConsulta((previa) => ({ ...previa, ...cambios, desplazamiento: 0 }))
+
+  function buscarUsuario(evento: FormEvent<HTMLFormElement>) {
+    evento.preventDefault()
+    filtrar({ usuario: escritoUsuario.trim() || undefined })
+  }
+
+  const actualizar = fuente.actualizar
 
   async function aplicar(id: string, cambios: CambiosDeSugerencia) {
-    await fuente.actualizar(id, cambios)
+    const resultado = await actualizar?.(id, cambios)
     setVersion((actual) => actual + 1)
+    return resultado
   }
 
   async function cambiarEstado(sugerencia: Sugerencia, estado: EstadoSugerencia) {
     setFalloAlCambiar(false)
     setAviso('')
     try {
-      await aplicar(sugerencia.id, { estado })
-      setAviso(`La sugerencia ${sugerencia.id} ahora está ${ETIQUETA_ESTADO[estado].toLowerCase()}.`)
+      const resultado = await aplicar(sugerencia.id, { estado })
+      const codigo = codigoCorto(sugerencia.id)
+      const nombre = ETIQUETA_ESTADO_SUGERENCIA[estado].toLowerCase()
+      setAviso(resultado?.huboCambios === false ? `La sugerencia ${codigo} ya estaba ${nombre}: no se guardó nada.` : `La sugerencia ${codigo} ahora está ${nombre}.`)
     } catch {
       setFalloAlCambiar(true)
     }
   }
 
   async function guardarDetalle(id: string, cambios: CambiosDeSugerencia) {
-    await aplicar(id, cambios)
+    const resultado = await aplicar(id, cambios)
     setAbierta(null)
-    setAviso(`Guardamos los cambios de la sugerencia ${id}.`)
+    const codigo = codigoCorto(id)
+    setAviso(resultado?.huboCambios === false ? `No había nada nuevo que guardar en la sugerencia ${codigo}.` : `Guardamos los cambios de la sugerencia ${codigo}.`)
   }
 
   const items = datos?.items ?? []
-  const total = datos?.total ?? 0
 
   return (
     <div className={estilos.pagina}>
@@ -157,30 +161,33 @@ export function PanelSugerencias({ fuente, apodo, onSalir, onAdministracion, ret
 
       <main className={estilos.principal}>
         <h1 className={estilos.titulo}>Gestión de sugerencias</h1>
-        <p className={estilos.subtitulo}>Revisa, prioriza y responde a las ideas de la comunidad Treeve.</p>
+        <p className={estilos.subtitulo}>Revisa y responde a las ideas de la comunidad Treeve.</p>
 
-        <TarjetasResumen resumen={resumen} />
+        {fuente.resumen && <TarjetasResumen resumen={resumen} />}
 
-        <section aria-labelledby={`${idBusqueda}-titulo`} className={estilos.bandeja}>
-          <h2 id={`${idBusqueda}-titulo`} className={estilos.tituloBandeja}>
+        <section aria-labelledby={`${idUsuario}-titulo`} className={estilos.bandeja}>
+          <h2 id={`${idUsuario}-titulo`} className={estilos.tituloBandeja}>
             Bandeja de sugerencias
           </h2>
 
           <div className={estilos.filtros}>
-            <label htmlFor={idBusqueda} className={estilos.soloLectores}>
-              Buscar por usuario o contenido
-            </label>
-            <div className={estilos.busqueda}>
+            <form onSubmit={buscarUsuario} className={estilos.busqueda}>
               <Icono nombre="buscar" tamano={20} />
-              <input id={idBusqueda} type="search" value={escrito} placeholder="Buscar por usuario o contenido..." onChange={(e) => setEscrito(e.target.value)} />
-            </div>
+              <label htmlFor={idUsuario} className={estilos.soloLectores}>
+                Buscar por nombre de usuario
+              </label>
+              <input id={idUsuario} type="search" value={escritoUsuario} placeholder="Nombre de usuario exacto…" onChange={(e) => setEscritoUsuario(e.target.value)} />
+              <Boton type="submit" variante="suave">
+                Buscar
+              </Boton>
+            </form>
             <label className={estilos.filtro}>
               <span className={estilos.soloLectores}>Estado</span>
-              <select value={consulta.estado} onChange={(e) => filtrar({ estado: e.target.value as EstadoSugerencia | 'todos' })}>
+              <select value={consulta.estado ?? 'todos'} onChange={(e) => filtrar({ estado: e.target.value === 'todos' ? undefined : (e.target.value as EstadoSugerencia) })}>
                 <option value="todos">Todos los estados</option>
-                {ESTADOS.map((estado) => (
+                {ESTADOS_SUGERENCIA.map((estado) => (
                   <option key={estado} value={estado}>
-                    {ETIQUETA_ESTADO[estado]}
+                    {ETIQUETA_ESTADO_SUGERENCIA[estado]}
                   </option>
                 ))}
               </select>
@@ -195,9 +202,12 @@ export function PanelSugerencias({ fuente, apodo, onSalir, onAdministracion, ret
             </label>
             <label className={estilos.filtro}>
               <span className={estilos.soloLectores}>Orden</span>
-              <select value={consulta.orden} onChange={(e) => filtrar({ orden: e.target.value as OrdenSugerencias })}>
-                <option value="recientes">Más recientes primero</option>
-                <option value="antiguas">Más antiguas primero</option>
+              <select value={consulta.orden ?? 'recientes'} onChange={(e) => filtrar({ orden: e.target.value as OrdenSugerencias })}>
+                {(Object.keys(ETIQUETA_ORDEN) as OrdenSugerencias[]).map((orden) => (
+                  <option key={orden} value={orden}>
+                    {ETIQUETA_ORDEN[orden]}
+                  </option>
+                ))}
               </select>
             </label>
           </div>
@@ -213,12 +223,18 @@ export function PanelSugerencias({ fuente, apodo, onSalir, onAdministracion, ret
             </div>
           )}
 
-          <TablaSugerencias items={items} ocupado={cargando} onCambiarEstado={(s, estado) => void cambiarEstado(s, estado)} onVer={setAbierta} />
-          <Paginacion pagina={consulta.pagina} tamano={consulta.tamano} total={total} onIrA={(pagina) => setConsulta((previa) => ({ ...previa, pagina }))} />
+          <TablaSugerencias items={items} ocupado={cargando} onCambiarEstado={actualizar ? (s, estado) => void cambiarEstado(s, estado) : undefined} onVer={setAbierta} />
+          <Paginacion
+            desplazamiento={consulta.desplazamiento}
+            cantidad={items.length}
+            hayMas={datos?.hayMas ?? false}
+            onAnterior={() => setConsulta((previa) => ({ ...previa, desplazamiento: Math.max(0, previa.desplazamiento - previa.limite) }))}
+            onSiguiente={() => setConsulta((previa) => ({ ...previa, desplazamiento: previa.desplazamiento + previa.limite }))}
+          />
         </section>
       </main>
 
-      <DetalleSugerencia sugerencia={abierta} onCerrar={() => setAbierta(null)} onGuardar={guardarDetalle} />
+      <DetalleSugerencia sugerencia={abierta} onCerrar={() => setAbierta(null)} onGuardar={actualizar ? guardarDetalle : undefined} />
     </div>
   )
 }

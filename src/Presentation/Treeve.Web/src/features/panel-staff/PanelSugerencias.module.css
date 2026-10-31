@@ -207,7 +207,7 @@
   align-items: center;
   gap: 0.5rem;
   min-height: 3rem;
-  padding: 0 1rem;
+  padding: 0 0.375rem 0 1rem;
   border: 1.5px solid var(--borde-control);
   border-radius: 999px;
   background: var(--fondo);
@@ -356,45 +356,6 @@
   background: var(--fondo-hundido);
 }
 
-/* Estados: color + punto + texto. El rechazado va en gris, nunca en rojo. */
-.etiquetaEstado {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.25rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.875rem;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.punto {
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 50%;
-  background: currentColor;
-}
-
-.etiquetaEstado[data-estado='pendiente'] {
-  background: var(--ambar-fondo);
-  color: var(--ambar-texto);
-}
-
-.etiquetaEstado[data-estado='en-revision'] {
-  background: #dfecf7;
-  color: #1f4a73;
-}
-
-.etiquetaEstado[data-estado='implementada'] {
-  background: var(--pastel);
-  color: var(--acento-oscuro);
-}
-
-.etiquetaEstado[data-estado='rechazada'] {
-  background: #ebe7dd;
-  color: #4a4a43;
-}
-
 /* ---------- Paginación ---------- */
 .pie {
   display: flex;
@@ -412,42 +373,7 @@
 .paginas {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
-}
-
-.pagina {
-  display: grid;
-  place-items: center;
-  min-width: 2.75rem;
-  height: 2.75rem;
-  padding: 0 0.5rem;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
-  color: var(--tinta);
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background-color 300ms ease;
-}
-
-.pagina:hover:not(:disabled) {
-  background: var(--fondo-hundido);
-}
-
-.pagina[aria-current='page'] {
-  background: var(--acento);
-  color: var(--sobre-acento);
-}
-
-.pagina:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.hueco {
-  padding: 0 0.25rem;
-  color: var(--tinta-suave);
+  gap: 0.5rem;
 }
 
 /* ---------- Detalle ---------- */

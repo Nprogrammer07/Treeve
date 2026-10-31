@@ -46,3 +46,12 @@ El correo de recuperación trae un botón que abre `<Recuperacion__UrlBase>?toke
 La pantalla lee el token una sola vez, lo borra de la barra de direcciones y lo guarda solo en memoria. No se escribe en consola, ni en logs, ni en ningún almacenamiento del navegador. Al cambiar la contraseña la API cierra todas las sesiones, y la interfaz olvida la sesión guardada en el navegador.
 
 En desarrollo (`npm run dev`) no hace falta nada: Vite responde `index.html` en cualquier ruta.
+
+## Zona de staff (`/staff`)
+
+La zona de staff vive en la dirección `/staff` (HU-10), sin enlaces desde la experiencia de la persona usuaria. Necesita la **misma regla de Render** de la sección anterior (*Rewrite* de `/*` a `/index.html`): sin ella, abrir `/staff` directamente responde "Not Found".
+
+- **Vercel:** necesita una regla equivalente en un archivo `vercel.json`, que hoy la prueba de estructura de la CI no admite en la carpeta del frontend. Hay que hablarlo con el arquitecto antes de agregarlo.
+- **En desarrollo** (`npm run dev`) no hace falta nada.
+
+La API valida el rol en cada petición (ver `api-staff.md`): quien abra `/staff` sin ser staff verá "Acceso denegado" y la API registrará el intento.

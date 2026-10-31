@@ -6,12 +6,15 @@ import { FormularioRecuperacion } from '../features/identidad/FormularioRecupera
 import { FormularioRegistro } from '../features/identidad/FormularioRegistro.tsx'
 import { RestablecerContrasena } from '../features/identidad/RestablecerContrasena.tsx'
 import { crearMotorSonido } from '../features/sonidos/motor.ts'
+import { consultarAcceso, crearFuenteDeStaff } from '../features/panel-staff/api.ts'
+import { ZonaDeStaff } from '../features/panel-staff/ZonaDeStaff.tsx'
 import { SelectorSonido } from '../features/sonidos/SelectorSonido.tsx'
 import { VentanaSugerencias } from '../features/sugerencias/VentanaSugerencias.tsx'
 import { PaginaVisitante, type ModoDeAcceso } from '../features/visitante/PaginaVisitante.tsx'
 import type { ControlEspacioVerde, EtapaArbol } from '../scene/EspacioVerde.tsx'
 import { borrarSesion } from '../shared/api/sesion.ts'
 import { useSesion } from '../shared/api/useSesion.ts'
+import { AccesoDeStaff } from './AccesoDeStaff.tsx'
 import { BancoEscena } from './BancoEscena.tsx'
 
 // El banco de pruebas del panel de staff solo existe en desarrollo: en producción esta rama se elimina del paquete.
@@ -36,6 +39,7 @@ function App() {
   const [sugerenciasAbierto, setSugerenciasAbierto] = useState(false)
   const [aviso, setAviso] = useState('')
   const espacioVerde = useRef<ControlEspacioVerde>(null)
+  const [fuenteDeStaff] = useState(crearFuenteDeStaff)
 
   if (import.meta.env.DEV && window.location.hash === '#escena') return <BancoEscena />
   if (import.meta.env.DEV && BancoStaff && window.location.hash === '#staff') {
@@ -55,6 +59,13 @@ function App() {
       setModoDeAcceso(modo)
     }
     return <RestablecerContrasena onRestablecida={() => irAlAcceso('login', 'Tu contraseña se cambió. Inicia sesión con la nueva.')} onPedirEnlace={() => irAlAcceso('recuperar', '')} />
+  }
+
+  // HU-10: la zona de staff tiene su propia dirección (/staff), sin enlaces desde la experiencia de la persona usuaria.
+  if (window.location.pathname.replace(/\/$/, '') === '/staff') {
+    const volver = () => window.location.assign('/')
+    if (!sesion) return <AccesoDeStaff onVolver={volver} />
+    return <ZonaDeStaff comprobarAcceso={consultarAcceso} fuente={fuenteDeStaff} apodo={sesion.apodo} onSalir={borrarSesion} onVolver={volver} />
   }
 
   if (!sesion) {

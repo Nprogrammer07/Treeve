@@ -1,0 +1,29 @@
+.pagina {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 1rem;
+  min-height: 100dvh;
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+.titulo {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin: 0;
+  font-family: var(--fuente-titulo);
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
+}
+
+.texto {
+  max-width: 28rem;
+  margin: 0;
+  color: var(--tinta-suave);
+}
+
+.tarjeta {
+  width: min(100%, 28rem);
+  text-align: left;
+}
