@@ -1,13 +1,18 @@
 import type { ReactNode, Ref } from 'react'
-import { EspacioVerde, type ControlEspacioVerde, type EtapaArbol } from '../../scene/EspacioVerde.tsx'
+import { EspacioVerde, type ControlEspacioVerde } from '../../scene/EspacioVerde.tsx'
 import { Boton } from '../../shared/ui/Boton.tsx'
 import { Icono } from '../../shared/ui/Icono.tsx'
+import type { Lote } from './lote.ts'
 import estilos from './PantallaEspacioVerde.module.css'
+import { ProgresoDelEspacioVerde } from './ProgresoDelEspacioVerde.tsx'
 
 interface Props {
   apodo: string
-  /** La etapa la calcula el backend (HU-07a); esta pantalla solo la dibuja. */
-  etapa: EtapaArbol
+  /** El lote lo calcula el backend (HU-07a); esta pantalla solo lo dibuja. null mientras carga o si no se pudo leer. */
+  lote: Lote | null
+  cargandoLote: boolean
+  falloLote: boolean
+  onReintentarLote: () => void
   /** Los controles de sonido los entrega app/: las features no se importan entre sí. */
   controlesSonido: ReactNode
   onDesahogarme: () => void
@@ -24,7 +29,7 @@ interface Props {
  * HU-07b: la pantalla a la que llega la persona al iniciar sesión. Muestra su espacio verde y el camino a desahogarse.
  * Las tarjetas de historial, mensaje de apoyo y sugerencias se suman cuando existan sus historias y su API.
  */
-export function PantallaEspacioVerde({ apodo, etapa, controlesSonido, onDesahogarme, onSugerir, onSalir, aviso = '', mostrarMetricas = false, ref }: Props) {
+export function PantallaEspacioVerde({ apodo, lote, cargandoLote, falloLote, onReintentarLote, controlesSonido, onDesahogarme, onSugerir, onSalir, aviso = '', mostrarMetricas = false, ref }: Props) {
   const inicial = apodo.trim().charAt(0).toUpperCase()
 
   return (
@@ -48,7 +53,12 @@ export function PantallaEspacioVerde({ apodo, etapa, controlesSonido, onDesahoga
 
       <main className={estilos.principal}>
         <section aria-label="Tu espacio verde" className={estilos.escena}>
-          <EspacioVerde etapa={etapa} pajaros ref={ref} mostrarMetricas={mostrarMetricas} />
+          {/* Sin lote no se dibuja nada: mostrar un lote de mentira confundiría a quien ya tiene el suyo crecido. */}
+          {lote ? (
+            <EspacioVerde etapa={lote.etapa} nivelFlores={lote.niveles.flores} nivelBosque={lote.niveles.bosque} pajaros ref={ref} mostrarMetricas={mostrarMetricas} />
+          ) : (
+            <div className={estilos.marcador} aria-hidden="true" />
+          )}
           <Boton onClick={onDesahogarme} className={estilos.desahogarme}>
             <Icono nombre="masCirculo" tamano={22} />
             Desahogarme ahora
@@ -56,6 +66,8 @@ export function PantallaEspacioVerde({ apodo, etapa, controlesSonido, onDesahoga
         </section>
         {/* La escena es un dibujo: este aviso es la versión en texto de lo que ocurre en ella. */}
         <output className={estilos.aviso}>{aviso}</output>
+
+        <ProgresoDelEspacioVerde lote={lote} cargando={cargandoLote} fallo={falloLote} onReintentar={onReintentarLote} />
 
         <section aria-labelledby="titulo-sugerencias" className={estilos.sugerencias}>
           <span className={estilos.iconoSugerencias} aria-hidden="true">

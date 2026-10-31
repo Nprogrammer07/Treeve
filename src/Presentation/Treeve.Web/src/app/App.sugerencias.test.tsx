@@ -2,9 +2,11 @@ import { fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { enviarSugerencia, listarMisSugerencias } from '../features/sugerencias/api.ts'
 import { borrarSesion, guardarSesion } from '../shared/api/sesion.ts'
+import { loteDePrueba } from '../test/loteDePrueba.ts'
 import App from './App.tsx'
 
 vi.mock('../scene/EspacioVerde.tsx', () => ({ EspacioVerde: () => <p>escena</p> }))
+vi.mock('../features/espacio-verde/api.ts', () => ({ consultarEspacioVerde: () => Promise.resolve(loteDePrueba()) }))
 vi.mock('../features/sugerencias/api.ts', () => ({
   enviarSugerencia: vi.fn<typeof enviarSugerencia>(),
   listarMisSugerencias: vi.fn<typeof listarMisSugerencias>(),

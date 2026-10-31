@@ -6,17 +6,19 @@ import { iniciarSesion, registrar } from '../features/identidad/api.ts'
 import type { MotorSonido, TipoSonido } from '../features/sonidos/motor.ts'
 import type { ControlEspacioVerde } from '../scene/EspacioVerde.tsx'
 import { borrarSesion, guardarSesion } from '../shared/api/sesion.ts'
+import { loteDePrueba } from '../test/loteDePrueba.ts'
 import App from './App.tsx'
 
 const regar = vi.hoisted(() => vi.fn<() => void>())
 
 vi.mock('../scene/EspacioVerde.tsx', () => ({
   EspacioVerde: ({ etapa, ref }: { etapa: string; ref?: Ref<ControlEspacioVerde> }) => {
-    useImperativeHandle(ref, () => ({ regar }), [])
+    useImperativeHandle(ref, () => ({ regar, crecer: () => {} }), [])
     return <p>{`escena ${etapa}`}</p>
   },
 }))
 vi.mock('../features/desahogos/api.ts', () => ({ guardarDesahogo: vi.fn<typeof guardarDesahogo>() }))
+vi.mock('../features/espacio-verde/api.ts', () => ({ consultarEspacioVerde: () => Promise.resolve(loteDePrueba()) }))
 vi.mock('../features/identidad/api.ts', () => ({
   registrar: vi.fn<typeof registrar>(),
   iniciarSesion: vi.fn<typeof iniciarSesion>(),
