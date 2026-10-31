@@ -2,9 +2,12 @@ import { lazy, Suspense, useRef, useState } from 'react'
 import { FlujoDesahogo } from '../features/desahogos/FlujoDesahogo.tsx'
 import { PantallaEspacioVerde } from '../features/espacio-verde/PantallaEspacioVerde.tsx'
 import { FormularioLogin } from '../features/identidad/FormularioLogin.tsx'
+import { FormularioRecuperacion } from '../features/identidad/FormularioRecuperacion.tsx'
 import { FormularioRegistro } from '../features/identidad/FormularioRegistro.tsx'
+import { RestablecerContrasena } from '../features/identidad/RestablecerContrasena.tsx'
 import { crearMotorSonido } from '../features/sonidos/motor.ts'
 import { SelectorSonido } from '../features/sonidos/SelectorSonido.tsx'
+import { VentanaSugerencias } from '../features/sugerencias/VentanaSugerencias.tsx'
 import { PaginaVisitante, type ModoDeAcceso } from '../features/visitante/PaginaVisitante.tsx'
 import type { ControlEspacioVerde, EtapaArbol } from '../scene/EspacioVerde.tsx'
 import { borrarSesion } from '../shared/api/sesion.ts'
@@ -27,7 +30,10 @@ function App() {
   // Un solo motor de audio para toda la app: el sonido sigue sonando al cambiar de pantalla (HU-08).
   const [motor] = useState(crearMotorSonido)
   const [modoDeAcceso, setModoDeAcceso] = useState<ModoDeAcceso>('registro')
+  // Aviso de éxito que se muestra en "Iniciar sesión" (por ejemplo, después de cambiar la contraseña).
+  const [avisoDeAcceso, setAvisoDeAcceso] = useState('')
   const [desahogoAbierto, setDesahogoAbierto] = useState(false)
+  const [sugerenciasAbierto, setSugerenciasAbierto] = useState(false)
   const [aviso, setAviso] = useState('')
   const espacioVerde = useRef<ControlEspacioVerde>(null)
 
@@ -40,17 +46,34 @@ function App() {
     )
   }
 
+  // HU-03b: el enlace del correo de recuperación abre /restablecer-contrasena, con o sin sesión.
+  if (window.location.pathname.replace(/\/$/, '') === '/restablecer-contrasena') {
+    // La dirección se deja limpia (sin el token) antes de volver a dibujar la app; luego el cambio de estado la vuelve a leer.
+    const irAlAcceso = (modo: ModoDeAcceso, avisoNuevo: string) => {
+      window.history.replaceState(null, '', '/')
+      setAvisoDeAcceso(avisoNuevo)
+      setModoDeAcceso(modo)
+    }
+    return <RestablecerContrasena onRestablecida={() => irAlAcceso('login', 'Tu contraseña se cambió. Inicia sesión con la nueva.')} onPedirEnlace={() => irAlAcceso('recuperar', '')} />
+  }
+
   if (!sesion) {
+    const elegirModo = (modo: ModoDeAcceso) => {
+      setAvisoDeAcceso('')
+      setModoDeAcceso(modo)
+    }
     return (
       <PaginaVisitante
         acceso={
           modoDeAcceso === 'registro' ? (
-            <FormularioRegistro onIrALogin={() => setModoDeAcceso('login')} />
+            <FormularioRegistro onIrALogin={() => elegirModo('login')} />
+          ) : modoDeAcceso === 'login' ? (
+            <FormularioLogin aviso={avisoDeAcceso} onIrARegistro={() => elegirModo('registro')} onOlvidoContrasena={() => elegirModo('recuperar')} />
           ) : (
-            <FormularioLogin onIrARegistro={() => setModoDeAcceso('registro')} />
+            <FormularioRecuperacion onVolver={() => elegirModo('login')} />
           )
         }
-        onElegirAcceso={setModoDeAcceso}
+        onElegirAcceso={elegirModo}
         controlesSonido={<SelectorSonido motor={motor} />}
         mostrarMetricas={import.meta.env.DEV}
       />
@@ -60,6 +83,7 @@ function App() {
   function salir() {
     // Solo olvida el token en este navegador: la sesión sigue vigente en el servidor hasta que venza.
     setDesahogoAbierto(false)
+    setSugerenciasAbierto(false)
     setAviso('')
     borrarSesion()
   }
@@ -82,9 +106,11 @@ function App() {
           setAviso('')
           setDesahogoAbierto(true)
         }}
+        onSugerir={() => setSugerenciasAbierto(true)}
         onSalir={salir}
         mostrarMetricas={import.meta.env.DEV}
       />
+      <VentanaSugerencias abierto={sugerenciasAbierto} onCerrar={() => setSugerenciasAbierto(false)} />
       <FlujoDesahogo abierto={desahogoAbierto} onCerrar={() => setDesahogoAbierto(false)} alGuardar={alGuardar} />
     </>
   )

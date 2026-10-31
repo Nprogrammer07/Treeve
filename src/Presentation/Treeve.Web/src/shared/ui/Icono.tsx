@@ -20,6 +20,7 @@ const TRAZOS = {
   panel: 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z',
   flechaIzq: 'M15 5l-7 7 7 7',
   flechaDer: 'M9 5l7 7-7 7',
+  idea: 'M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z',
   altavoz: 'M4 10v4h4l5 4V6l-5 4zM16 9a4 4 0 0 1 0 6M18.500 6.500a8 8 0 0 1 0 11',
 } as const
 

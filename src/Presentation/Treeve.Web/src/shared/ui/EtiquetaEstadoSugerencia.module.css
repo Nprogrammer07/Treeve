@@ -1,0 +1,38 @@
+.etiqueta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.punto {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* El rechazado va en gris, nunca en rojo. */
+.etiqueta[data-estado='pendiente'] {
+  background: var(--ambar-fondo);
+  color: var(--ambar-texto);
+}
+
+.etiqueta[data-estado='en_revision'] {
+  background: #dfecf7;
+  color: #1f4a73;
+}
+
+.etiqueta[data-estado='implementada'] {
+  background: var(--pastel);
+  color: var(--acento-oscuro);
+}
+
+.etiqueta[data-estado='rechazada'] {
+  background: #ebe7dd;
+  color: #4a4a43;
+}

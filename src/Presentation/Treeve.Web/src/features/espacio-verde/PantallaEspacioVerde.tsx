@@ -11,6 +11,8 @@ interface Props {
   /** Los controles de sonido los entrega app/: las features no se importan entre sí. */
   controlesSonido: ReactNode
   onDesahogarme: () => void
+  /** HU-09: abre la ventana para enviar una sugerencia y ver las propias. */
+  onSugerir: () => void
   onSalir: () => void
   /** Texto que cuenta en palabras lo que la escena muestra (por ejemplo, que el espacio verde fue regado). */
   aviso?: string
@@ -22,7 +24,7 @@ interface Props {
  * HU-07b: la pantalla a la que llega la persona al iniciar sesión. Muestra su espacio verde y el camino a desahogarse.
  * Las tarjetas de historial, mensaje de apoyo y sugerencias se suman cuando existan sus historias y su API.
  */
-export function PantallaEspacioVerde({ apodo, etapa, controlesSonido, onDesahogarme, onSalir, aviso = '', mostrarMetricas = false, ref }: Props) {
+export function PantallaEspacioVerde({ apodo, etapa, controlesSonido, onDesahogarme, onSugerir, onSalir, aviso = '', mostrarMetricas = false, ref }: Props) {
   const inicial = apodo.trim().charAt(0).toUpperCase()
 
   return (
@@ -54,6 +56,19 @@ export function PantallaEspacioVerde({ apodo, etapa, controlesSonido, onDesahoga
         </section>
         {/* La escena es un dibujo: este aviso es la versión en texto de lo que ocurre en ella. */}
         <output className={estilos.aviso}>{aviso}</output>
+
+        <section aria-labelledby="titulo-sugerencias" className={estilos.sugerencias}>
+          <span className={estilos.iconoSugerencias} aria-hidden="true">
+            <Icono nombre="idea" tamano={22} />
+          </span>
+          <div className={estilos.textoSugerencias}>
+            <h2 id="titulo-sugerencias" className={estilos.tituloSugerencias}>
+              Sugerencias
+            </h2>
+            <p className={estilos.descripcionSugerencias}>¿Se te ocurre algo que haría Treeve más acogedor? Cuéntaselo directamente a nuestro equipo.</p>
+          </div>
+          <Boton onClick={onSugerir}>Enviar una sugerencia</Boton>
+        </section>
       </main>
 
       <nav aria-label="Secciones" className={estilos.navegacion}>
@@ -64,6 +79,10 @@ export function PantallaEspacioVerde({ apodo, etapa, controlesSonido, onDesahoga
         <button type="button" className={estilos.seccion} onClick={onDesahogarme}>
           <Icono nombre="masCirculo" tamano={18} />
           Desahogarme
+        </button>
+        <button type="button" className={estilos.seccion} onClick={onSugerir}>
+          <Icono nombre="idea" tamano={18} />
+          Sugerencias
         </button>
       </nav>
     </div>
