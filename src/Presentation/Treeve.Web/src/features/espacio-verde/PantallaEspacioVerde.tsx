@@ -15,6 +15,8 @@ interface Props {
   onReintentarLote: () => void
   /** Los controles de sonido los entrega app/: las features no se importan entre sí. */
   controlesSonido: ReactNode
+  /** La campana de avisos, que entrega app/. Sin ella, el encabezado queda como antes. */
+  controlDeAvisos?: ReactNode
   onDesahogarme: () => void
   /** HU-09: abre la ventana para enviar una sugerencia y ver las propias. */
   onSugerir: () => void
@@ -29,7 +31,7 @@ interface Props {
  * HU-07b: la pantalla a la que llega la persona al iniciar sesión. Muestra su espacio verde y el camino a desahogarse.
  * Las tarjetas de historial, mensaje de apoyo y sugerencias se suman cuando existan sus historias y su API.
  */
-export function PantallaEspacioVerde({ apodo, lote, cargandoLote, falloLote, onReintentarLote, controlesSonido, onDesahogarme, onSugerir, onSalir, aviso = '', mostrarMetricas = false, ref }: Props) {
+export function PantallaEspacioVerde({ apodo, lote, cargandoLote, falloLote, onReintentarLote, controlesSonido, controlDeAvisos, onDesahogarme, onSugerir, onSalir, aviso = '', mostrarMetricas = false, ref }: Props) {
   const inicial = apodo.trim().charAt(0).toUpperCase()
 
   return (
@@ -43,6 +45,7 @@ export function PantallaEspacioVerde({ apodo, lote, cargandoLote, falloLote, onR
             <h1 className={estilos.titulo}>Hola, {apodo}</h1>
           </div>
           <div className={estilos.herramientas}>
+            {controlDeAvisos}
             {controlesSonido}
             <button type="button" className={estilos.salir} aria-label="Salir" onClick={onSalir}>
               <Icono nombre="salir" tamano={20} />

@@ -1,0 +1,33 @@
+.campana {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--linea);
+  border-radius: 50%;
+  background: var(--superficie);
+  color: var(--tinta);
+  cursor: pointer;
+}
+
+.campana:hover {
+  background: var(--pastel);
+}
+
+.insignia {
+  position: absolute;
+  top: -0.25rem;
+  right: -0.25rem;
+  display: grid;
+  place-items: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.25rem;
+  border-radius: 999px;
+  background: var(--acento-oscuro);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1;
+}

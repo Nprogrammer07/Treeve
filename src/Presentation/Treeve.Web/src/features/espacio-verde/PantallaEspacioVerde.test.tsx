@@ -158,4 +158,18 @@ describe('PantallaEspacioVerde', () => {
 
     expect(container.textContent).not.toMatch(/racha|día \d|historial|nutrientes|\d+ desahogos escritos/i)
   })
+
+  describe('la campana de avisos', () => {
+    it('muestra el control de avisos que entrega app/, junto a los de sonido', () => {
+      render(pantalla({ controlDeAvisos: <button type="button">campana</button> }))
+
+      expect(screen.getByRole('button', { name: 'campana' })).toBeInTheDocument()
+    })
+
+    it('sin control de avisos, el encabezado queda como antes', () => {
+      render(pantalla())
+
+      expect(screen.queryByRole('button', { name: /campana|Avisos/ })).not.toBeInTheDocument()
+    })
+  })
 })
