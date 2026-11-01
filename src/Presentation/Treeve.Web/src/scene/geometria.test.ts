@@ -4,8 +4,11 @@ import {
   arbolesDelBosque,
   casillas,
   dentroDelCesped,
+  NIVEL_MAXIMO,
   disenarMapa,
   escalaDelArbol,
+  floresDelLote,
+  fraccionDelBosque,
   formaArbol,
   poligonoAgua,
   poligonoArena,
@@ -177,5 +180,86 @@ describe('puntoEnPoligono', () => {
     expect(puntoEnPoligono(5, 5, cuadrado)).toBe(true)
     expect(puntoEnPoligono(15, 5, cuadrado)).toBe(false)
     expect(puntoEnPoligono(-1, 5, cuadrado)).toBe(false)
+  })
+})
+
+describe('niveles del lote (HU-07a)', () => {
+  const mapa = disenarMapa(1400, 480)
+
+  it('el nivel máximo es 4, como en la API', () => {
+    expect(NIVEL_MAXIMO).toBe(4)
+  })
+
+  describe('bosque', () => {
+    const bosque = (nivel: number) => arbolesDelBosque(1400, 480, mapa, nivel)
+
+    it('crece de forma estricta con cada nivel y el último es el bosque completo', () => {
+      const cantidades = [1, 2, 3, 4].map((nivel) => bosque(nivel).length)
+
+      expect(cantidades).toEqual([...cantidades].sort((a, b) => a - b))
+      expect(new Set(cantidades).size).toBe(4)
+      expect(bosque(4)).toEqual(arbolesDelBosque(1400, 480, mapa))
+    })
+
+    it('el nivel 1 ya tiene árboles, pero pocos', () => {
+      expect(bosque(1).length).toBeGreaterThan(5)
+      expect(bosque(1).length).toBeLessThan(bosque(4).length / 3)
+    })
+
+    it('el bosque solo crece: los árboles de un nivel siguen en el siguiente', () => {
+      for (const nivel of [1, 2, 3]) {
+        const siguiente = new Set(bosque(nivel + 1).map((a) => `${a.x},${a.y}`))
+        expect(bosque(nivel).every((a) => siguiente.has(`${a.x},${a.y}`))).toBe(true)
+      }
+    })
+
+    it('en todos los niveles sigue ordenado de atrás hacia adelante y fuera del césped', () => {
+      for (const nivel of [1, 2, 3, 4]) {
+        const lista = bosque(nivel)
+        expect(lista.map((a) => a.y)).toEqual(lista.map((a) => a.y).sort((p, q) => p - q))
+        expect(lista.some((a) => dentroDelCesped(a.x, a.y, mapa, 1.06))).toBe(false)
+      }
+    })
+
+    it('un nivel fuera de rango se ajusta: 0 vale como 1 y 9 como 4', () => {
+      expect(fraccionDelBosque(0)).toBe(fraccionDelBosque(1))
+      expect(fraccionDelBosque(9)).toBe(fraccionDelBosque(4))
+      expect(fraccionDelBosque(4)).toBe(1)
+    })
+  })
+
+  describe.each(TAMANOS)('flores en %i × %i', (ancho, alto) => {
+    const m = disenarMapa(ancho, alto)
+
+    it('hay 5, 11, 19 y 28 flores según el nivel', () => {
+      expect([1, 2, 3, 4].map((nivel) => floresDelLote(m, nivel).length)).toEqual([5, 11, 19, 28])
+    })
+
+    it('todas caen sobre el césped y ninguna junto al árbol de la persona', () => {
+      for (const flor of floresDelLote(m, 4)) {
+        expect(dentroDelCesped(flor.x, flor.y, m, 1)).toBe(true)
+        expect(Math.hypot(flor.x - m.cx, (flor.y - m.cy) * 2)).toBeGreaterThan(m.tw * 1.2)
+        expect(flor.radio).toBeGreaterThan(0)
+        expect([0, 1, 2, 3]).toContain(flor.tono)
+      }
+    })
+
+    it('las flores solo se suman: las de un nivel siguen en el siguiente, y son siempre las mismas', () => {
+      for (const nivel of [1, 2, 3]) {
+        const siguiente = new Set(floresDelLote(m, nivel + 1).map((f) => `${f.x},${f.y}`))
+        expect(floresDelLote(m, nivel).every((f) => siguiente.has(`${f.x},${f.y}`))).toBe(true)
+      }
+      expect(floresDelLote(m, 3)).toEqual(floresDelLote(m, 3))
+    })
+
+    it('una flor no pisa a otra', () => {
+      const lista = floresDelLote(m, 4)
+      for (const [i, p] of lista.entries()) for (const q of lista.slice(i + 1)) expect(Math.hypot(p.x - q.x, p.y - q.y)).toBeGreaterThan(1)
+    })
+  })
+
+  it('un nivel de flores fuera de rango se ajusta', () => {
+    expect(floresDelLote(mapa, 0)).toHaveLength(5)
+    expect(floresDelLote(mapa, 9)).toHaveLength(28)
   })
 })

@@ -1,6 +1,4 @@
-import { lazy, Suspense, useRef, useState } from 'react'
-import { FlujoDesahogo } from '../features/desahogos/FlujoDesahogo.tsx'
-import { PantallaEspacioVerde } from '../features/espacio-verde/PantallaEspacioVerde.tsx'
+import { lazy, Suspense, useState } from 'react'
 import { FormularioLogin } from '../features/identidad/FormularioLogin.tsx'
 import { FormularioRecuperacion } from '../features/identidad/FormularioRecuperacion.tsx'
 import { FormularioRegistro } from '../features/identidad/FormularioRegistro.tsx'
@@ -9,19 +7,15 @@ import { crearMotorSonido } from '../features/sonidos/motor.ts'
 import { consultarAcceso, crearFuenteDeStaff } from '../features/panel-staff/api.ts'
 import { ZonaDeStaff } from '../features/panel-staff/ZonaDeStaff.tsx'
 import { SelectorSonido } from '../features/sonidos/SelectorSonido.tsx'
-import { VentanaSugerencias } from '../features/sugerencias/VentanaSugerencias.tsx'
 import { PaginaVisitante, type ModoDeAcceso } from '../features/visitante/PaginaVisitante.tsx'
-import type { ControlEspacioVerde, EtapaArbol } from '../scene/EspacioVerde.tsx'
 import { borrarSesion } from '../shared/api/sesion.ts'
 import { useSesion } from '../shared/api/useSesion.ts'
 import { AccesoDeStaff } from './AccesoDeStaff.tsx'
 import { BancoEscena } from './BancoEscena.tsx'
+import { EspacioDeLaPersona } from './EspacioDeLaPersona.tsx'
 
 // El banco de pruebas del panel de staff solo existe en desarrollo: en producción esta rama se elimina del paquete.
 const BancoStaff = import.meta.env.DEV ? lazy(() => import('./BancoStaff.tsx')) : null
-
-// TEMPORAL: la etapa real la calcula el backend (HU-07a) y se pedirá a la API cuando exista su contrato.
-const ETAPA_TEMPORAL: EtapaArbol = 'tallo'
 
 /**
  * Composición de la aplicación: aquí se unen las features, que no se conocen entre sí.
@@ -35,10 +29,6 @@ function App() {
   const [modoDeAcceso, setModoDeAcceso] = useState<ModoDeAcceso>('registro')
   // Aviso de éxito que se muestra en "Iniciar sesión" (por ejemplo, después de cambiar la contraseña).
   const [avisoDeAcceso, setAvisoDeAcceso] = useState('')
-  const [desahogoAbierto, setDesahogoAbierto] = useState(false)
-  const [sugerenciasAbierto, setSugerenciasAbierto] = useState(false)
-  const [aviso, setAviso] = useState('')
-  const espacioVerde = useRef<ControlEspacioVerde>(null)
   const [fuenteDeStaff] = useState(crearFuenteDeStaff)
 
   if (import.meta.env.DEV && window.location.hash === '#escena') return <BancoEscena />
@@ -91,40 +81,8 @@ function App() {
     )
   }
 
-  function salir() {
-    // Solo olvida el token en este navegador: la sesión sigue vigente en el servidor hasta que venza.
-    setDesahogoAbierto(false)
-    setSugerenciasAbierto(false)
-    setAviso('')
-    borrarSesion()
-  }
-
-  function alGuardar() {
-    setDesahogoAbierto(false)
-    setAviso('Tu desahogo regó tu espacio verde.')
-    espacioVerde.current?.regar()
-  }
-
-  return (
-    <>
-      <PantallaEspacioVerde
-        ref={espacioVerde}
-        apodo={sesion.apodo}
-        etapa={ETAPA_TEMPORAL}
-        aviso={aviso}
-        controlesSonido={<SelectorSonido motor={motor} compacto />}
-        onDesahogarme={() => {
-          setAviso('')
-          setDesahogoAbierto(true)
-        }}
-        onSugerir={() => setSugerenciasAbierto(true)}
-        onSalir={salir}
-        mostrarMetricas={import.meta.env.DEV}
-      />
-      <VentanaSugerencias abierto={sugerenciasAbierto} onCerrar={() => setSugerenciasAbierto(false)} />
-      <FlujoDesahogo abierto={desahogoAbierto} onCerrar={() => setDesahogoAbierto(false)} alGuardar={alGuardar} />
-    </>
-  )
+  // Solo olvida el token en este navegador: la sesión sigue vigente en el servidor hasta que venza.
+  return <EspacioDeLaPersona apodo={sesion.apodo} motor={motor} onSalir={borrarSesion} />
 }
 
 export default App

@@ -1,0 +1,53 @@
+.tarjeta {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--linea);
+  border-radius: 1.75rem;
+  background: var(--superficie);
+}
+
+.componentes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.componente {
+  padding: 0.5rem 1rem;
+  border-radius: 1.25rem;
+  background: var(--pastel);
+  text-align: center;
+}
+
+.nombre {
+  color: var(--tinta-suave);
+  font-size: 0.875rem;
+}
+
+.valor {
+  margin: 0;
+  font-family: var(--fuente-titulo);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.barra {
+  width: 100%;
+  height: 0.75rem;
+  accent-color: var(--acento);
+}
+
+.texto {
+  margin: 0;
+  font-weight: 600;
+  text-align: center;
+}
+
+.reintento {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}

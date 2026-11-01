@@ -83,6 +83,18 @@ export function dentroDelCesped(x: number, y: number, mapa: Mapa, margen = 1): b
   return Math.abs(x - mapa.cx) / (mapa.a * margen) + Math.abs(y - mapa.cy) / ((mapa.a / 2) * margen) <= 1
 }
 
+/** Los tres componentes del lote (árbol, flores y bosque) tienen niveles del 1 al 4 (HU-07a, ADR-007). */
+export const NIVEL_MAXIMO = 4
+
+const limitarNivel = (nivel: number): number => Math.min(NIVEL_MAXIMO, Math.max(1, Math.round(nivel)))
+
+/** Qué parte del bosque completo ya creció en cada nivel. */
+const FRACCION_DEL_BOSQUE = [0.22, 0.5, 0.78, 1] as const
+
+export function fraccionDelBosque(nivel: number): number {
+  return FRACCION_DEL_BOSQUE[limitarNivel(nivel) - 1] ?? 1
+}
+
 export interface Casilla {
   /** Vértices x, y, x, y… del rombo de la casilla. */
   puntos: number[]
@@ -169,10 +181,11 @@ export interface ArbolDelBosque {
 }
 
 /**
- * Árboles del bosque: densos, fuera del césped y lejos del agua. Salen ordenados de atrás hacia adelante
+ * Árboles del bosque según su nivel (1 a 4): densos, fuera del césped y lejos del agua. Salen ordenados de atrás hacia adelante
  * (de menor a mayor y), que es el orden en que hay que pintarlos para que los de adelante tapen a los de atrás.
  */
-export function arbolesDelBosque(ancho: number, alto: number, mapa: Mapa): ArbolDelBosque[] {
+export function arbolesDelBosque(ancho: number, alto: number, mapa: Mapa, nivel: number = NIVEL_MAXIMO): ArbolDelBosque[] {
+  const fraccion = fraccionDelBosque(nivel)
   const paso = Math.max(mapa.a * 0.11, 22)
   const arena = poligonoArena(ancho, alto)
   const filas = Math.ceil(alto / (paso * 0.7)) + 2
@@ -183,9 +196,52 @@ export function arbolesDelBosque(ancho: number, alto: number, mapa: Mapa): Arbol
       const x = (i + (j % 2 === 0 ? 0 : 0.5)) * paso + (ruido(i, j, 1) - 0.5) * paso * 0.6
       const y = j * paso * 0.7 + (ruido(i, j, 2) - 0.5) * paso * 0.5
       if (dentroDelCesped(x, y, mapa, 1.06) || puntoEnPoligono(x, y, arena) || ruido(i, j, 3) > 0.9) continue
+      // Un árbol que aparece en un nivel sigue estando en los siguientes: el bosque solo crece, nunca pierde árboles.
+      if (ruido(i, j, 6) > fraccion) continue
       const tono = Math.min(2, Math.floor(ruido(i, j, 4) * 3)) as 0 | 1 | 2
       arboles.push({ x, y, radio: paso * (0.55 + ruido(i, j, 5) * 0.35), tono })
     }
   }
   return arboles.sort((p, q) => p.y - q.y)
+}
+
+// ---------- Flores sobre el césped ----------
+
+/** Cuántas flores hay en cada nivel del componente "flores". */
+const FLORES_POR_NIVEL = [5, 11, 19, 28] as const
+
+export interface FlorDelLote {
+  x: number
+  y: number
+  radio: number
+  /** Cuál de los cuatro colores usa: rosa, amarillo, blanco o lila. */
+  tono: 0 | 1 | 2 | 3
+}
+
+/**
+ * Flores del lote según el nivel de "flores" (1 a 4): puntos fijos sobre las casillas, siempre los mismos.
+ * Las del nivel siguiente se suman a las anteriores (ninguna desaparece) y ninguna cae junto al árbol de la persona.
+ */
+export function floresDelLote(mapa: Mapa, nivel: number): FlorDelLote[] {
+  const { cx, cy, n, tw } = mapa
+  const candidatas: (FlorDelLote & { orden: number })[] = []
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n; j++) {
+      const u = i - (n - 1) / 2
+      const v = j - (n - 1) / 2
+      if (u * u + v * v < 2) continue
+      // Un punto cualquiera dentro del rombo de la casilla (|a| + |b| ≤ 0,8).
+      const a = (ruido(i, j, 7) - 0.5) * 0.8
+      const b = (ruido(i, j, 8) - 0.5) * 0.8
+      candidatas.push({
+        x: cx + (u - v) * tw + a * tw,
+        y: cy + ((u + v) * tw) / 2 + (b * tw) / 2,
+        radio: tw * 0.3,
+        tono: Math.min(3, Math.floor(ruido(i, j, 10) * 4)) as 0 | 1 | 2 | 3,
+        orden: ruido(i, j, 9),
+      })
+    }
+  }
+  candidatas.sort((p, q) => p.orden - q.orden)
+  return candidatas.slice(0, FLORES_POR_NIVEL[limitarNivel(nivel) - 1] ?? 0).map(({ orden: _orden, ...flor }) => flor)
 }

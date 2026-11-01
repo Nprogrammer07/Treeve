@@ -187,3 +187,11 @@
   margin: 0.25rem 0 0;
   color: var(--tinta-suave);
 }
+
+/* Lugar de la escena mientras llega el lote: mismo alto, para que la pantalla no salte. */
+.marcador {
+  height: var(--altura-escena);
+  border-radius: 1.5rem;
+  background: linear-gradient(to bottom, #6fb23d, #5ea334);
+  opacity: 0.35;
+}

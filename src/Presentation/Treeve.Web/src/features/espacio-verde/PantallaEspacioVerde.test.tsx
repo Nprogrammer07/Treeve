@@ -2,24 +2,37 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { createRef, useImperativeHandle, type Ref } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ControlEspacioVerde } from '../../scene/EspacioVerde.tsx'
+import { loteDePrueba } from '../../test/loteDePrueba.ts'
 import { PantallaEspacioVerde } from './PantallaEspacioVerde.tsx'
 
-const regar = vi.hoisted(() => vi.fn<() => void>())
+const control = vi.hoisted(() => ({ regar: vi.fn<() => void>(), crecer: vi.fn<() => void>() }))
 
 vi.mock('../../scene/EspacioVerde.tsx', () => ({
-  EspacioVerde: ({ etapa, ref }: { etapa: string; ref?: Ref<ControlEspacioVerde> }) => {
-    useImperativeHandle(ref, () => ({ regar }), [])
-    return <p>{`escena ${etapa}`}</p>
+  EspacioVerde: ({ etapa, nivelFlores, nivelBosque, ref }: { etapa: string; nivelFlores?: number; nivelBosque?: number; ref?: Ref<ControlEspacioVerde> }) => {
+    useImperativeHandle(ref, () => control, [])
+    return <p>{`escena ${etapa} flores ${nivelFlores} bosque ${nivelBosque}`}</p>
   },
 }))
 
 const pantalla = (extra: Partial<Parameters<typeof PantallaEspacioVerde>[0]> = {}) => (
-  <PantallaEspacioVerde apodo="Luis" etapa="tallo" controlesSonido={<p>controles de sonido</p>} onDesahogarme={() => {}} onSugerir={() => {}} onSalir={() => {}} {...extra} />
+  <PantallaEspacioVerde
+    apodo="Luis"
+    lote={loteDePrueba()}
+    cargandoLote={false}
+    falloLote={false}
+    onReintentarLote={() => {}}
+    controlesSonido={<p>controles de sonido</p>}
+    onDesahogarme={() => {}}
+    onSugerir={() => {}}
+    onSalir={() => {}}
+    {...extra}
+  />
 )
 
 describe('PantallaEspacioVerde', () => {
   beforeEach(() => {
-    regar.mockClear()
+    control.regar.mockClear()
+    control.crecer.mockClear()
   })
 
   it('saluda por el apodo con un único título principal', () => {
@@ -29,10 +42,56 @@ describe('PantallaEspacioVerde', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Hola, Luis' })).toBeInTheDocument()
   })
 
-  it('dibuja la etapa que recibe y muestra los controles de sonido', () => {
+  describe('el lote (HU-07a)', () => {
+    it('dibuja la etapa del árbol y los niveles de flores y bosque que entrega la API', () => {
+      render(pantalla({ lote: loteDePrueba({ etapa: 'flor', niveles: { arbol: 3, flores: 4, bosque: 2 } }) }))
+
+      expect(screen.getByText('escena flor flores 4 bosque 2')).toBeInTheDocument()
+    })
+
+    it('muestra el estado del lote y el progreso hacia el siguiente crecimiento', () => {
+      render(pantalla())
+
+      expect(screen.getByRole('region', { name: 'Estado de tu espacio verde' })).toBeInTheDocument()
+      expect(screen.getByText('Te faltan 2 desahogos para que crezca el bosque.')).toBeInTheDocument()
+    })
+
+    it('mientras no hay lote no dibuja la escena: un lote de mentira confundiría a quien ya lo tiene crecido', () => {
+      render(pantalla({ lote: null, cargandoLote: true }))
+
+      expect(screen.queryByText(/^escena/)).not.toBeInTheDocument()
+      expect(screen.getByText('Cargando tu espacio verde…')).toBeInTheDocument()
+    })
+
+    it('sin lote tampoco muestra niveles ni cifras', () => {
+      const { container } = render(pantalla({ lote: null, cargandoLote: true }))
+
+      expect(container.textContent).not.toMatch(/Nivel \d|desahogos|Tallo|Brote/)
+    })
+
+    it('si no se pudo leer, avisa y permite reintentar', () => {
+      const onReintentarLote = vi.fn<() => void>()
+      render(pantalla({ lote: null, falloLote: true, onReintentarLote }))
+
+      expect(screen.getByRole('alert')).toHaveTextContent('No pudimos cargar tu espacio verde')
+      fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }))
+
+      expect(onReintentarLote).toHaveBeenCalledOnce()
+    })
+
+    it('se puede desahogar aunque el lote todavía no haya llegado', () => {
+      const onDesahogarme = vi.fn<() => void>()
+      render(pantalla({ lote: null, cargandoLote: true, onDesahogarme }))
+
+      fireEvent.click(screen.getByRole('button', { name: 'Desahogarme ahora' }))
+
+      expect(onDesahogarme).toHaveBeenCalledOnce()
+    })
+  })
+
+  it('muestra los controles de sonido', () => {
     render(pantalla())
 
-    expect(screen.getByText('escena tallo')).toBeInTheDocument()
     expect(screen.getByText('controles de sonido')).toBeInTheDocument()
   })
 
@@ -80,21 +139,23 @@ describe('PantallaEspacioVerde', () => {
   it('cuenta con texto lo que ocurre en la escena', () => {
     render(pantalla({ aviso: 'Tu desahogo regó tu espacio verde.' }))
 
-    expect(screen.getByRole('status')).toHaveTextContent('Tu desahogo regó tu espacio verde.')
+    expect(screen.getByText('Tu desahogo regó tu espacio verde.').tagName).toBe('OUTPUT')
   })
 
-  it('deja regar la escena desde fuera', () => {
-    const control = createRef<ControlEspacioVerde>()
-    render(pantalla({ ref: control }))
+  it('deja regar y hacer crecer la escena desde fuera', () => {
+    const ref = createRef<ControlEspacioVerde>()
+    render(pantalla({ ref }))
 
-    control.current?.regar()
+    ref.current?.regar()
+    ref.current?.crecer()
 
-    expect(regar).toHaveBeenCalledOnce()
+    expect(control.regar).toHaveBeenCalledOnce()
+    expect(control.crecer).toHaveBeenCalledOnce()
   })
 
-  it('no muestra datos que la API todavía no entrega (días, niveles, nutrientes, historial)', () => {
+  it('no inventa datos que la API no entrega: nada de días, rachas ni historial', () => {
     const { container } = render(pantalla())
 
-    expect(container.textContent).not.toMatch(/día \d|nivel \d|nutrientes|racha|historial|\d+ desahogos/i)
+    expect(container.textContent).not.toMatch(/racha|día \d|historial|nutrientes|\d+ desahogos escritos/i)
   })
 })

@@ -4,6 +4,7 @@ import {
   casillas,
   disenarMapa,
   escalaDelArbol,
+  floresDelLote,
   formaArbol,
   poligonoAgua,
   poligonoArena,
@@ -20,7 +21,12 @@ export interface Metricas {
 }
 
 export interface OpcionesEscena {
+  /** Etapa del árbol (brote, tallo, flor o árbol adulto). */
   etapa: EtapaArbol
+  /** Nivel del componente "flores" (1 a 4). */
+  nivelFlores: number
+  /** Nivel del componente "bosque" (1 a 4). */
+  nivelBosque: number
   pajaros: boolean
   reducirMovimiento: boolean
   onMetricas?: (metricas: Metricas) => void
@@ -28,6 +34,7 @@ export interface OpcionesEscena {
 
 const AVES = 4
 const DURACION_PULSO_MS = 900
+const TONOS_DE_FLOR = [0xf4a9bd, 0xf6d365, 0xffffff, 0xc9a7e8] as const
 
 // Paleta propia de Treeve: verdes vivos y amables, de estilo isométrico para juego móvil.
 const COLORES = {
@@ -63,7 +70,12 @@ export class Escena {
   private readonly bosque = new Graphics()
   private readonly arbol = new Graphics()
   private readonly lluvia = new Graphics()
+  private readonly brillo = new Graphics()
   private readonly aves: Graphics[] = []
+  private destellos: { x: number; y: number; vx: number; vy: number; vida: number; vidaInicial: number; radio: number }[] = []
+  private mapa: Mapa | null = null
+  private amplitudDelPulso = 0.06
+  private crecimientoPendiente = false
   private gotas: { x: number; y: number; vy: number }[] = []
   private yTierra = 0
   private pulsoRestante = 0
@@ -95,7 +107,7 @@ export class Escena {
       return
     }
     anfitrion.appendChild(this.app.canvas)
-    this.app.stage.addChild(this.suelo, this.bosque, this.arbol, this.lluvia)
+    this.app.stage.addChild(this.suelo, this.bosque, this.arbol, this.brillo, this.lluvia)
     for (let i = 0; i < AVES; i++) {
       const ave = new Graphics()
       this.aves.push(ave)
@@ -111,9 +123,32 @@ export class Escena {
       this.riegoPendiente = false
       this.regar()
     }
+    if (this.crecimientoPendiente) {
+      this.crecimientoPendiente = false
+      this.crecer()
+    }
   }
 
-  actualizar(cambios: Partial<Pick<OpcionesEscena, 'etapa' | 'pajaros'>>): void {
+  /** Crecimiento del lote (un componente subió de nivel): destellos que salen del árbol y un latido más grande. */
+  crecer(): void {
+    if (!this.listo || !this.mapa) {
+      // Se pidió antes de que la escena terminara de cargar: ocurre en cuanto esté lista.
+      this.crecimientoPendiente = true
+      return
+    }
+    if (this.opciones.reducirMovimiento) return
+    const { cx, cy, a } = this.mapa
+    this.destellos = Array.from({ length: 30 }, (_, i) => {
+      const angulo = (i / 30) * Math.PI * 2 + Math.random() * 0.3
+      const rapidez = 0.05 + Math.random() * 0.1
+      const vida = 1100 + Math.random() * 600
+      return { x: cx, y: cy - a * 0.18, vx: Math.cos(angulo) * rapidez, vy: Math.sin(angulo) * rapidez * 0.55 - 0.04, vida, vidaInicial: vida, radio: 3 + Math.random() * 3.5 }
+    })
+    this.amplitudDelPulso = 0.13
+    this.pulsoRestante = DURACION_PULSO_MS
+  }
+
+  actualizar(cambios: Partial<Pick<OpcionesEscena, 'etapa' | 'pajaros' | 'nivelFlores' | 'nivelBosque'>>): void {
     this.opciones = { ...this.opciones, ...cambios }
     if (this.listo) this.dibujarEstatico()
   }
@@ -133,6 +168,7 @@ export class Escena {
       y: -Math.random() * 80,
       vy: 0.35 + Math.random() * 0.25,
     }))
+    this.amplitudDelPulso = 0.06
     this.pulsoRestante = DURACION_PULSO_MS
   }
 
@@ -154,6 +190,7 @@ export class Escena {
   private dibujarEstatico(): void {
     const { width: ancho, height: alto } = this.app.screen
     const mapa = disenarMapa(ancho, alto)
+    this.mapa = mapa
     this.yTierra = mapa.cy
     this.dibujarTerreno(ancho, alto, mapa)
     this.dibujarBosque(ancho, alto, mapa)
@@ -187,12 +224,19 @@ export class Escena {
     g.poly(aplanar(Object.values(romboSuelo(mapa.cx, mapa.cy, mapa.a)))).fill(COLORES.cesped)
     for (const casilla of casillas(mapa)) g.poly(casilla.puntos).fill(casilla.claro ? COLORES.casillaClara : COLORES.casillaOscura)
     g.poly(aplanar(Object.values(romboSuelo(mapa.cx, mapa.cy, mapa.n * mapa.tw)))).stroke({ width: 2, color: COLORES.lineaTablero, alpha: 0.9 })
+
+    // Flores sobre el césped: cuántas depende del nivel del componente "flores".
+    for (const flor of floresDelLote(mapa, this.opciones.nivelFlores)) {
+      g.ellipse(flor.x, flor.y + flor.radio * 0.6, flor.radio * 1.1, flor.radio * 0.45).fill({ color: COLORES.sombra, alpha: 0.2 })
+      g.circle(flor.x, flor.y, flor.radio).fill(TONOS_DE_FLOR[flor.tono])
+      g.circle(flor.x, flor.y, flor.radio * 0.42).fill(flor.tono === 1 ? 0xffffff : 0xf6c445)
+    }
   }
 
   /** Bosque denso en los bordes: copas redondas en tres verdes, con sombra, pintadas de atrás hacia adelante. */
   private dibujarBosque(ancho: number, alto: number, mapa: Mapa): void {
     const g = this.bosque.clear()
-    for (const arbol of arbolesDelBosque(ancho, alto, mapa)) {
+    for (const arbol of arbolesDelBosque(ancho, alto, mapa, this.opciones.nivelBosque)) {
       const [oscuro, medio, luz] = COPAS[arbol.tono] ?? COPAS[0] ?? [0x2f7d2a, 0x44a237, 0x6fcb4b]
       const r = arbol.radio
       g.ellipse(arbol.x + r * 0.1, arbol.y + r * 0.75, r * 0.95, r * 0.35).fill({ color: COLORES.sombra, alpha: 0.3 })
@@ -262,6 +306,21 @@ export class Escena {
     if (this.opciones.reducirMovimiento) return
     this.dibujarAves(performance.now())
     this.animarRiego(dt)
+    this.animarDestellos(dt)
+  }
+
+  private animarDestellos(dt: number): void {
+    this.destellos = this.destellos.filter((d) => d.vida > 0)
+    this.brillo.clear()
+    for (const d of this.destellos) {
+      d.vida -= dt
+      d.x += d.vx * dt
+      d.y += d.vy * dt
+      const intensidad = Math.max(0, d.vida / d.vidaInicial)
+      // Estrella de cuatro puntas que se apaga al final de su vida.
+      const r = d.radio * (0.5 + intensidad)
+      this.brillo.poly([d.x, d.y - r * 1.6, d.x + r * 0.45, d.y - r * 0.45, d.x + r * 1.6, d.y, d.x + r * 0.45, d.y + r * 0.45, d.x, d.y + r * 1.6, d.x - r * 0.45, d.y + r * 0.45, d.x - r * 1.6, d.y, d.x - r * 0.45, d.y - r * 0.45]).fill({ color: 0xfff1a8, alpha: intensidad })
+    }
   }
 
   private animarRiego(dt: number): void {
@@ -272,7 +331,7 @@ export class Escena {
     if (this.pulsoRestante > 0) {
       this.pulsoRestante = Math.max(0, this.pulsoRestante - dt)
       const avance = 1 - this.pulsoRestante / DURACION_PULSO_MS
-      this.arbol.scale.set(1 + 0.06 * Math.sin(Math.PI * avance))
+      this.arbol.scale.set(1 + this.amplitudDelPulso * Math.sin(Math.PI * avance))
     }
   }
 }
