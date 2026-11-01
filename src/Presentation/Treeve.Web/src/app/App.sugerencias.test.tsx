@@ -6,6 +6,7 @@ import { loteDePrueba } from '../test/loteDePrueba.ts'
 import App from './App.tsx'
 
 vi.mock('../scene/EspacioVerde.tsx', () => ({ EspacioVerde: () => <p>escena</p> }))
+vi.mock('../features/notificaciones/api.ts', () => ({ listarNotificaciones: () => Promise.resolve([]), marcarComoLeida: () => Promise.resolve() }))
 vi.mock('../features/espacio-verde/api.ts', () => ({ consultarEspacioVerde: () => Promise.resolve(loteDePrueba()) }))
 vi.mock('../features/sugerencias/api.ts', () => ({
   enviarSugerencia: vi.fn<typeof enviarSugerencia>(),

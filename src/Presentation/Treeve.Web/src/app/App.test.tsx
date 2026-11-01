@@ -18,6 +18,7 @@ vi.mock('../scene/EspacioVerde.tsx', () => ({
   },
 }))
 vi.mock('../features/desahogos/api.ts', () => ({ guardarDesahogo: vi.fn<typeof guardarDesahogo>() }))
+vi.mock('../features/notificaciones/api.ts', () => ({ listarNotificaciones: () => Promise.resolve([]), marcarComoLeida: () => Promise.resolve() }))
 vi.mock('../features/espacio-verde/api.ts', () => ({ consultarEspacioVerde: () => Promise.resolve(loteDePrueba()) }))
 vi.mock('../features/identidad/api.ts', () => ({
   registrar: vi.fn<typeof registrar>(),

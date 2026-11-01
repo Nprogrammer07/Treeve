@@ -75,4 +75,19 @@ describe('VentanaSugerencias', () => {
     await waitFor(() => expect(screen.getByRole('dialog', { name: 'Enviar una sugerencia' })).toBeInTheDocument())
     expect(screen.getByLabelText('Escribe tu sugerencia')).toHaveValue('')
   })
+
+  it('puede abrirse directo en el historial, como cuando llega un aviso de sugerencia respondida', async () => {
+    vi.mocked(listarMisSugerencias).mockResolvedValue([{ sugerenciaId: 's-1', texto: 'Un modo oscuro', estado: 'implementada', creadaEn: '2026-10-26T15:00:00-05:00', comentario: 'Ya está.', respondidaEn: '2026-10-30T10:00:00-05:00' }])
+    render(ventana({ vistaInicial: 'historial' }))
+
+    expect(screen.getByRole('dialog', { name: 'Mis sugerencias' })).toBeInTheDocument()
+    expect(await screen.findByText('Ya está.')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Escribe tu sugerencia')).not.toBeInTheDocument()
+  })
+
+  it('sin indicar vista, abre en el formulario', () => {
+    render(ventana())
+
+    expect(screen.getByRole('dialog', { name: 'Enviar una sugerencia' })).toBeInTheDocument()
+  })
 })

@@ -16,6 +16,7 @@ vi.mock('../scene/EspacioVerde.tsx', () => ({
     return <p>{`escena ${etapa} flores ${nivelFlores} bosque ${nivelBosque}`}</p>
   },
 }))
+vi.mock('../features/notificaciones/api.ts', () => ({ listarNotificaciones: () => Promise.resolve([]), marcarComoLeida: () => Promise.resolve() }))
 vi.mock('../features/espacio-verde/api.ts', () => ({ consultarEspacioVerde: vi.fn<typeof consultarEspacioVerde>() }))
 vi.mock('../features/desahogos/api.ts', () => ({ guardarDesahogo: vi.fn<typeof guardarDesahogo>() }))
 

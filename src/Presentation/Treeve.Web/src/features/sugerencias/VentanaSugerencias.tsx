@@ -8,9 +8,11 @@ import estilos from './VentanaSugerencias.module.css'
 interface Props {
   abierto: boolean
   onCerrar: () => void
+  /** Con qué vista se abre: el formulario o el historial. Cada apertura empieza en esta. */
+  vistaInicial?: Vista
 }
 
-type Vista = 'enviar' | 'enviada' | 'historial'
+export type Vista = 'enviar' | 'enviada' | 'historial'
 
 const TITULOS: Record<Vista, string> = {
   enviar: 'Enviar una sugerencia',
@@ -19,13 +21,13 @@ const TITULOS: Record<Vista, string> = {
 }
 
 /** HU-09: enviar una sugerencia, ver la confirmación y consultar el historial propio, todo en una ventana. */
-export function VentanaSugerencias({ abierto, onCerrar }: Props) {
+export function VentanaSugerencias({ abierto, onCerrar, vistaInicial = 'enviar' }: Props) {
   // La ventana existe solo mientras está abierta: así cada apertura empieza en el formulario, sin restos.
-  return abierto ? <Ventana onCerrar={onCerrar} /> : null
+  return abierto ? <Ventana onCerrar={onCerrar} vistaInicial={vistaInicial} /> : null
 }
 
-function Ventana({ onCerrar }: Pick<Props, 'onCerrar'>) {
-  const [vista, setVista] = useState<Vista>('enviar')
+function Ventana({ onCerrar, vistaInicial }: Pick<Props, 'onCerrar'> & { vistaInicial: Vista }) {
+  const [vista, setVista] = useState<Vista>(vistaInicial)
 
   return (
     <Dialogo abierto titulo={TITULOS[vista]} onCerrar={onCerrar}>
