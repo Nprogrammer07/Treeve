@@ -14,5 +14,7 @@
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="4.0.1" />
     <PackageVersion Include="TngTech.ArchUnitNET.xUnit" Version="0.13.4" />
+    <!-- ADR-009: levanta la API completa en memoria para las pruebas de seguridad. -->
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.13" />
   </ItemGroup>
 </Project>

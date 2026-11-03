@@ -36,6 +36,9 @@ internal sealed class RepositorioFragmentosJson : IRepositorioFragmentos
 
     private static readonly IReadOnlyDictionary<string, Tema> Temas = new Dictionary<string, Tema>
     {
+        ["soledad"] = Tema.Soledad,
+        ["malestar"] = Tema.Malestar,
+        ["alegria"] = Tema.Alegria,
         ["trabajo"] = Tema.Trabajo,
         ["estudio"] = Tema.Estudio,
         ["familia"] = Tema.Familia,
@@ -81,7 +84,8 @@ internal sealed class RepositorioFragmentosJson : IRepositorioFragmentos
             (f.Temas ?? []).Select(t => Traducir(Temas, t, f.Id)),
             (f.Intensidad ?? []).Select(i => Traducir(Intensidades, i, f.Id)),
             f.Peso ?? 1,
-            f.Texto);
+            f.Texto,
+            f.Contradice ?? false);
 
     private static T Traducir<T>(IReadOnlyDictionary<string, T> valores, string valor, string dondeAparece) =>
         valores.TryGetValue(valor, out var traducido)
@@ -107,7 +111,8 @@ internal sealed class RepositorioFragmentosJson : IRepositorioFragmentos
         IReadOnlyList<string>? Temas,
         IReadOnlyList<string>? Intensidad,
         int? Peso,
-        string Texto);
+        string Texto,
+        bool? Contradice);
 
     private sealed record ArchivoDeTemas(IReadOnlyDictionary<string, IReadOnlyList<string>> Temas);
 

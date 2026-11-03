@@ -12,8 +12,9 @@ public class FragmentoTests
         Tema[]? temas = null,
         Intensidad[]? intensidades = null,
         int peso = 1,
-        string texto = "Lo que sientes tiene sentido.") =>
-        Fragmento.Crear(id, ranura, emocion, temas ?? [], intensidades ?? [], peso, texto);
+        string texto = "Lo que sientes tiene sentido.",
+        bool contradice = false) =>
+        Fragmento.Crear(id, ranura, emocion, temas ?? [], intensidades ?? [], peso, texto, contradice);
 
     [Theory]
     [InlineData("TRI-VAL-1")]
@@ -23,6 +24,30 @@ public class FragmentoTests
     public void El_id_dice_su_emocion_y_su_ranura(string id)
     {
         Assert.Throws<ArgumentException>(() => Crear(id: id));
+    }
+
+    [Fact]
+    public void Un_fragmento_de_contradiccion_solo_encaja_si_el_texto_contradice_la_emocion()
+    {
+        var neutro = Crear(id: "GEN-VAL-01", emocion: null, contradice: true);
+
+        Assert.True(neutro.EncajaCon(new Senales(Emocion.Tristeza, Tema.Alegria, Intensidad.Baja)));
+        Assert.True(neutro.EncajaCon(new Senales(Emocion.Felicidad, Tema.Soledad, Intensidad.Baja)));
+        Assert.False(neutro.EncajaCon(new Senales(Emocion.Tristeza, Tema.Soledad, Intensidad.Baja)));
+        Assert.False(neutro.EncajaCon(new Senales(Emocion.Felicidad, null, Intensidad.Baja)));
+        Assert.False(neutro.EncajaCon(new Senales(Emocion.Duda, Tema.Alegria, Intensidad.Baja)));
+    }
+
+    [Fact]
+    public void La_contradiccion_suma_especificidad_y_no_cuenta_como_fragmento_general()
+    {
+        var neutro = Crear(id: "GEN-VAL-01", emocion: null, contradice: true);
+
+        Assert.Equal(2, neutro.Especificidad);
+        Assert.False(neutro.EsGeneralPara(Emocion.Tristeza));
+        // Entre los que encajan, una combinación de emoción y tema (3) gana a la contradicción (2), y esta a la emoción sola (1).
+        Assert.True(Crear(id: "FEL-VAL-01", emocion: Emocion.Felicidad, temas: [Tema.Soledad]).Especificidad > neutro.Especificidad);
+        Assert.True(neutro.Especificidad > Crear(id: "GEN-VAL-02", emocion: null).Especificidad);
     }
 
     [Fact]

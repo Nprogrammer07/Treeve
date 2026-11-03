@@ -73,6 +73,24 @@ public class SenalesTests
         Assert.Throws<ArgumentException>(() => new ReglaCrisis([], []));
     }
 
+    [Theory]
+    [InlineData(Emocion.Felicidad, Tema.Soledad, true)]
+    [InlineData(Emocion.Felicidad, Tema.Malestar, true)]
+    [InlineData(Emocion.Tristeza, Tema.Alegria, true)]
+    [InlineData(Emocion.Rabia, Tema.Alegria, true)]
+    [InlineData(Emocion.Miedo, Tema.Alegria, true)]
+    [InlineData(Emocion.Felicidad, Tema.Alegria, false)]
+    [InlineData(Emocion.Tristeza, Tema.Soledad, false)]
+    [InlineData(Emocion.Rabia, Tema.Malestar, false)]
+    [InlineData(Emocion.Duda, Tema.Alegria, false)]
+    [InlineData(Emocion.Duda, Tema.Soledad, false)]
+    [InlineData(Emocion.Felicidad, Tema.Trabajo, false)]
+    [InlineData(Emocion.Tristeza, null, false)]
+    public void El_texto_contradice_la_emocion_cuando_su_tono_es_el_opuesto(Emocion emocion, Tema? tema, bool contradice)
+    {
+        Assert.Equal(contradice, new Senales(emocion, tema, Intensidad.Baja).Contradice);
+    }
+
     [Fact]
     public void Las_senales_no_se_imprimen()
     {
