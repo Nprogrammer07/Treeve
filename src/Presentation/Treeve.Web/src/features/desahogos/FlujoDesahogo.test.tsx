@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { guardarDesahogo } from './api.ts'
 import { FlujoDesahogo } from './FlujoDesahogo.tsx'
 import type { CrearNotaResponse } from './tipos.ts'
@@ -21,6 +21,26 @@ function desahogarse(emocion = 'Duda', texto = 'no sé qué hacer') {
   fireEvent.change(screen.getByLabelText('Escribe lo que sientes'), { target: { value: texto } })
   fireEvent.click(screen.getByRole('button', { name: 'Regar mi espacio verde' }))
 }
+
+
+beforeEach(() => {
+  // Las pruebas de integración activan "reducir movimiento" para que el mensaje de apoyo aparezca de inmediato,
+  // sin la pausa ni la escritura letra por letra (HU-06a-4). Esas se prueban aparte en MensajeDeApoyo.test.tsx.
+  vi.stubGlobal(
+    'matchMedia',
+    vi.fn((consulta: string) => ({
+      matches: consulta === '(prefers-reduced-motion: reduce)',
+      media: consulta,
+      onchange: null,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+    })),
+  )
+})
+afterEach(() => vi.unstubAllGlobals())
 
 describe('FlujoDesahogo', () => {
   beforeEach(() => {
@@ -73,7 +93,7 @@ describe('FlujoDesahogo', () => {
       desahogarse('Duda', 'no sé qué hacer')
 
       const dialogo = await screen.findByRole('dialog', { name: 'Un mensaje para ti' })
-      expect(within(dialogo).getByText('Hola, Ani. Gracias por contarlo.')).toBeInTheDocument()
+      expect(within(dialogo).getAllByText('Hola, Ani. Gracias por contarlo.').length).toBeGreaterThan(0)
       expect(guardarDesahogo).toHaveBeenCalledWith({ emocion: 'duda', texto: 'no sé qué hacer' })
       // Todavía no se riega: primero la persona lee su mensaje.
       expect(alGuardar).not.toHaveBeenCalled()
@@ -121,7 +141,7 @@ describe('FlujoDesahogo', () => {
 
       desahogarse('Tristeza', 'me siento muy mal')
 
-      expect(await screen.findByText(/Estamos contigo/)).toBeInTheDocument()
+      expect((await screen.findAllByText(/Estamos contigo/)).length).toBeGreaterThan(0)
       await new Promise((resolver) => setTimeout(resolver, 30))
       expect(screen.getByRole('dialog', { name: 'Un mensaje para ti' })).toBeInTheDocument()
       expect(alGuardar).not.toHaveBeenCalled()
@@ -166,12 +186,12 @@ describe('FlujoDesahogo', () => {
   it('al volver a abrir después de ver un mensaje, no queda el mensaje anterior', async () => {
     const { rerender } = render(flujo())
     desahogarse()
-    await screen.findByText('Hola, Ani. Gracias por contarlo.')
+    await screen.findAllByText('Hola, Ani. Gracias por contarlo.')
 
     rerender(flujo({ abierto: false }))
     rerender(flujo({ abierto: true }))
 
-    expect(screen.queryByText('Hola, Ani. Gracias por contarlo.')).not.toBeInTheDocument()
+    expect(screen.queryAllByText('Hola, Ani. Gracias por contarlo.')).toHaveLength(0)
     await waitFor(() => expect(screen.getByRole('dialog', { name: '¿Cómo te sientes hoy?' })).toBeInTheDocument())
   })
 })

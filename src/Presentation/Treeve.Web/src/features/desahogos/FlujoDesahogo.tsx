@@ -13,8 +13,11 @@ interface Props {
   abierto: boolean
   /** Se cierra la ventana sin haber guardado nada. */
   onCerrar: () => void
-  /** El desahogo quedó guardado y la persona ya vio su mensaje: app/ decide qué sigue (regar el espacio verde). */
+  /** El desahogo quedó guardado y la persona ya vio su mensaje: app/ decide qué sigue (recargar el lote, aviso). */
   alGuardar: () => void
+  /** El mensaje de apoyo acaba de aparecer: app/ dispara la animación de riego de la escena (HU-07b),
+   *  para que la pausa y la escritura letra por letra (HU-06a-4) ocurran sincronizadas con ese momento. */
+  onMensajeAparece?: () => void
 }
 
 type Paso = { nombre: 'emocion' } | { nombre: 'escribir'; emocion: Emocion } | { nombre: 'mensaje'; mensaje: Mensaje }
@@ -25,12 +28,12 @@ type Paso = { nombre: 'emocion' } | { nombre: 'escribir'; emocion: Emocion } | {
  * Solo la emoción y el mensaje viven en memoria; el texto lo gestiona HojaDePapel y nunca se persiste.
  * Al cerrar la ventana todo se descarta.
  */
-export function FlujoDesahogo({ abierto, onCerrar, alGuardar }: Props) {
+export function FlujoDesahogo({ abierto, onCerrar, alGuardar, onMensajeAparece }: Props) {
   // La ventana existe solo mientras está abierta: así cada apertura empieza de cero.
-  return abierto ? <Ventana onCerrar={onCerrar} alGuardar={alGuardar} /> : null
+  return abierto ? <Ventana onCerrar={onCerrar} alGuardar={alGuardar} onMensajeAparece={onMensajeAparece} /> : null
 }
 
-function Ventana({ onCerrar, alGuardar }: Pick<Props, 'onCerrar' | 'alGuardar'>) {
+function Ventana({ onCerrar, alGuardar, onMensajeAparece }: Pick<Props, 'onCerrar' | 'alGuardar' | 'onMensajeAparece'>) {
   const [paso, setPaso] = useState<Paso>({ nombre: 'emocion' })
 
   // Si el desahogo ya se guardó, cerrar la ventana (con el botón, la X o Esc) también avisa que quedó guardado.
@@ -54,7 +57,7 @@ function Ventana({ onCerrar, alGuardar }: Pick<Props, 'onCerrar' | 'alGuardar'>)
           <HojaDePapel emocion={paso.emocion} onGuardado={(mensaje) => setPaso({ nombre: 'mensaje', mensaje })} />
         </div>
       )}
-      {paso.nombre === 'mensaje' && <MensajeDeApoyo mensaje={paso.mensaje} onSeguir={alGuardar} />}
+      {paso.nombre === 'mensaje' && <MensajeDeApoyo mensaje={paso.mensaje} onSeguir={alGuardar} onAparece={onMensajeAparece} />}
     </Dialogo>
   )
 }

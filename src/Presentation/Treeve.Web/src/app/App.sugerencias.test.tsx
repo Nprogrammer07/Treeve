@@ -13,6 +13,26 @@ vi.mock('../features/sugerencias/api.ts', () => ({
   listarMisSugerencias: vi.fn<typeof listarMisSugerencias>(),
 }))
 
+
+beforeEach(() => {
+  // Las pruebas de integración activan "reducir movimiento" para que el mensaje de apoyo aparezca de inmediato,
+  // sin la pausa ni la escritura letra por letra (HU-06a-4). Esas se prueban aparte en MensajeDeApoyo.test.tsx.
+  vi.stubGlobal(
+    'matchMedia',
+    vi.fn((consulta: string) => ({
+      matches: consulta === '(prefers-reduced-motion: reduce)',
+      media: consulta,
+      onchange: null,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+    })),
+  )
+})
+afterEach(() => vi.unstubAllGlobals())
+
 describe('HU-09: sugerencias desde el espacio verde', () => {
   beforeEach(() => {
     guardarSesion({ usuarioId: 'u-1', apodo: 'Luis', token: 'token-secreto', expiraEn: '2999-01-01T00:00:00Z' })

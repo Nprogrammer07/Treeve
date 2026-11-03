@@ -61,6 +61,26 @@ afterEach(() => {
   borrarSesion()
 })
 
+
+beforeEach(() => {
+  // Las pruebas de integración activan "reducir movimiento" para que el mensaje de apoyo aparezca de inmediato,
+  // sin la pausa ni la escritura letra por letra (HU-06a-4). Esas se prueban aparte en MensajeDeApoyo.test.tsx.
+  vi.stubGlobal(
+    'matchMedia',
+    vi.fn((consulta: string) => ({
+      matches: consulta === '(prefers-reduced-motion: reduce)',
+      media: consulta,
+      onchange: null,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+    })),
+  )
+})
+afterEach(() => vi.unstubAllGlobals())
+
 describe('sin sesión', () => {
   it('abre la página de visitante con el registro y el sonido ambiental', () => {
     render(<App />)
@@ -167,7 +187,7 @@ describe('pasos 2 y 3: desahogarse', () => {
     expect(screen.getByPlaceholderText('Hoy me sentí...')).toBeInTheDocument()
   })
 
-  it('al guardar muestra el mensaje de apoyo y, al cerrarlo, riega el espacio verde y lo cuenta con texto', async () => {
+  it('al guardar muestra el mensaje de apoyo y riega el espacio verde a la par; al cerrarlo lo cuenta con texto', async () => {
     render(<App />)
 
     fireEvent.click(screen.getByRole('button', { name: 'Desahogarme ahora' }))
@@ -177,13 +197,15 @@ describe('pasos 2 y 3: desahogarse', () => {
 
     expect(await screen.findByRole('dialog', { name: 'Un mensaje para ti' })).toHaveTextContent('Hola, Luis. Gracias por contarlo.')
     expect(guardarDesahogo).toHaveBeenCalledWith({ emocion: 'duda', texto: 'no sé' })
-    expect(regar).not.toHaveBeenCalled()
+    // El riego se dispara en cuanto aparece el mensaje, para que la pausa y la escritura letra por letra (HU-06a-4)
+    // ocurran sincronizadas con la animación de riego (HU-07b).
+    expect(regar).toHaveBeenCalledOnce()
 
     fireEvent.click(screen.getByRole('button', { name: 'Seguir' }))
 
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    // Cerrar el mensaje no vuelve a regar: la escena solo se riega una vez por desahogo.
     expect(regar).toHaveBeenCalledOnce()
-    // Hay dos avisos de estado en pantalla (sonido y riego): se busca el del riego por su texto.
     expect(screen.getByText('Tu desahogo regó tu espacio verde.').tagName).toBe('OUTPUT')
   })
 

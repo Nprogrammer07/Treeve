@@ -28,10 +28,49 @@
   background: var(--ambar-fondo);
 }
 
+.pausa {
+  color: var(--tinta-suave);
+  font-style: italic;
+  opacity: 0.9;
+}
+
+/* Un cursor que titila al final del texto mientras se escribe. Se oculta solo cuando la escritura termina. */
+.cursor {
+  display: inline-block;
+  width: 0.1em;
+  height: 1em;
+  margin-left: 0.1em;
+  vertical-align: -0.1em;
+  background: currentColor;
+  animation: parpadeo 1s steps(2, start) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cursor {
+    animation: none;
+  }
+}
+
+@keyframes parpadeo {
+  to {
+    visibility: hidden;
+  }
+}
+
 .texto {
   margin: 0;
   font-family: var(--fuente-manuscrita);
   font-size: clamp(1.5rem, 4.5vw, 1.875rem);
   line-height: 1.35;
   white-space: pre-line;
+}
+
+.soloLectores {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
