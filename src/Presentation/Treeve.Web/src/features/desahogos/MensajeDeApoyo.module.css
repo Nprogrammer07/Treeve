@@ -28,6 +28,35 @@
   background: var(--ambar-fondo);
 }
 
+.pausa {
+  color: var(--tinta-suave);
+  font-style: italic;
+  opacity: 0.9;
+}
+
+/* Un cursor que titila al final del texto mientras se escribe. Se oculta solo cuando la escritura termina. */
+.cursor {
+  display: inline-block;
+  width: 0.1em;
+  height: 1em;
+  margin-left: 0.1em;
+  vertical-align: -0.1em;
+  background: currentColor;
+  animation: parpadeo 1s steps(2, start) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cursor {
+    animation: none;
+  }
+}
+
+@keyframes parpadeo {
+  to {
+    visibility: hidden;
+  }
+}
+
 .texto {
   margin: 0;
   font-family: var(--fuente-manuscrita);

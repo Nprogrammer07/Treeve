@@ -29,6 +29,26 @@ async function desahogarse() {
   await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
 }
 
+
+beforeEach(() => {
+  // Las pruebas de integración activan "reducir movimiento" para que el mensaje de apoyo aparezca de inmediato,
+  // sin la pausa ni la escritura letra por letra (HU-06a-4). Esas se prueban aparte en MensajeDeApoyo.test.tsx.
+  vi.stubGlobal(
+    'matchMedia',
+    vi.fn((consulta: string) => ({
+      matches: consulta === '(prefers-reduced-motion: reduce)',
+      media: consulta,
+      onchange: null,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+    })),
+  )
+})
+afterEach(() => vi.unstubAllGlobals())
+
 describe('HU-07a: el espacio verde con el lote real', () => {
   beforeEach(() => {
     escena.regar.mockClear()

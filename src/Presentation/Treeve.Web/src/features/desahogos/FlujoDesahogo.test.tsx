@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { guardarDesahogo } from './api.ts'
 import { FlujoDesahogo } from './FlujoDesahogo.tsx'
 import type { CrearNotaResponse } from './tipos.ts'
@@ -21,6 +21,26 @@ function desahogarse(emocion = 'Duda', texto = 'no sé qué hacer') {
   fireEvent.change(screen.getByLabelText('Escribe lo que sientes'), { target: { value: texto } })
   fireEvent.click(screen.getByRole('button', { name: 'Regar mi espacio verde' }))
 }
+
+
+beforeEach(() => {
+  // Las pruebas de integración activan "reducir movimiento" para que el mensaje de apoyo aparezca de inmediato,
+  // sin la pausa ni la escritura letra por letra (HU-06a-4). Esas se prueban aparte en MensajeDeApoyo.test.tsx.
+  vi.stubGlobal(
+    'matchMedia',
+    vi.fn((consulta: string) => ({
+      matches: consulta === '(prefers-reduced-motion: reduce)',
+      media: consulta,
+      onchange: null,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+    })),
+  )
+})
+afterEach(() => vi.unstubAllGlobals())
 
 describe('FlujoDesahogo', () => {
   beforeEach(() => {

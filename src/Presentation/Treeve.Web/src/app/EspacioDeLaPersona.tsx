@@ -36,7 +36,8 @@ export function EspacioDeLaPersona({ apodo, motor, onSalir }: Props) {
   async function alGuardar() {
     setDesahogoAbierto(false)
     setAviso('Tu desahogo regó tu espacio verde.')
-    espacioVerde.current?.regar()
+    // El riego de la escena se disparó cuando apareció el mensaje (ver onMensajeAparece abajo),
+    // para que la pausa y la escritura letra por letra (HU-06a-4) ocurran sincronizadas con él.
     // El desahogo ya quedó registrado como un riego: se pide el lote de nuevo y se compara con el de antes.
     // Cada 3 desahogos crece un componente (HU-07a): si algo subió de nivel, hay animación especial y aviso en palabras.
     const antes = lote
@@ -99,7 +100,12 @@ export function EspacioDeLaPersona({ apodo, motor, onSalir }: Props) {
         onIrAStaff={() => window.location.assign('/staff')}
       />
       <VentanaSugerencias abierto={sugerenciasAbierto} onCerrar={() => setSugerenciasAbierto(false)} vistaInicial={vistaDeSugerencias} />
-      <FlujoDesahogo abierto={desahogoAbierto} onCerrar={() => setDesahogoAbierto(false)} alGuardar={() => void alGuardar()} />
+      <FlujoDesahogo
+        abierto={desahogoAbierto}
+        onCerrar={() => setDesahogoAbierto(false)}
+        alGuardar={() => void alGuardar()}
+        onMensajeAparece={() => espacioVerde.current?.regar()}
+      />
     </>
   )
 }
