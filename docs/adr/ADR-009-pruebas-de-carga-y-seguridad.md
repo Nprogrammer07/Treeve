@@ -1,6 +1,6 @@
 # ADR-009 · Pruebas de carga y de seguridad de la API
 
-- **Estado:** Propuesto
+- **Estado:** Aceptado (2026-11-03) por Nicolás
 - **Fecha:** 2026-11-03
 - **Decisores:** Nicolás (arquitecto)
 - **Historias relacionadas:** TEC-05; RNF de HU-02, HU-03a, HU-05, HU-06, HU-10 y HU-11
