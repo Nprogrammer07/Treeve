@@ -628,6 +628,12 @@ $env:TREEVE_PRUEBAS_POSTGRES = "Host=localhost;Port=5432;Username=postgres;Passw
 dotnet test Treeve.slnx
 ```
 
+### 4.8 Pruebas de seguridad de la API y de carga (TEC-05, ADR-009)
+
+- **`tests/Treeve.Api.Tests`** levanta la API completa en memoria, como en producción (HTTPS obligatorio), contra una base temporal con la misma variable `TREEVE_PRUEBAS_POSTGRES`. Recorre **todas** las rutas registradas: una ruta nueva sin `RequireAuthorization()` o sin `RequiereRol(...)` hace fallar la CI. Si una ruta nueva tiene que ser pública, se agrega a propósito a `RutasPublicas` en `SeguridadDeLaApiTests`.
+- También comprueba que el texto de un desahogo no queda en claro en ninguna tabla, no sale en ningún log (en ningún nivel) ni en las respuestas de error o de staff, y que solo la persona dueña lo lee.
+- **`tests/carga/`** tiene el script de k6. No corre en la CI: se ejecuta a mano siguiendo su [README](../../tests/carga/README.md).
+
 ---
 
 ## 5. Reglas no negociables

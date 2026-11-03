@@ -12,6 +12,7 @@ Cada decisión de arquitectura nueva, o cada cambio a una existente, se propone 
 | [ADR-006](ADR-006-gestion-de-staff-auditoria-y-notificaciones.md) | Gestión de staff, auditoría inmutable y notificaciones | Aceptado |
 | [ADR-007](ADR-007-crecimiento-del-espacio-verde.md) | Crecimiento del espacio verde | Aceptado |
 | [ADR-008](ADR-008-correo-saliente-y-recuperacion-de-contrasena.md) | Correo saliente y recuperación de contraseña | Aceptado |
+| [ADR-009](ADR-009-pruebas-de-carga-y-seguridad.md) | Pruebas de carga (k6) y de seguridad de la API | Propuesto |
 
 ## Plantilla
 
