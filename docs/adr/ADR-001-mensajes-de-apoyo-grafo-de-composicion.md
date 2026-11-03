@@ -27,7 +27,7 @@ El mensaje se arma con un **motor de reglas sin IA**. Cada mensaje combina 5 ran
 | Señal | Cálculo | Afecta |
 |---|---|---|
 | Emoción | Elegida por el usuario | Todas; define la metáfora |
-| Tema | Palabras clave: trabajo, estudio, familia, pareja, amistad, salud, dinero | Reflejo |
+| Tema | Palabras clave: soledad, malestar, trabajo, estudio, familia, pareja, amistad, salud, dinero | Reflejo (y, con la emoción, validación y contraste) |
 | Intensidad | Longitud, mayúsculas, signos repetidos, palabras absolutas | Validación y contraste |
 | Momento del día | Hora local del usuario | Saludo |
 | Tendencia | Últimas 3–5 emociones | Contraste |
@@ -86,7 +86,8 @@ Una IA futura entraría como otra implementación de `IGeneradorMensajeApoyo` en
 6. **Historial cifrado y mínimo.** El id de un reflejo delata el tema detectado, así que `historial_respuestas` guarda los ids **cifrados** (AES-256-GCM, contexto persona + respuesta) y solo conserva las últimas 5 respuestas de cada persona.
 7. **Contenido como datos.** `fragmentos.json`, `temas.json` y `crisis.json` viven en `src/Infrastructure/Treeve.Infrastructure/MensajesApoyo/Contenido/`; `EstructuraDelRepositorioTests` admite JSON solo en esa carpeta. Guía para escribirlo: [contenido de los mensajes de apoyo](../guias/contenido-mensajes-apoyo.md).
 8. **Contenido (HU-06a-3):** 8 variantes generales por ranura y emoción, más reflejos por tema y validaciones de intensidad alta.
-9. **Pendiente:** momento del día, tendencia, racha, primer desahogo e hito del árbol son HU-06a-2; la revisión psicológica, la revisión humana de 200 combinaciones y las líneas de ayuda verificadas siguen abiertas.
+9. **Combinaciones emoción + tema (2026-11-03):** la emoción elegida sigue siendo la base del mensaje, y los temas la complementan. Se suman los temas `soledad`, `malestar` y `alegria` (frases con contexto, no palabras sueltas) y fragmentos `felicidad` + tema en validación, reflejo y contraste. Además, `Senales.Contradice` es verdadera cuando el tono del tema detectado es opuesto al de la emoción (Felicidad con soledad o malestar; Tristeza, Rabia o Miedo con alegría). Los fragmentos marcados `"contradice": true` solo encajan en ese caso, suman 2 de especificidad y usan una redacción neutra que no celebra ni trata como malo lo escrito. Así la regla sirve para todas las emociones sin escribir un fragmento por cada combinación. Limitaciones aceptadas: la detección es por palabras clave y entiende negaciones solo de forma parcial (frases negadas explícitas en `malestar`); `Duda` es neutra y nunca contradice; los puentes siguen siendo propios de la emoción. El contenido requiere revisión psicológica.
+10. **Pendiente:** momento del día, tendencia, racha, primer desahogo e hito del árbol son HU-06a-2; la revisión psicológica, la revisión humana de 200 combinaciones y las líneas de ayuda verificadas siguen abiertas.
 
 ## Alternativas consideradas
 
