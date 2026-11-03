@@ -1,6 +1,7 @@
+import { StrictMode } from 'react'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { DURACION_DE_PAUSA, INTERVALO_POR_LETRA } from './animacion.ts'
+import { DURACION_DE_PAUSA, DURACION_TOTAL_OBJETIVO, INTERVALO_POR_LETRA, intervaloParaTexto } from './animacion.ts'
 import { MensajeDeApoyo } from './MensajeDeApoyo.tsx'
 
 function simularReducirMovimiento(reducir: boolean) {
@@ -21,9 +22,13 @@ function simularReducirMovimiento(reducir: boolean) {
 
 const TEXTO = 'Hola, Ani. Gracias por contarlo.'
 
-// Las esperas por fase usan waitFor (poll) con un tiempo máximo generoso respecto a la duración real.
-const TOPE_TERMINADO = DURACION_DE_PAUSA + (TEXTO.length + 2) * INTERVALO_POR_LETRA + 200
-const esperarTerminar = (texto: string) => waitFor(() => expect(screen.getByText(texto)).toBeInTheDocument(), { timeout: TOPE_TERMINADO })
+// Lo que ve la persona: el párrafo visible (no la copia invisible para lectores de pantalla).
+const parrafoVisible = () => document.querySelector('[aria-hidden="true"] p')
+const textoVisible = () => parrafoVisible()?.textContent?.replace(/\s/g, '') ?? ''
+// Las esperas usan waitFor con un tope generoso respecto a la duración real (siempre acotada por DURACION_TOTAL_OBJETIVO).
+const TOPE_TERMINADO = DURACION_TOTAL_OBJETIVO + 500
+const esperarTerminar = (texto: string) =>
+  waitFor(() => expect(textoVisible()).toBe(texto.replace(/\s/g, '')), { timeout: TOPE_TERMINADO })
 
 describe('MensajeDeApoyo', () => {
   beforeEach(() => simularReducirMovimiento(false))
@@ -34,7 +39,7 @@ describe('MensajeDeApoyo', () => {
       render(<MensajeDeApoyo mensaje={{ texto: TEXTO, esDeCrisis: false }} onSeguir={() => {}} />)
 
       await esperarTerminar(TEXTO)
-      expect(screen.getByText(TEXTO)).toBeInTheDocument()
+      expect(parrafoVisible()?.textContent).toContain(TEXTO)
     })
 
     it('un mensaje de crisis se marca para darle un fondo más cálido, y la interfaz no agrega teléfonos ni enlaces propios', () => {
@@ -59,21 +64,19 @@ describe('MensajeDeApoyo', () => {
   })
 
   describe('la animación (HU-06a-4)', () => {
-    it('empieza por la pausa "El bosque te está escuchando…", sin el texto', () => {
+    it('empieza por la pausa "El bosque te está escuchando…", sin letras del mensaje a la vista', () => {
       render(<MensajeDeApoyo mensaje={{ texto: TEXTO, esDeCrisis: false }} onSeguir={() => {}} />)
 
-      expect(screen.getByText('El bosque te está escuchando…')).toBeInTheDocument()
-      expect(screen.queryByText(TEXTO)).not.toBeInTheDocument()
+      expect(parrafoVisible()?.textContent).toBe('El bosque te está escuchando…')
     })
 
     it('tras la pausa, el texto crece letra por letra hasta completarse', async () => {
       render(<MensajeDeApoyo mensaje={{ texto: 'abcd', esDeCrisis: false }} onSeguir={() => {}} />)
 
-      // En algún momento intermedio el párrafo contiene algunas letras, pero no todas.
+      // En algún momento intermedio el visible contiene algunas letras, pero no todas.
       await waitFor(
         () => {
-          const parrafo = document.querySelector('p')
-          const letras = (parrafo?.textContent ?? '').replace(/\s/g, '')
+          const letras = textoVisible()
           expect(letras.length).toBeGreaterThan(0)
           expect(letras.length).toBeLessThan(4)
         },
@@ -99,18 +102,18 @@ describe('MensajeDeApoyo', () => {
 
       fireEvent.click(screen.getByRole('button', { name: 'Saltar' }))
 
-      expect(screen.getByText(TEXTO)).toBeInTheDocument()
+      expect(parrafoVisible()?.textContent).toContain(TEXTO)
       expect(screen.getByRole('button', { name: 'Seguir' })).toBeInTheDocument()
       expect(onSeguir).not.toHaveBeenCalled()
     })
 
     it('"Saltar" mientras se escribe también muestra todo el mensaje', async () => {
       render(<MensajeDeApoyo mensaje={{ texto: TEXTO, esDeCrisis: false }} onSeguir={() => {}} />)
-      await waitFor(() => expect(screen.queryByText('El bosque te está escuchando…')).not.toBeInTheDocument(), { timeout: DURACION_DE_PAUSA + 200 })
+      await waitFor(() => expect(parrafoVisible()?.textContent).not.toBe('El bosque te está escuchando…'), { timeout: DURACION_DE_PAUSA + 200 })
 
       fireEvent.click(screen.getByRole('button', { name: 'Saltar' }))
 
-      expect(screen.getByText(TEXTO)).toBeInTheDocument()
+      expect(parrafoVisible()?.textContent).toContain(TEXTO)
     })
 
     it('"Seguir" avisa, nunca se cierra solo', async () => {
@@ -135,6 +138,17 @@ describe('MensajeDeApoyo', () => {
       expect(onAparece).toHaveBeenCalledOnce()
     })
 
+    it('tampoco se llama dos veces en StrictMode (el doble montaje de los efectos en desarrollo no debe duplicar el riego)', () => {
+      const onAparece = vi.fn<() => void>()
+      render(
+        <StrictMode>
+          <MensajeDeApoyo mensaje={{ texto: TEXTO, esDeCrisis: false }} onSeguir={() => {}} onAparece={onAparece} />
+        </StrictMode>,
+      )
+
+      expect(onAparece).toHaveBeenCalledOnce()
+    })
+
     it('sin onAparece, no se cae', () => {
       expect(() => render(<MensajeDeApoyo mensaje={{ texto: TEXTO, esDeCrisis: false }} onSeguir={() => {}} />)).not.toThrow()
     })
@@ -146,8 +160,8 @@ describe('MensajeDeApoyo', () => {
     it('aparece el mensaje completo, sin pausa ni escritura letra por letra', () => {
       render(<MensajeDeApoyo mensaje={{ texto: TEXTO, esDeCrisis: false }} onSeguir={() => {}} />)
 
-      expect(screen.getByText(TEXTO)).toBeInTheDocument()
-      expect(screen.queryByText('El bosque te está escuchando…')).not.toBeInTheDocument()
+      expect(parrafoVisible()?.textContent).toBe(TEXTO)
+      expect(parrafoVisible()?.textContent).not.toBe('El bosque te está escuchando…')
     })
 
     it('"Seguir" está disponible desde el inicio, sin "Saltar"', () => {
@@ -162,6 +176,60 @@ describe('MensajeDeApoyo', () => {
       render(<MensajeDeApoyo mensaje={{ texto: TEXTO, esDeCrisis: false }} onSeguir={() => {}} onAparece={onAparece} />)
 
       expect(onAparece).toHaveBeenCalledOnce()
+    })
+  })
+
+  describe('un mensaje de crisis aparece completo sin esperar (línea de ayuda sin latencia)', () => {
+    const crisis = { texto: 'Estamos contigo. Si lo necesitas, Línea 106 (24h) te acompaña.', esDeCrisis: true }
+
+    it('se muestra entero de inmediato, sin pausa ni escritura letra por letra', () => {
+      render(<MensajeDeApoyo mensaje={crisis} onSeguir={() => {}} />)
+
+      expect(parrafoVisible()?.textContent).toBe(crisis.texto)
+      expect(parrafoVisible()?.textContent).not.toBe('El bosque te está escuchando…')
+    })
+
+    it('"Seguir" está disponible desde el inicio, sin "Saltar"', () => {
+      render(<MensajeDeApoyo mensaje={crisis} onSeguir={() => {}} />)
+
+      expect(screen.getByRole('button', { name: 'Seguir' })).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: 'Saltar' })).not.toBeInTheDocument()
+    })
+
+    it('conserva el fondo cálido de crisis sin agregar enlaces propios', () => {
+      render(<MensajeDeApoyo mensaje={crisis} onSeguir={() => {}} />)
+
+      expect(document.querySelector('[data-crisis="true"]')).not.toBeNull()
+      expect(screen.queryByRole('link')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('lectores de pantalla (no anuncia letra por letra)', () => {
+    it('el texto completo está en el DOM una sola vez desde el principio y la animación visual queda aria-hidden', () => {
+      const { container } = render(<MensajeDeApoyo mensaje={{ texto: TEXTO, esDeCrisis: false }} onSeguir={() => {}} />)
+
+      const texto = TEXTO.replace(/\s/g, '')
+      const nodosConElTexto = Array.from(container.querySelectorAll('p')).filter((p) => (p.textContent ?? '').replace(/\s/g, '') === texto)
+      expect(nodosConElTexto).toHaveLength(1)
+      // La animación visual (lo que crece letra por letra) está dentro de un contenedor aria-hidden,
+      // así el lector de pantalla no la narra; el texto accesible completo no tiene aria-live que lo reanuncie.
+      expect(container.querySelector('[aria-hidden="true"]')).not.toBeNull()
+      expect(container.querySelector('[aria-live]')).toBeNull()
+    })
+  })
+
+  describe('duración acotada (no se eterniza con textos largos)', () => {
+    it('para un mensaje largo, el intervalo por letra se acorta para no pasar del tope total', () => {
+      // Un mensaje de ~230 letras es lo típico que devuelve la API.
+      const largo = 'a'.repeat(230)
+      const porLetra = intervaloParaTexto(largo)
+
+      const total = DURACION_DE_PAUSA + porLetra * largo.length
+      expect(total).toBeLessThanOrEqual(DURACION_TOTAL_OBJETIVO)
+    })
+
+    it('para un mensaje corto, se usa el intervalo cómodo (no se acelera innecesariamente)', () => {
+      expect(intervaloParaTexto('Hola')).toBe(INTERVALO_POR_LETRA)
     })
   })
 })
