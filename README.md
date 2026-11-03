@@ -46,11 +46,16 @@ Treeve/
 ├── tests/
 │   ├── Treeve.Domain.Tests/           # Reglas de negocio (anillos 1 y 2)
 │   ├── Treeve.Application.Tests/      # Casos de uso con dobles de prueba
-│   └── Treeve.ArchitectureTests/      # Regla de dependencias verificada en CI
+│   ├── Treeve.Infrastructure.Tests/   # Cifrado, repositorios y PostgreSQL real
+│   ├── Treeve.Api.Tests/              # Seguridad de la API completa (ADR-009)
+│   ├── Treeve.ArchitectureTests/      # Regla de dependencias verificada en CI
+│   └── carga/                         # Script de k6, se ejecuta a mano (ADR-009)
 ├── deploy/                            # Externo · Dockerfile de Treeve.Api (Railway, ADR-002)
 ├── docs/
 │   ├── adr/                           # Decisiones de arquitectura
-│   └── guias/                         # Guías para el equipo
+│   ├── arquitectura/                  # Modelo C4 (Mermaid)
+│   ├── guias/                         # Guías para el equipo
+│   └── pruebas/                       # Informe de pruebas de carga y seguridad (TEC-05)
 └── .github/                           # CI y plantilla de PR
 ```
 

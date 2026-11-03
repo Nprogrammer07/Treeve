@@ -18,6 +18,9 @@ public class EstructuraDelRepositorioTests
     /// <summary>ADR-001: el contenido de los mensajes de apoyo son datos (JSON versionado), no código.</summary>
     private const string ContenidoDeMensajes = "src/Infrastructure/Treeve.Infrastructure/MensajesApoyo/Contenido/";
 
+    /// <summary>ADR-009: los scripts de k6 (una herramienta de pruebas, no parte del stack) están en JavaScript, y solo aquí.</summary>
+    private const string PruebasDeCarga = "tests/carga/";
+
     private static readonly string[] CarpetasDelBackend =
         ["src/Core/", "src/Infrastructure/", "src/Presentation/Treeve.Api/", "tests/"];
 
@@ -49,12 +52,13 @@ public class EstructuraDelRepositorioTests
 
         var ajenos = Archivos
             .Where(a => CarpetasDelBackend.Any(c => a.StartsWith(c, StringComparison.Ordinal)))
-            .Where(a => !extensiones.Contains(Path.GetExtension(a)) && !EsConfiguracionDeAspNet(Path.GetFileName(a)) && !EsContenidoDeMensajes(a))
+            .Where(a => !extensiones.Contains(Path.GetExtension(a)) && !EsConfiguracionDeAspNet(Path.GetFileName(a)) && !EsContenidoDeMensajes(a) && !EsPruebaDeCarga(a))
             .ToList();
 
         SinArchivos(ajenos,
-            "El backend solo admite C# (.cs y .csproj), la configuración de ASP.NET Core (ADR-003) " +
-            $"y el contenido JSON de los mensajes de apoyo en {ContenidoDeMensajes} (ADR-001).");
+            "El backend solo admite C# (.cs y .csproj), la configuración de ASP.NET Core (ADR-003), " +
+            $"el contenido JSON de los mensajes de apoyo en {ContenidoDeMensajes} (ADR-001) " +
+            $"y los scripts de k6 con su README en {PruebasDeCarga} (ADR-009).");
     }
 
     [Fact]
@@ -140,6 +144,11 @@ public class EstructuraDelRepositorioTests
         ruta.StartsWith(ContenidoDeMensajes, StringComparison.Ordinal) &&
         !ruta[ContenidoDeMensajes.Length..].Contains('/', StringComparison.Ordinal) &&
         ruta.EndsWith(".json", StringComparison.Ordinal);
+
+    private static bool EsPruebaDeCarga(string ruta) =>
+        ruta.StartsWith(PruebasDeCarga, StringComparison.Ordinal) &&
+        !ruta[PruebasDeCarga.Length..].Contains('/', StringComparison.Ordinal) &&
+        (ruta.EndsWith(".js", StringComparison.Ordinal) || ruta == $"{PruebasDeCarga}README.md");
 
     private static bool EsConfiguracionDeAspNet(string archivo) =>
         archivo == "launchSettings.json" ||
