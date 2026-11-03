@@ -1,4 +1,5 @@
 import { lazy, Suspense, useState } from 'react'
+import { ZonaDeAdministracion } from '../features/administracion/ZonaDeAdministracion.tsx'
 import { FormularioLogin } from '../features/identidad/FormularioLogin.tsx'
 import { FormularioRecuperacion } from '../features/identidad/FormularioRecuperacion.tsx'
 import { FormularioRegistro } from '../features/identidad/FormularioRegistro.tsx'
@@ -51,11 +52,33 @@ function App() {
     return <RestablecerContrasena onRestablecida={() => irAlAcceso('login', 'Tu contraseña se cambió. Inicia sesión con la nueva.')} onPedirEnlace={() => irAlAcceso('recuperar', '')} />
   }
 
-  // HU-10: la zona de staff tiene su propia dirección (/staff), sin enlaces desde la experiencia de la persona usuaria.
-  if (window.location.pathname.replace(/\/$/, '') === '/staff') {
+  // HU-10 y HU-12: la zona de staff (/staff) y la de administración (/staff/administracion) tienen sus propias direcciones,
+  // sin enlaces desde la experiencia de la persona usuaria. Al administrador se le ofrece la segunda desde el panel de staff.
+  const ruta = window.location.pathname.replace(/\/$/, '')
+  if (ruta === '/staff' || ruta === '/staff/administracion') {
     const volver = () => window.location.assign('/')
     if (!sesion) return <AccesoDeStaff onVolver={volver} />
-    return <ZonaDeStaff comprobarAcceso={consultarAcceso} fuente={fuenteDeStaff} apodo={sesion.apodo} onSalir={borrarSesion} onVolver={volver} />
+    if (ruta === '/staff/administracion') {
+      return (
+        <ZonaDeAdministracion
+          comprobarAcceso={consultarAcceso}
+          apodo={sesion.apodo}
+          onSalir={borrarSesion}
+          onVolverASugerencias={() => window.location.assign('/staff')}
+          onVolverAlInicio={volver}
+        />
+      )
+    }
+    return (
+      <ZonaDeStaff
+        comprobarAcceso={consultarAcceso}
+        fuente={fuenteDeStaff}
+        apodo={sesion.apodo}
+        onSalir={borrarSesion}
+        onVolver={volver}
+        onAdministracion={() => window.location.assign('/staff/administracion')}
+      />
+    )
   }
 
   if (!sesion) {
