@@ -40,7 +40,8 @@ public sealed partial class Fragmento
         IReadOnlySet<Tema> temas,
         IReadOnlySet<Intensidad> intensidades,
         int peso,
-        string texto)
+        string texto,
+        bool contradice)
     {
         Id = id;
         Ranura = ranura;
@@ -49,6 +50,7 @@ public sealed partial class Fragmento
         Intensidades = intensidades;
         Peso = peso;
         Texto = texto;
+        Contradice = contradice;
     }
 
     /// <summary>Por ejemplo "TRI-REF-07": emoción (o GEN si sirve para todas), ranura y número.</summary>
@@ -69,10 +71,17 @@ public sealed partial class Fragmento
     public string Texto { get; }
 
     /// <summary>
-    /// De lo general a lo específico: la emoción suma 1, el tema 2 y la intensidad 1. Entre los fragmentos
-    /// que encajan, el motor prefiere los más específicos.
+    /// true: solo sirve cuando el texto suena distinto a la emoción elegida (<see cref="Senales.Contradice"/>); son
+    /// frases neutras que no celebran ni consuelan de más. false: no depende de eso.
     /// </summary>
-    public int Especificidad => (Emocion is null ? 0 : 1) + (Temas.Count > 0 ? 2 : 0) + (Intensidades.Count > 0 ? 1 : 0);
+    public bool Contradice { get; }
+
+    /// <summary>
+    /// De lo general a lo específico: la emoción suma 1, el tema 2, la intensidad 1 y la contradicción 2. Entre los
+    /// fragmentos que encajan, el motor prefiere los más específicos: una combinación de emoción y tema (3) gana
+    /// a uno de contradicción (2), y este a uno solo de la emoción (1).
+    /// </summary>
+    public int Especificidad => (Emocion is null ? 0 : 1) + (Temas.Count > 0 ? 2 : 0) + (Intensidades.Count > 0 ? 1 : 0) + (Contradice ? 2 : 0);
 
     public static Fragmento Crear(
         string id,
@@ -81,7 +90,8 @@ public sealed partial class Fragmento
         IEnumerable<Tema> temas,
         IEnumerable<Intensidad> intensidades,
         int peso,
-        string texto)
+        string texto,
+        bool contradice = false)
     {
         ArgumentNullException.ThrowIfNull(temas);
         ArgumentNullException.ThrowIfNull(intensidades);
@@ -119,7 +129,7 @@ public sealed partial class Fragmento
             throw new ArgumentException($"El saludo {id} debe nombrar a la persona con {MarcadorDeApodo}.", nameof(texto));
         }
 
-        return new Fragmento(id, ranura, emocion, temas.ToHashSet(), intensidades.ToHashSet(), peso, limpio);
+        return new Fragmento(id, ranura, emocion, temas.ToHashSet(), intensidades.ToHashSet(), peso, limpio, contradice);
     }
 
     public bool EncajaCon(Senales senales)
@@ -128,12 +138,13 @@ public sealed partial class Fragmento
 
         return (Emocion is null || Emocion == senales.Emocion)
             && (Temas.Count == 0 || (senales.Tema is { } tema && Temas.Contains(tema)))
-            && (Intensidades.Count == 0 || Intensidades.Contains(senales.Intensidad));
+            && (Intensidades.Count == 0 || Intensidades.Contains(senales.Intensidad))
+            && (!Contradice || senales.Contradice);
     }
 
-    /// <summary>Sin tema ni intensidad: encaja con cualquier desahogo de esa emoción.</summary>
+    /// <summary>Sin tema ni intensidad ni contradicción: encaja con cualquier desahogo de esa emoción.</summary>
     public bool EsGeneralPara(Emocion emocion) =>
-        (Emocion is null || Emocion == emocion) && Temas.Count == 0 && Intensidades.Count == 0;
+        (Emocion is null || Emocion == emocion) && Temas.Count == 0 && Intensidades.Count == 0 && !Contradice;
 
     public string TextoPara(string apodo) => Texto.Replace(MarcadorDeApodo, apodo, StringComparison.Ordinal);
 

@@ -29,7 +29,7 @@ Ejemplo (tristeza, habla de su mamá, intensidad media):
 | `id` | Sí | `EMO-RAN-NN`. EMO: `TRI`, `RAB`, `MIE`, `DUD`, `FEL` o `GEN` (cualquier emoción). RAN: `SAL`, `VAL`, `REF`, `CON`, `PUE`. NN: dos dígitos. Debe coincidir con `emocion` y `ranura` |
 | `ranura` | Sí | `saludo`, `validación`, `reflejo`, `contraste`, `puente` |
 | `emocion` | No | `tristeza`, `rabia`, `miedo`, `duda`, `felicidad`. Sin él, sirve para todas (id `GEN-…`) |
-| `temas` | No | `trabajo`, `estudio`, `familia`, `pareja`, `amistad`, `salud`, `dinero`. Sin él, sirve para cualquier tema |
+| `temas` | No | `soledad`, `malestar`, `trabajo`, `estudio`, `familia`, `pareja`, `amistad`, `salud`, `dinero`. Sin él, sirve para cualquier tema |
 | `intensidad` | No | `baja`, `media`, `alta`. Sin él, sirve para cualquier intensidad |
 | `peso` | No | 1 a 10 (por defecto 1). Más peso, más probable frente a otros igual de específicos |
 | `texto` | Sí | Oración completa, hasta 300 caracteres |
@@ -52,6 +52,27 @@ Entre más etiquetas, más específico: si encaja, se prefiere sobre uno general
 
 Palabras o frases por tema, escritas con ortografía normal: al comparar se ignoran tildes y mayúsculas, así "mamá" también encuentra "mama". Un `*` al final acepta cualquier terminación: `trabaj*` encuentra "trabajo", "trabajando" y "trabajadora". Cuidado con los comodines muy cortos: `novi*` encontraría "noviembre".
 
+### Combinar la emoción con lo que escribe la persona
+
+La emoción elegida marca el tono base, y las palabras clave del texto lo complementan: un fragmento con `emocion` y `temas` (por ejemplo, `felicidad` + `soledad`) vale 3 puntos de especificidad y le gana a uno solo de felicidad, que vale 1. Así, quien elige Felicidad pero escribe que se siente sola o solo no recibe un mensaje que celebra.
+
+- **Soledad y malestar** son los temas pensados para esas combinaciones. Hoy tienen fragmentos de `felicidad` en validación, reflejo y contraste, y reflejos `GEN` para cualquier emoción.
+- **Mínimo de 6 por combinación y ranura** (5 respuestas sin repetir + 1). Con menos, al agotarse los propios el motor volvería a los fragmentos festivos. `ContenidoDeMensajesTests` lo comprueba.
+- **Tono:** reconocer sin celebrar y sin asumir. Nada de "qué bonito" ni "qué lástima"; sin adjetivos de género ("sola", "contento") ni consejos clínicos.
+- **Las palabras sueltas no sirven.** "solo" también es "solamente" y "mal" aparece en "no estuvo mal": por eso las frases piden contexto ("me siento solo", "estoy triste"). `solo*` o `sol*` estarían mal, porque encontrarían "solucionando".
+- **Sin negaciones:** "ya no me siento solo" también activa el tema. El mensaje de esa combinación debe sonar bien aunque se active por error.
+- Si un texto empata entre un tema de siempre y soledad o malestar, gana soledad o malestar (van primero en `Tema`).
+
+#### Cuando el texto contradice la emoción (`contradice`)
+
+Sirve para Felicidad, Tristeza, Rabia y Miedo. `Senales.Contradice` es verdadera si el tono del tema detectado es opuesto al de la emoción: Felicidad con soledad o malestar, o Tristeza, Rabia o Miedo con alegría ("Hoy me siento feliz"). `Duda` es neutra y nunca contradice.
+
+- Un fragmento con `"contradice": true` solo encaja cuando hay contradicción, vale 2 puntos de especificidad y no cuenta como fragmento general. Por eso, en ese caso, le gana al de la emoción sola.
+- Hoy son fragmentos `GEN` (para cualquier emoción) en validación, reflejo y contraste: mínimo 6 por ranura. `ContenidoDeMensajesTests` lo comprueba.
+- Redacción neutra: no celebrar y no tratar lo escrito como algo malo. Reconocer lo que la persona dijo y que las emociones se mezclan.
+- El tema `alegria` usa frases con contexto ("me siento feliz", "estoy muy bien"). Las negadas ("no me siento feliz", "no estoy bien") están en `malestar`, que gana los empates.
+- Límites: los puentes siguen siendo propios de la emoción elegida, y con Duda un texto de certeza ("lo entiendo todo") no se detecta como contradicción.
+
 ## 5. Crisis (`crisis.json`)
 
 - `frases`: frases de riesgo agrupadas por categoría. Basta una para responder con el mensaje fijo.
@@ -66,4 +87,4 @@ Palabras o frases por tema, escritas con ortografía normal: al comparar se igno
 dotnet test tests/Treeve.Infrastructure.Tests
 ```
 
-`ContenidoDeMensajesTests` falla si un fragmento está mal escrito (id, marcador, puntuación), si una emoción no tiene al menos 8 fragmentos generales por ranura, si una respuesta repite fragmentos de las 5 anteriores o si la regla de crisis deja de reconocer los ejemplos. Para probar una frase de crisis nueva, agrégala como ejemplo en esa prueba.
+`ContenidoDeMensajesTests` falla si un fragmento está mal escrito (id, marcador, puntuación), si una emoción no tiene al menos 8 fragmentos generales por ranura, si una respuesta repite fragmentos de las 5 anteriores, si Felicidad con un texto de soledad o malestar vuelve a celebrar o si la regla de crisis deja de reconocer los ejemplos. Para probar una frase de crisis nueva, agrégala como ejemplo en esa prueba.

@@ -115,8 +115,194 @@ public class ContenidoDeMensajesTests
     [InlineData("Mi mejor amiga se fue del país", Tema.Amistad)]
     [InlineData("Me dieron el diagnóstico en la clínica", Tema.Salud)]
     [InlineData("No me alcanza la plata para el arriendo", Tema.Dinero)]
+    [InlineData("Me siento solo desde que me mudé", Tema.Soledad)]
+    [InlineData("Hoy me sentí sola en la fiesta", Tema.Soledad)]
+    [InlineData("Siento la soledad en las noches", Tema.Soledad)]
+    [InlineData("Hoy estoy triste y sin ganas de nada", Tema.Malestar)]
+    [InlineData("Me siento mal y ya no puedo más", Tema.Malestar)]
+    // Empate entre un tema nuevo y uno de siempre: gana el que cuida primero cómo se siente la persona.
+    [InlineData("Nadie me entiende en casa", Tema.Soledad)]
+    [InlineData("Hoy me siento feliz", Tema.Alegria)]
+    [InlineData("Estoy muy bien, gracias", Tema.Alegria)]
+    // Una negación vuelve la frase positiva en malestar, no en alegría.
+    [InlineData("No me siento feliz hoy", Tema.Malestar)]
+    [InlineData("No me siento bien", Tema.Malestar)]
+    [InlineData("No estoy muy bien", Tema.Malestar)]
     public void Detecta_los_temas_con_las_palabras_clave_reales(string texto, Tema tema)
     {
         Assert.Equal(tema, Catalogo.Temas.Detectar(TextoNormalizado.Desde(texto)));
+    }
+
+    [Theory]
+    [InlineData("Solo quería contarlo, gracias por escuchar")]
+    [InlineData("Estoy solucionando un problema con mi proyecto")]
+    [InlineData("Hoy el día no estuvo mal")]
+    [InlineData("Vi una película muy triste y la disfruté")]
+    public void Las_palabras_sueltas_no_activan_soledad_ni_malestar(string texto)
+    {
+        // "solo" también es "solamente" y "mal" aparece en "no estuvo mal": las frases del tema piden más contexto.
+        Assert.Null(Catalogo.Temas.Detectar(TextoNormalizado.Desde(texto)));
+    }
+
+    public static TheoryData<Tema, Ranura> TemasYRanurasDeFelicidad()
+    {
+        var datos = new TheoryData<Tema, Ranura>();
+        foreach (var tema in new[] { Tema.Soledad, Tema.Malestar })
+        {
+            foreach (var ranura in new[] { Ranura.Validacion, Ranura.Reflejo, Ranura.Contraste })
+            {
+                datos.Add(tema, ranura);
+            }
+        }
+
+        return datos;
+    }
+
+    [Theory]
+    [MemberData(nameof(TemasYRanurasDeFelicidad))]
+    public void Felicidad_con_soledad_o_malestar_tiene_fragmentos_para_no_agotarse(Tema tema, Ranura ranura)
+    {
+        // Con 5 respuestas sin repetir hacen falta al menos 6: si no, el motor volvería a los fragmentos festivos.
+        var propios = Catalogo.DeLaRanura(ranura).Count(f => f.Emocion == Emocion.Felicidad && f.Temas.Contains(tema));
+
+        Assert.True(
+            propios >= MotorDeRespuesta.RespuestasSinRepetir + 1,
+            $"Felicidad/{tema}/{ranura} tiene {propios} fragmentos; hacen falta al menos {MotorDeRespuesta.RespuestasSinRepetir + 1}.");
+    }
+
+    [Theory]
+    [InlineData("Me siento solo", Tema.Soledad)]
+    [InlineData("Hoy estoy triste y sin ganas de nada", Tema.Malestar)]
+    public void Con_felicidad_elegida_y_un_texto_de_soledad_o_malestar_no_celebra(string texto, Tema tema)
+    {
+        var motor = new MotorDeRespuesta(Catalogo);
+        var porId = Catalogo.Fragmentos.ToDictionary(f => f.Id);
+        var historial = new List<IReadOnlyList<string>>();
+
+        for (var i = 0; i < 60; i++)
+        {
+            var recientes = historial.TakeLast(MotorDeRespuesta.RespuestasSinRepetir).Reverse().SelectMany(ids => ids).ToList();
+
+            var mensaje = motor.Generar(new PeticionDeMensaje("Nico", Emocion.Felicidad, texto, recientes, i));
+
+            Assert.False(mensaje.EsDeCrisis);
+            foreach (var id in mensaje.FragmentosUsados)
+            {
+                var fragmento = porId[id];
+                switch (fragmento.Ranura)
+                {
+                    case Ranura.Validacion or Ranura.Contraste:
+                        // Sin esta combinación saldrían frases como "Qué bonito que te sientas así".
+                        Assert.True(
+                            fragmento.Emocion == Emocion.Felicidad && fragmento.Temas.Contains(tema),
+                            $"{id} no es de la combinación felicidad + {tema}.");
+                        break;
+                    case Ranura.Reflejo:
+                        Assert.True(fragmento.Temas.Contains(tema), $"{id} no refleja el tema {tema}.");
+                        break;
+                }
+            }
+
+            historial.Add(mensaje.FragmentosUsados);
+        }
+    }
+
+    [Fact]
+    public void Con_felicidad_y_un_texto_alegre_sigue_celebrando()
+    {
+        var motor = new MotorDeRespuesta(Catalogo);
+        var porId = Catalogo.Fragmentos.ToDictionary(f => f.Id);
+
+        for (var i = 0; i < 30; i++)
+        {
+            var mensaje = motor.Generar(new PeticionDeMensaje("Nico", Emocion.Felicidad, "Solo quería contarlo, hoy estoy muy feliz", [], i));
+
+            Assert.DoesNotContain(
+                mensaje.FragmentosUsados,
+                id => porId[id].Contradice || porId[id].Temas.Contains(Tema.Soledad) || porId[id].Temas.Contains(Tema.Malestar));
+        }
+    }
+
+    [Theory]
+    [InlineData(Emocion.Tristeza)]
+    [InlineData(Emocion.Rabia)]
+    [InlineData(Emocion.Miedo)]
+    public void Con_una_emocion_negativa_y_un_texto_alegre_no_trata_la_alegria_como_algo_malo(Emocion emocion)
+    {
+        var motor = new MotorDeRespuesta(Catalogo);
+        var porId = Catalogo.Fragmentos.ToDictionary(f => f.Id);
+        var historial = new List<IReadOnlyList<string>>();
+
+        for (var i = 0; i < 60; i++)
+        {
+            var recientes = historial.TakeLast(MotorDeRespuesta.RespuestasSinRepetir).Reverse().SelectMany(ids => ids).ToList();
+
+            var mensaje = motor.Generar(new PeticionDeMensaje("Nico", emocion, "Hoy me siento feliz", recientes, i));
+
+            Assert.False(mensaje.EsDeCrisis);
+            foreach (var id in mensaje.FragmentosUsados)
+            {
+                // Validación, reflejo y contraste salen del conjunto neutro, no del consuelo propio de la emoción.
+                if (porId[id].Ranura is Ranura.Validacion or Ranura.Reflejo or Ranura.Contraste)
+                {
+                    Assert.True(porId[id].Contradice, $"{id} no es un fragmento de contradicción.");
+                }
+            }
+
+            historial.Add(mensaje.FragmentosUsados);
+        }
+    }
+
+    [Fact]
+    public void Con_duda_un_texto_alegre_no_se_considera_contradiccion()
+    {
+        var motor = new MotorDeRespuesta(Catalogo);
+        var porId = Catalogo.Fragmentos.ToDictionary(f => f.Id);
+
+        for (var i = 0; i < 30; i++)
+        {
+            var mensaje = motor.Generar(new PeticionDeMensaje("Nico", Emocion.Duda, "Hoy me siento feliz", [], i));
+
+            Assert.DoesNotContain(mensaje.FragmentosUsados, id => porId[id].Contradice);
+        }
+    }
+
+    [Fact]
+    public void Con_una_emocion_negativa_y_un_texto_de_soledad_no_cambia_su_tono()
+    {
+        // Tristeza y soledad dicen lo mismo: no hay contradicción y la validación sigue siendo la de la emoción.
+        var motor = new MotorDeRespuesta(Catalogo);
+        var porId = Catalogo.Fragmentos.ToDictionary(f => f.Id);
+
+        for (var i = 0; i < 30; i++)
+        {
+            var mensaje = motor.Generar(new PeticionDeMensaje("Nico", Emocion.Tristeza, "Me siento solo", [], i));
+
+            Assert.DoesNotContain(mensaje.FragmentosUsados, id => porId[id].Contradice);
+        }
+    }
+
+    [Theory]
+    [InlineData(Ranura.Validacion)]
+    [InlineData(Ranura.Reflejo)]
+    [InlineData(Ranura.Contraste)]
+    public void Hay_fragmentos_de_contradiccion_para_no_agotarse(Ranura ranura)
+    {
+        var propios = Catalogo.DeLaRanura(ranura).Count(f => f.Contradice);
+
+        Assert.True(
+            propios >= MotorDeRespuesta.RespuestasSinRepetir + 1,
+            $"{ranura} tiene {propios} fragmentos de contradicción; hacen falta al menos {MotorDeRespuesta.RespuestasSinRepetir + 1}.");
+    }
+
+    [Theory]
+    [InlineData(Emocion.Felicidad)]
+    [InlineData(Emocion.Tristeza)]
+    public void La_crisis_no_depende_de_la_emocion_ni_de_los_temas(Emocion emocion)
+    {
+        var mensaje = new MotorDeRespuesta(Catalogo).Generar(
+            new PeticionDeMensaje("Nico", emocion, "Me siento solo y quiero morirme", [], 1));
+
+        Assert.True(mensaje.EsDeCrisis);
     }
 }
